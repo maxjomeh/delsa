@@ -1,149 +1,108 @@
-import { Cpu, Zap, Activity, Globe } from 'lucide-react';
+import { Cpu, Zap, Shield, Rocket, ChevronLeft, Check, Terminal, Share2 } from 'lucide-react';
 
-export default function Home() {
+export default function LandingPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-20px); }
         }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.5; }
-          50% { opacity: 1; }
+        @keyframes glow {
+          0%, 100% { text-shadow: 0 0 10px rgba(51, 255, 0, 0.2); }
+          50% { text-shadow: 0 0 20px rgba(51, 255, 0, 0.5); }
         }
-        @keyframes backgroundMove {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        .ai-card::before {
-          content: "";
-          position: absolute;
-          inset: -2px;
-          background: conic-gradient(from 0deg, transparent 70%, #33ff00, #33ff00);
-          animation: rotate 4s linear infinite;
-          z-index: -1;
-        }
+        html { scroll-behavior: smooth; }
       `}} />
 
-      <div style={{ 
-        backgroundColor: '#050505', 
-        background: 'linear-gradient(-45deg, #050505, #111, #0a1a05, #000)',
-        backgroundSize: '400% 400%',
-        animation: 'backgroundMove 15s ease infinite',
-        minHeight: '100vh', 
-        color: '#fff', 
-        fontFamily: 'Segoe UI, Tahoma, sans-serif',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-        direction: 'rtl'
-      }}>
+      <div style={{ backgroundColor: '#000', color: '#fff', fontFamily: 'Tahoma, Segoe UI, sans-serif', direction: 'rtl' }}>
         
-        {/* کارت اصلی با حاشیه چرخشی */}
-        <div className="ai-card" style={{ 
-          maxWidth: '420px', 
-          width: '100%',
-          background: '#0a0a0a',
-          borderRadius: '24px',
-          padding: '2px', // فضا برای دیدن حاشیه انیمیشنی
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          
-          {/* محتوای داخلی کارت */}
-          <div style={{
-            background: 'rgba(10, 10, 10, 0.95)',
-            borderRadius: '22px',
-            padding: '40px',
-            height: '100%'
-          }}>
-            
-            {/* هدر با افکت پالس */}
-            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-              <div style={{ 
-                display: 'inline-flex', 
-                padding: '12px', 
-                borderRadius: '50%', 
-                background: 'rgba(51, 255, 0, 0.05)', 
-                marginBottom: '15px', 
-                border: '1px solid #33ff00',
-                boxShadow: '0 0 20px rgba(51, 255, 0, 0.2)',
-                animation: 'pulse 2s infinite'
-              }}>
-                <Cpu size={32} color="#33ff00" />
-              </div>
-              <h1 style={{ fontSize: '26px', fontWeight: 'bold', color: '#fff', textShadow: '0 0 10px rgba(51, 255, 0, 0.3)' }}>
-                DELSA <span style={{ color: '#33ff00' }}>AI</span>
-              </h1>
-              <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, #333, transparent)', marginTop: '10px' }}></div>
-            </div>
-
-            {/* وضعیت کاربر */}
-            <div style={{ marginBottom: '30px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', padding: '12px', background: 'rgba(51,255,0,0.03)', borderRadius: '12px', border: '1px solid #1a1a1a' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#33ff00', boxShadow: '0 0 10px #33ff00' }}></div>
-                <span style={{ fontSize: '14px', color: '#888' }}>سیستم فعال و ایمن</span>
-              </div>
-              
-              <div style={{ padding: '20px', borderRadius: '16px', backgroundColor: '#111', border: '1px solid #222' }}>
-                <div style={{ fontSize: '12px', color: '#555', marginBottom: '4px' }}>شناسه اپراتور:</div>
-                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#eee' }}>مسلم جمعه</div>
-                
-                <div style={{ marginTop: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '8px' }}>
-                    <span style={{ color: '#888' }}>پایداری اشتراک:</span>
-                    <span style={{ color: '#33ff00' }}>28 روز باقی‌مانده</span>
-                  </div>
-                  <div style={{ width: '100%', height: '4px', background: '#222', borderRadius: '10px', overflow: 'hidden' }}>
-                    <div style={{ width: '70%', height: '100%', background: 'linear-gradient(90deg, #33ff00, #1a8800)', boxShadow: '0 0 10px rgba(51, 255, 0, 0.5)' }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* دکمه‌های شیشه‌ای نئونی */}
-            <div style={{ display: 'grid', gap: '12px' }}>
-              <button style={{ 
-                background: '#33ff00', 
-                color: '#000', 
-                border: 'none', 
-                padding: '14px', 
-                borderRadius: '12px', 
-                fontWeight: 'bold', 
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 15px rgba(51, 255, 0, 0.3)'
-              }}>
-                <Zap size={18} fill="#000" /> تمدید سیکل زمانی
-              </button>
-              
-              <button style={{ 
-                background: 'rgba(255,255,255,0.02)', 
-                color: '#aaa', 
-                border: '1px solid #333', 
-                padding: '12px', 
-                borderRadius: '12px', 
-                cursor: 'pointer',
-                fontSize: '13px'
-              }}>
-                دسترسی به ترمینال
-              </button>
-            </div>
-
-            {/* فوتر کوچک */}
-            <div style={{ marginTop: '30px', textAlign: 'center', fontSize: '10px', color: '#444', letterSpacing: '1px' }}>
-              <Globe size={10} style={{ verticalAlign: 'middle', marginLeft: '5px' }} />
-              ENCRYPTED CONNECTION ESTABLISHED
-            </div>
+        {/* --- Navigation --- */}
+        <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 5%', borderBottom: '1px solid #111', position: 'sticky', top: 0, backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 100 }}>
+          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#33ff00' }}>DELSA <span style={{color:'#fff'}}>AI</span></div>
+          <div style={{ display: 'flex', gap: '30px', fontSize: '14px', color: '#888' }}>
+            <a href="#features" style={{ color: 'inherit', textDecoration: 'none' }}>قابلیت‌ها</a>
+            <a href="#pricing" style={{ color: 'inherit', textDecoration: 'none' }}>تعرفه‌ها</a>
+            <a href="/dashboard" style={{ color: '#33ff00', textDecoration: 'none', border: '1px solid #33ff00', padding: '5px 15px', borderRadius: '8px' }}>ورود به پنل</a>
           </div>
-        </div>
+        </nav>
+
+        {/* --- Hero Section --- */}
+        <section style={{ padding: '100px 5%', textAlign: 'center', background: 'radial-gradient(circle at 50% 50%, #0a1a05 0%, #000 70%)' }}>
+          <div style={{ animation: 'float 6s ease-in-out infinite', display: 'inline-block' }}>
+             <Cpu size={80} color="#33ff00" strokeWidth={1} />
+          </div>
+          <h1 style={{ fontSize: '3.5rem', fontWeight: '900', marginTop: '30px', marginBottom: '20px', animation: 'glow 3s infinite' }}>
+            نسل جدید مدیریت هوشمند با <span style={{ color: '#33ff00' }}>دِلسا</span>
+          </h1>
+          <p style={{ fontSize: '1.2rem', color: '#888', maxWidth: '700px', margin: '0 auto 40px' }}>
+            پلتفرم پیشرفته مدیریت اشتراک و اتوماسیون مبتنی بر هوش مصنوعی. امنیت، سرعت و دقت را در یک اکوسیستم تجربه کنید.
+          </p>
+          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+            <button style={{ backgroundColor: '#33ff00', color: '#000', padding: '15px 40px', borderRadius: '12px', border: 'none', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer' }}>شروع رایگان</button>
+            <button style={{ backgroundColor: 'transparent', color: '#fff', padding: '15px 40px', borderRadius: '12px', border: '1px solid #333', fontSize: '18px', cursor: 'pointer' }}>مشاهده دمو</button>
+          </div>
+        </section>
+
+        {/* --- Features Section --- */}
+        <section id="features" style={{ padding: '80px 5%', backgroundColor: '#050505' }}>
+          <h2 style={{ textAlign: 'center', marginBottom: '60px', fontSize: '2rem' }}>چرا <span style={{ color: '#33ff00' }}>دِلسا؟</span></h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
+            {[
+              { icon: <Zap color="#33ff00" />, title: "پردازش آنی", desc: "تمامی درخواست‌های شما در کمتر از ۱۰۰ میلی‌ثانیه پردازش می‌شوند." },
+              { icon: <Shield color="#33ff00" />, title: "امنیت نظامی", desc: "رمزنگاری End-to-End برای تمامی داده‌های حساس اشتراک کاربران." },
+              { icon: <Terminal color="#33ff00" />, title: "یکپارچگی کامل", desc: "اتصال آسان به APIهای مختلف و سیستم‌های مالی شما." },
+            ].map((f, i) => (
+              <div key={i} style={{ padding: '30px', background: '#0a0a0a', borderRadius: '20px', border: '1px solid #111', transition: '0.3s' }}>
+                <div style={{ marginBottom: '20px' }}>{f.icon}</div>
+                <h3 style={{ marginBottom: '15px' }}>{f.title}</h3>
+                <p style={{ color: '#666', lineHeight: '1.6' }}>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* --- Pricing Section --- */}
+        <section id="pricing" style={{ padding: '80px 5%' }}>
+          <h2 style={{ textAlign: 'center', marginBottom: '60px', fontSize: '2rem' }}>پلن‌های اشتراک</h2>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', flexWrap: 'wrap' }}>
+            
+            {/* Plan Card */}
+            <div style={{ width: '320px', padding: '40px', background: '#0a0a0a', borderRadius: '24px', border: '1px solid #1a1a1a', position: 'relative' }}>
+              <h3 style={{ fontSize: '24px', marginBottom: '10px' }}>حرفه‌ای</h3>
+              <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '30px' }}>۴۹,۰۰۰ <span style={{ fontSize: '14px', color: '#666' }}>تومان / ماه</span></div>
+              <ul style={{ list-style: 'none', padding: 0, color: '#aaa', marginBottom: '40px' }}>
+                <li style={{ marginBottom: '15px' }}><Check size={16} color="#33ff00" /> دسترسی به داشبورد AI</li>
+                <li style={{ marginBottom: '15px' }}><Check size={16} color="#33ff00" /> پشتیبانی ۲۴/۷</li>
+                <li style={{ marginBottom: '15px' }}><Check size={16} color="#33ff00" /> اتصال به گیت‌هاب</li>
+              </ul>
+              <button style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #33ff00', color: '#33ff00', background: 'transparent', cursor: 'pointer' }}>انتخاب پلن</button>
+            </div>
+
+            {/* Premium Plan (Highlighted) */}
+            <div style={{ width: '320px', padding: '40px', background: '#0a0a0a', borderRadius: '24px', border: '2px solid #33ff00', boxShadow: '0 0 30px rgba(51, 255, 0, 0.1)' }}>
+              <div style={{ position: 'absolute', top: '-15px', right: '20px', background: '#33ff00', color: '#000', padding: '5px 15px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>پیشنهادی</div>
+              <h3 style={{ fontSize: '24px', marginBottom: '10px' }}>سازمانی</h3>
+              <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '30px' }}>۱۸۹,۰۰۰ <span style={{ fontSize: '14px', color: '#666' }}>تومان / ماه</span></div>
+              <ul style={{ list-style: 'none', padding: 0, color: '#aaa', marginBottom: '40px' }}>
+                <li style={{ marginBottom: '15px' }}><Check size={16} color="#33ff00" /> تمام امکانات حرفه‌ای</li>
+                <li style={{ marginBottom: '15px' }}><Check size={16} color="#33ff00" /> ظرفیت نامحدود</li>
+                <li style={{ marginBottom: '15px' }}><Check size={16} color="#33ff00" /> امنیت اختصاصی</li>
+              </ul>
+              <button style={{ width: '100%', padding: '12px', borderRadius: '10px', border: 'none', color: '#000', background: '#33ff00', fontWeight: 'bold', cursor: 'pointer' }}>خرید آنلاین</button>
+            </div>
+
+          </div>
+        </section>
+
+        {/* --- Footer --- */}
+        <footer style={{ padding: '50px 5%', borderTop: '1px solid #111', textAlign: 'center', color: '#444' }}>
+          <div style={{ marginBottom: '20px' }}>
+             <Share2 size={24} color="#33ff00" />
+          </div>
+          <p>© ۲۰۲۴ تمامی حقوق برای سیستم هوشمند دِلسا محفوظ است.</p>
+        </footer>
+
       </div>
     </>
   );
