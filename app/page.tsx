@@ -39,7 +39,7 @@ export default function Home() {
           <h1 style={{ fontSize: '28px', fontWeight: 'bold', letterSpacing: '1px', color: '#fff', textShadow: '0 0 10px rgba(51, 255, 0, 0.5)' }}>
             DELSA <span style={{ color: '#33ff00' }}>AI</span>
           </h1>
-          <p style={{ color: '#888', fontSize: '14px', marginTop: '10px' }}>سیستم مدیریت اشتراک هوشمند</p>
+          <p style={{ color: '#888', fontSize: '14px', marginTop: '10px' }}>مدیریت حساب</p>
         </div>
 
         {/* اطلاعات کاربر */}
@@ -51,7 +51,7 @@ export default function Home() {
           
           <div style={{ padding: '20px', borderRadius: '16px', border: '1px dashed #444', position: 'relative' }}>
             <div style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>کاربر متصل:</div>
-            <div style={{ fontSize: '18px', fontWeight: '500', color: '#fff' }}>مسلم آقاخانی</div>
+            <div style={{ fontSize: '18px', fontWeight: '500', color: '#fff' }}>مسلم جمعه</div>
             <div style={{ marginTop: '15px', fontSize: '13px', color: '#33ff00', display: 'flex', justifyContent: 'space-between' }}>
               <span>اعتبار باقی‌مانده:</span>
               <span>۴۵ روز (Premium)</span>
@@ -80,7 +80,7 @@ export default function Home() {
             justifyContent: 'center',
             gap: '8px'
           }}>
-            <Zap size={18} /> تمدید با هوش مصنوعی
+            <Zap size={18} /> تمدید اشتراک
           </button>
           
           <button style={{ 
