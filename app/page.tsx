@@ -54,7 +54,7 @@ export default function Home() {
             <div style={{ fontSize: '18px', fontWeight: '500', color: '#fff' }}>مسلم جمعه</div>
             <div style={{ marginTop: '15px', fontSize: '13px', color: '#33ff00', display: 'flex', justifyContent: 'space-between' }}>
               <span>اعتبار باقی‌مانده:</span>
-              <span>۴۵ روز (Premium)</span>
+              <span>28 روز (Premium)</span>
             </div>
             {/* ProgressBar نئونی */}
             <div style={{ width: '100%', height: '4px', background: '#222', borderRadius: '10px', marginTop: '8px' }}>
