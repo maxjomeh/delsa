@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import {ArrowUpLeft, ArrowLeft, RefreshCw, MessagesSquare, Package, ShoppingBag, CreditCard, Truck, UsersRound, BarChart3, Globe2, Bot, Check, Store, Boxes, BadgePercent, Headphones} from 'lucide-react';
 const systems=[
-  {icon:Bot,kicker:'01 / فروش هوشمند',title:'هر گفت‌وگو، یک قدم تا سفارش',text:'دستیار دلسا بر اساس موجودی و اطلاعات کسب‌وکار پاسخ می‌دهد؛ مکالمه‌ها از بله، ایتا، روبیکا و سروش در یک میز کار جمع می‌شوند.',href:'/dashboard?tab=channels',cta:'دیدن صندوق پیام'},
+  {icon:Bot,kicker:'01 / فروش هوشمند',title:'هر گفت‌وگو، یک قدم تا سفارش',text:'دستیار دلسا بر اساس موجودی و اطلاعات کسب‌وکار پاسخ می‌دهد؛ مکالمه‌ها از بله، ایتا، روبیکا و سروش در یک میز کار جمع می‌شوند.',href:'/dashboard?tab=inbox',cta:'دیدن صندوق پیام'},
   {icon:Package,kicker:'02 / کاتالوگ و انبار',title:'محصول و موجودی، همیشه روشن',text:'محصول‌ها، ویژگی‌ها و گردش موجودی را یک‌جا دنبال کن. تغییر قیمت و کالاهای نیازمند بررسی از قلم نمی‌افتند.',href:'/dashboard?tab=products',cta:'دیدن کاتالوگ'},
   {icon:ShoppingBag,kicker:'03 / سفارش و فاکتور',title:'از ثبت سفارش تا آماده‌سازی',text:'سفارش‌های آنلاین، تلفنی و حضوری را کنار هم ببین؛ وضعیت هر سفارش و فاکتور آن روشن می‌ماند.',href:'/dashboard?tab=orders',cta:'دیدن سفارش‌ها'},
   {icon:CreditCard,kicker:'04 / پرداخت و ارسال',title:'پرداخت و تحویل در ادامه‌ی همان جریان',text:'پرداخت‌ها، رسیدها، مرسوله‌ها و رهگیری را به سفارش وصل کن و مشتری را از وضعیت خرید باخبر نگه دار.',href:'/dashboard?tab=orders',cta:'مرور جریان سفارش'},
