@@ -18,7 +18,7 @@ Persian RTL Next.js App Router project for GitHub and Vercel.
 Node.js 22 or 24 LTS.
 
 ```sh
-npm ci
+npm install
 npm run dev
 ```
 
@@ -42,6 +42,6 @@ Create a private GitHub repository, push this project, then import that reposito
 
 Next delivery phase: real identity and sessions, database and tenant isolation, protected admin routes, editable CMS, server-side n8n integration, audited connector setup, then real service testing. Channel support must be verified individually before claiming availability. Keep all service secrets server-side and outside Git.
 
-Dependencies are pinned by package-lock.json; the Vazirmatn typeface is bundled locally.
+The Vazirmatn typeface is bundled locally. No live store or messaging connections are configured.
 
 Official setup references: https://nextjs.org/docs/app/getting-started/installation and https://vercel.com/docs/git/vercel-for-github
