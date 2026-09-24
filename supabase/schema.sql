@@ -1,11 +1,25 @@
 -- Run this in Supabase SQL Editor before enabling sign-up.
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  email text unique not null,
+  email text unique,
+  phone text unique,
   full_name text not null default '',
   role text not null default 'user' check (role in ('user','admin')),
   created_at timestamptz not null default now()
 );
+
+-- Upgrade an existing email-based profiles table for phone/password accounts.
+alter table public.profiles alter column email drop not null;
+alter table public.profiles add column if not exists phone text;
+create unique index if not exists profiles_phone_unique_idx
+  on public.profiles(phone) where phone is not null;
+
+update public.profiles as profile
+set phone = auth_user.phone
+from auth.users as auth_user
+where profile.id = auth_user.id
+  and profile.phone is null
+  and auth_user.phone is not null;
 
 alter table public.profiles enable row level security;
 
@@ -37,8 +51,8 @@ language plpgsql security definer
 set search_path = ''
 as $$
 begin
-  insert into public.profiles (id, email, full_name, role)
-  values (new.id, new.email, coalesce(new.raw_user_meta_data ->> 'full_name', ''), 'user');
+  insert into public.profiles (id, email, phone, full_name, role)
+  values (new.id, new.email, new.phone, coalesce(new.raw_user_meta_data ->> 'full_name', ''), 'user');
   return new;
 end;
 $$;
@@ -48,5 +62,5 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute procedure public.handle_new_user();
 
--- After the administrator has signed up and confirmed their email, run this manually:
--- update public.profiles set role = 'admin' where email = 'admin@example.com';
+-- To promote an administrator after signup, run this manually using their E.164 phone:
+-- update public.profiles set role = 'admin' where phone = '+989123456789';
