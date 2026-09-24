@@ -26,8 +26,8 @@ export default function ThemeToggle() {
     function animatePointer() {
       currentX += (targetX - currentX) * 0.16;
       currentY += (targetY - currentY) * 0.16;
-      root.style.setProperty('--cursor-x', `${currentX}px`);
-      root.style.setProperty('--cursor-y', `${currentY}px`);
+      root.style.setProperty('--pointer-x', `${currentX}px`);
+      root.style.setProperty('--pointer-y', `${currentY}px`);
       if (Math.abs(targetX - currentX) > 0.5 || Math.abs(targetY - currentY) > 0.5) {
         frame = window.requestAnimationFrame(animatePointer);
       } else {
@@ -39,9 +39,9 @@ export default function ThemeToggle() {
       if (event.pointerType === 'touch') return;
       targetX = event.clientX;
       targetY = event.clientY;
-      root.dataset.cursorActive = 'true';
+      root.dataset.pointerActive = 'true';
       window.clearTimeout(hideTimer);
-      hideTimer = window.setTimeout(() => delete root.dataset.cursorActive, 1200);
+      hideTimer = window.setTimeout(() => delete root.dataset.pointerActive, 1200);
       if (!frame) frame = window.requestAnimationFrame(animatePointer);
     }
 
@@ -50,9 +50,9 @@ export default function ThemeToggle() {
       window.removeEventListener('pointermove', onPointerMove);
       window.cancelAnimationFrame(frame);
       window.clearTimeout(hideTimer);
-      delete root.dataset.cursorActive;
-      root.style.removeProperty('--cursor-x');
-      root.style.removeProperty('--cursor-y');
+      delete root.dataset.pointerActive;
+      root.style.removeProperty('--pointer-x');
+      root.style.removeProperty('--pointer-y');
     };
   }, []);
 
@@ -65,7 +65,6 @@ export default function ThemeToggle() {
 
   return (
     <>
-      <div className="cursor-glow" aria-hidden="true" />
       <button
         className="theme-toggle"
         type="button"
