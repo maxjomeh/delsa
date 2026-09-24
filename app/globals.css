@@ -67,33 +67,38 @@
 @media(max-width:760px){.apu-hero{min-height:100svh;padding-top:112px}.apu-hero-art{inset:5% -48% 40% -30%;background:radial-gradient(ellipse at 60% 30%,#362016 0,#201915 45%,transparent 76%)}.apu-hero .cinematic-inner{padding-inline:22px;padding-bottom:12px}.apu-headline{font-size:clamp(48px,13vw,74px);line-height:1.32;margin-top:15px}.price-chart{width:88vw;right:5%;top:8%;opacity:.35}.price-one{right:8%;top:15%;padding:9px 11px;transform:scale(.88);transform-origin:top right}.price-one b{font-size:11px}.price-two{right:46%;top:32%;padding:8px 10px;transform:scale(.84);transform-origin:top right}.floating-price span,.floating-price i{font-size:8px}.orbit-a{width:120vw;right:-30%;top:0}.orbit-b{width:95vw;right:-15%;top:9%}.dot-a{right:27%;top:19%}.dot-b{right:71%;top:34%}.apu-hero .cinematic-label{font-size:10px}.apu-hero .cinematic-intro{margin-top:11px;padding-top:15px}.apu-hero .cinematic-overline{font-size:19px}.apu-hero .cinematic-intro p{font-size:12px;line-height:1.85}.apu-hero .cinematic-intro .hero-actions{margin-top:15px;display:flex;flex-wrap:nowrap;gap:8px}.apu-hero .hero-actions .button{font-size:11px;padding:10px 10px;gap:5px;flex:1}.hero-proof{gap:9px 13px;margin-top:19px;font-size:9px}.hero-proof svg{width:13px}.hero-scroll{bottom:8px}.apu-story{grid-template-columns:1fr;gap:28px;padding-block:70px}.story-copy h2{font-size:31px}.story-copy>p{font-size:13px}.apu-demo{padding:15px 12px;border-radius:15px;margin-inline:-3px}.demo-line{grid-template-columns:1.25fr .8fr .8fr .65fr;gap:5px;padding:10px 2px;font-size:8px}.demo-product{font-size:8px}.demo-product>span:first-child b{font-size:8px}.demo-status{font-size:7px;padding:4px 5px}.demo-stats{padding:12px 0}.demo-stats>div{padding-inline:7px}.demo-stats small{font-size:8px}.demo-stats b{font-size:16px}.steps-section{padding:67px 0}.steps-grid{grid-template-columns:1fr;gap:9px}.steps-grid article{min-height:145px;padding:19px}.steps-grid h3{font-size:15px;margin-top:12px}.section-head{display:block}.section-head h2{font-size:27px}.section-head>p{font-size:12px}.soon-section{grid-template-columns:1fr;gap:22px;padding-block:65px}.soon-heading h2{font-size:29px}.soon-list>div{padding:12px}.closing{flex-direction:column;align-items:flex-start}.closing h2{font-size:21px}.closing .button{width:100%;justify-content:center}.footer{flex-wrap:wrap}.footer>span:nth-child(2){display:none}.footer>a:last-child{margin-right:auto;font-size:11px}}
 @media(prefers-reduced-motion:reduce){.apu-glow,.orbit,.floating-price,.price-chart,.demo-product,.demo-product:nth-child(n),.steps-grid article,.live-tag i,.hero-scroll,.focus-icon{animation:none!important;transition:none!important}.apu-demo{animation:none}}
 
-/* Keep the animated APU illustration in its own left-side lane, clear of the copy. */
-@media(min-width:761px){
-  .apu-hero-art{inset:0 auto 0 0;width:56%;background:radial-gradient(ellipse at 17% 43%,#37261e 0,#1e1a17 38%,#111 76%)}
-  .apu-hero-art::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 44%,#121211 100%)}
-  .apu-glow{left:-8%;right:auto;top:-8%;width:min(52vw,700px);height:min(52vw,700px)}
-  .orbit-a{left:-31%;right:auto;top:-24%;width:min(66vw,860px)}
-  .orbit-b{left:-21%;right:auto;top:-10%;width:min(52vw,680px)}
-  .price-chart{left:3%;right:auto;top:43%;width:min(39vw,500px);filter:none;opacity:.62}
-  .price-one{left:7%;right:auto;top:18%}
-  .price-two{left:35%;right:auto;top:30%}
-  .dot-a{left:54%;right:auto;top:37%}
-  .dot-b{left:13%;right:auto;top:72%}
-  .apu-hero .cinematic-inner{position:absolute;right:max(40px,calc((100vw - 1220px)/2 + 40px));bottom:23px;width:min(51vw,660px);margin:0;padding:0}
-  .apu-hero .cinematic-intro{display:block;max-width:100%;margin-top:13px;padding-top:18px}
-  .apu-hero .cinematic-intro .hero-actions{margin-top:17px}
-  .apu-headline{text-shadow:none}
-}
-@media(max-width:760px){
-  .apu-hero-art{inset:0 0 auto 0;width:100%;height:47%;background:radial-gradient(ellipse at 16% 40%,#362016 0,#201915 42%,#121211 78%)}
-  .apu-hero-art::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 0,transparent 30%,#121211 74%),linear-gradient(0deg,#121211 0,transparent 47%)}
-  .apu-glow{left:-31%;right:auto;top:-51%;width:94vw;height:94vw}
-  .orbit-a{left:-40%;right:auto;top:-30%;width:94vw}
-  .orbit-b{left:-25%;right:auto;top:-13%;width:76vw}
-  .price-one{left:4%;right:auto;top:8%;transform:scale(.78);transform-origin:top left}
-  .price-two{left:31%;right:auto;top:25%;transform:scale(.75);transform-origin:top left}
-  .price-chart{left:2%;right:auto;top:49%;width:52vw;filter:none;opacity:.42}
-  .dot-a{left:53%;right:auto;top:42%}
-  .dot-b{left:8%;right:auto;top:73%}
-  .apu-headline{text-shadow:none}
+/* A framed motion canvas and a separate copy column give the APU hero a clear hierarchy. */
+.apu-hero{min-height:max(100svh,740px);background:radial-gradient(ellipse at 50% 8%,#211a16 0,#121211 48%)}
+.apu-hero-art{inset:106px auto 28px max(40px,calc((100vw - 1220px)/2 + 40px));width:min(44vw,600px);height:auto;z-index:0;overflow:hidden;border:1px solid #ffffff24;border-radius:26px;background:radial-gradient(ellipse at 28% 38%,#39271d 0,#211a16 44%,#151312 76%);box-shadow:0 28px 86px #0008,inset 0 1px #ffffff18}
+.apu-hero-art::before{content:"APU  /  پایش قیمت بازار";position:absolute;z-index:5;top:18px;right:20px;padding:5px 10px;border:1px solid #ffffff20;border-radius:999px;background:#171717b8;color:#f5f2eab8;font-size:10px;direction:rtl;backdrop-filter:blur(10px)}
+.apu-hero-art::after{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;background:linear-gradient(0deg,#12121163 0,transparent 38%),radial-gradient(ellipse at 90% 8%,#ff5a1f12,transparent 50%)}
+.apu-glow{left:2%;right:auto;top:15%;width:68%;height:auto;aspect-ratio:1;filter:blur(48px)}
+.orbit{z-index:1}
+.orbit-a{left:-7%;right:auto;top:-18%;width:92%}
+.orbit-b{left:15%;right:auto;top:1%;width:65%}
+.price-chart{left:7%;right:auto;top:62%;width:82%;z-index:1;opacity:.72;filter:none}
+.floating-price{z-index:2;box-shadow:0 10px 28px #0005}
+.price-one{left:10%;right:auto;top:22%}
+.price-two{left:54%;right:auto;top:43%}
+.dot-a{left:76%;right:auto;top:30%}
+.dot-b{left:19%;right:auto;top:77%}
+.apu-hero .cinematic-inner{position:absolute;top:50%;right:max(40px,calc((100vw - 1220px)/2 + 40px));bottom:auto;left:auto;width:min(38vw,520px);transform:translateY(-50%);margin:0;padding:0}
+.apu-hero .cinematic-intro{display:block;max-width:100%;margin-top:13px;padding-top:18px}
+.apu-hero .cinematic-intro .hero-actions{margin-top:17px}
+.apu-headline{text-shadow:none}
+@media(max-width:900px){
+  .apu-hero{min-height:max(100svh,790px);padding-top:0}
+  .apu-hero-art{inset:92px 16px auto;height:clamp(220px,30svh,270px);width:auto;border-radius:22px}
+  .apu-hero-art::before{top:12px;right:13px;font-size:9px}
+  .apu-glow{left:0;right:auto;top:10%;width:75%;height:auto}
+  .orbit-a{left:-8%;right:auto;top:-15%;width:88%}
+  .orbit-b{left:18%;right:auto;top:0;width:62%}
+  .price-one{left:6%;right:auto;top:18%;transform:scale(.78);transform-origin:top left}
+  .price-two{left:51%;right:auto;top:34%;transform:scale(.75);transform-origin:top left}
+  .price-chart{left:6%;right:auto;top:61%;width:76%;opacity:.58}
+  .dot-a{left:84%;right:auto;top:32%}
+  .dot-b{left:18%;right:auto;top:80%}
+  .apu-hero .cinematic-inner{top:auto;right:22px;bottom:22px;left:22px;width:auto;transform:none}
+  .apu-hero .cinematic-intro{margin-top:11px;padding-top:15px}
+  .apu-hero .cinematic-intro .hero-actions{margin-top:15px}
 }
