@@ -17,6 +17,10 @@ function normalizePhone(value) {
   return /^\+\d{8,15}$/.test(phone) ? phone : null;
 }
 
+function phoneLoginId(phone) {
+  return `phone-${phone.replace(/\D/g, '')}@delsa.invalid`;
+}
+
 export default function AuthForm({ mode = 'login', admin = false }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -36,15 +40,15 @@ export default function AuthForm({ mode = 'login', admin = false }) {
     try {
       if (signup) {
         const { data, error: authError } = await supabase.auth.signUp({
-          phone, password,
-          options: { data: { full_name: String(form.get('name') || '').trim() }, channel: 'sms' },
+          email: phoneLoginId(phone), password,
+          options: { data: { full_name: String(form.get('name') || '').trim(), phone } },
         });
         if (authError) throw authError;
         if (data.session) { router.replace('/dashboard'); router.refresh(); }
-        else setMessage('حساب ثبت شد؛ تنظیم تأیید شماره در Supabase هنوز ورود بدون کد را فعال نکرده است.');
+        else setMessage('حساب ثبت شد؛ برای ورود فوری باید تأیید ایمیل در تنظیمات Supabase خاموش باشد.');
         return;
       }
-      const { error: authError } = await supabase.auth.signInWithPassword({ phone, password });
+      const { error: authError } = await supabase.auth.signInWithPassword({ email: phoneLoginId(phone), password });
       if (authError) throw authError;
       const { data: { user } } = await supabase.auth.getUser();
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
@@ -72,6 +76,6 @@ export default function AuthForm({ mode = 'login', admin = false }) {
     </form>
     {!admin && <div className="auth-switch">{signup ? <>حساب داری؟ <Link href="/login">ورود</Link></> : <>حساب نداری؟ <Link href="/signup">ثبت‌نام</Link></>}</div>}
     {admin && <div className="auth-switch"><Link href="/login">بازگشت به ورود کاربر</Link></div>}
-    <small className="auth-legal">ورود با شماره تماس و رمز عبور · کد یک‌بارمصرف ارسال نمی‌شود.</small>
+    <small className="auth-legal">ورود با شماره تماس و رمز عبور · شماره با پیامک تأیید نمی‌شود و کدی ارسال نمی‌شود.</small>
   </section><Link href="/" className="auth-back">بازگشت به سایت <ArrowUpLeft size={15}/></Link></main>;
 }
