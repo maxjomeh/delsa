@@ -19,3 +19,43 @@
 .spotlight-card:hover::before{opacity:1}
 .spotlight-card>*{position:relative;z-index:1}
 @media(hover:none),(pointer:coarse){.spotlight-card::before{display:none}}
+
+/* Prisma Hero inspired cinematic landing hero, tuned for DELSA. */
+.floating-header{position:absolute;z-index:12;top:22px;left:50%;transform:translateX(-50%);width:min(calc(100% - 48px),1220px);max-width:none;height:72px;padding-inline:20px;border:1px solid #f5f2ea24;border-radius:16px;background:#17171770;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 14px 50px #0004}
+.floating-header .brand{gap:8px}
+.floating-header .brand-mark{width:30px;height:30px}
+.floating-header nav{gap:30px;color:#f5f2eab8;font-size:14px}
+.floating-header nav a{transition:color .2s ease}
+.floating-header nav a:hover{color:var(--ink)}
+.cinematic-hero{position:relative;isolation:isolate;min-height:100svh;display:flex;align-items:flex-end;overflow:hidden;padding:170px 0 30px;background:#121211}
+.cinematic-video{position:absolute;inset:0;z-index:-3;width:100%;height:100%;object-fit:cover;object-position:center 45%;filter:saturate(.62) contrast(1.07);pointer-events:none}
+.cinematic-video-fallback{background:radial-gradient(ellipse at 70% 35%,#6a321d 0,#30221a 23%,transparent 57%),radial-gradient(ellipse at 25% 20%,#353330 0,transparent 50%),linear-gradient(135deg,#10100f,#272522 55%,#111)}
+.hero-shade{position:absolute;inset:0;z-index:-2;background:linear-gradient(0deg,#171717 0%,#171717ed 10%,#171717a8 43%,#17171745 76%,#17171764 100%),linear-gradient(90deg,#1717179c 0%,#1717174a 50%,#17171771 100%)}
+.hero-orbit{position:absolute;z-index:-1;pointer-events:none;border:1px solid #f5f2ea12;border-radius:50%;width:min(76vw,1000px);aspect-ratio:1;right:-20%;top:-65%;transform:rotate(-22deg)}
+.hero-orbit-two{width:min(58vw,760px);right:-11%;top:-50%;border-color:#ff5a1f24;transform:rotate(18deg)}
+.cinematic-inner{position:relative;z-index:1;width:100%;max-width:1220px;margin-inline:auto;padding-inline:40px}
+.cinematic-label{display:flex;align-items:center;gap:10px;color:#f5f2eacb;font-size:13px;letter-spacing:.2px}
+.cinematic-pulse{width:8px;height:8px;border-radius:50%;background:var(--orange);box-shadow:0 0 18px #ff5a1fa8;animation:delsa-pulse 2.2s ease-in-out infinite}
+.cinematic-title{position:relative;display:flex;align-items:flex-start;width:max-content;max-width:100%;margin:22px 0 0;color:#f5f2ea;direction:ltr;font-family:Arial,Helvetica,sans-serif;font-size:clamp(80px,22vw,292px);font-weight:700;line-height:.76;letter-spacing:-.075em;text-shadow:0 12px 60px #0007}
+.cinematic-title>span:first-child{display:flex;overflow:hidden;padding:0 .055em .09em .01em}
+.cinematic-title>span:first-child span{display:inline-block;opacity:0;transform:translateY(110%);filter:blur(10px);animation:delsa-word-reveal .8s cubic-bezier(.2,.8,.2,1) forwards}
+.cinematic-title>span:first-child span:nth-child(2){animation-delay:.08s}.cinematic-title>span:first-child span:nth-child(3){animation-delay:.16s}.cinematic-title>span:first-child span:nth-child(4){animation-delay:.24s}.cinematic-title>span:first-child span:nth-child(5){animation-delay:.32s}
+.cinematic-title>i{color:var(--orange);font-size:.13em;font-style:normal;line-height:1;letter-spacing:0;margin:.02em 0 0 .12em}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.cinematic-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:34px;margin-top:24px;padding-top:22px;border-top:1px solid #f5f2ea2b;max-width:1100px}
+.cinematic-overline{display:block;color:var(--ink);font-size:clamp(21px,2.3vw,30px);font-weight:400;line-height:1.6}
+.cinematic-intro p{max-width:600px;margin:5px 0 0;color:#f5f2eaaa;font-size:15px;line-height:1.9}
+.cinematic-intro .hero-actions{flex:none}
+.cinematic-secondary{border-color:#f5f2ea55;background:#17171758;backdrop-filter:blur(10px)}
+.cinematic-secondary:hover:not(:disabled){background:#f5f2ea16}
+.cinematic-bottom{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:34px}
+.cinematic-bottom .hero-channels{margin:0;padding:0;border:0;color:#f5f2ea9e}
+.cinematic-bottom .channel-pill{background:#1717175c;border-color:#f5f2ea28;color:#f5f2ea}
+.scroll-cue{display:inline-flex;align-items:center;gap:9px;color:#f5f2eab8;font-size:12px;white-space:nowrap}
+.scroll-cue svg{transform:rotate(-90deg);color:var(--orange);transition:transform .2s ease}
+.scroll-cue:hover svg{transform:rotate(-90deg) translateX(-3px)}
+@keyframes delsa-word-reveal{to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes delsa-pulse{50%{box-shadow:0 0 2px #ff5a1f55;opacity:.7}}
+@media(max-width:900px){.cinematic-hero{padding-top:155px;padding-bottom:26px}.cinematic-inner{padding-inline:28px}.cinematic-title{font-size:clamp(80px,21vw,180px)}.cinematic-intro{gap:20px}.cinematic-intro .hero-actions{flex-wrap:wrap;justify-content:flex-start}.cinematic-intro .button{padding-inline:16px}.cinematic-bottom{margin-top:28px}}
+@media(max-width:760px){.floating-header{top:14px;width:calc(100% - 28px);height:62px;padding-inline:13px;border-radius:13px}.floating-header nav{display:none}.floating-header .brand-mark{width:27px;height:27px}.floating-header .brand-word{font-size:17px}.floating-header .button{font-size:12px;padding:8px 11px;gap:7px}.cinematic-hero{min-height:100svh;align-items:flex-end;padding:125px 0 23px}.cinematic-inner{padding-inline:24px}.cinematic-label{font-size:11px}.cinematic-title{font-size:clamp(72px,21vw,126px);margin-top:20px}.cinematic-title>i{font-size:.15em}.cinematic-intro{display:block;margin-top:12px;padding-top:19px}.cinematic-overline{font-size:22px}.cinematic-intro p{font-size:13px;line-height:1.9}.cinematic-intro .hero-actions{display:flex;gap:9px;margin-top:20px}.cinematic-intro .hero-actions .button{flex:1;padding:10px 9px;font-size:12px;gap:8px;white-space:nowrap}.cinematic-bottom{align-items:flex-start;flex-direction:column;gap:15px;margin-top:24px}.cinematic-bottom .hero-channels{gap:7px;font-size:10px}.cinematic-bottom .hero-channels>span:first-child{width:100%;margin:0 0 2px}.cinematic-bottom .channel-pill{font-size:10px;padding:3px 8px}.scroll-cue{display:none}.hero-orbit{width:110vw;right:-60%;top:-27%}.hero-orbit-two{width:85vw;right:-39%;top:-22%}}
+@media(prefers-reduced-motion:reduce){.cinematic-title>span:first-child span{opacity:1;transform:none;filter:none;animation:none}.cinematic-pulse{animation:none}.scroll-cue svg{transition:none}}
