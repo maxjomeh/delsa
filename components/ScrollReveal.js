@@ -18,9 +18,11 @@ export default function ScrollReveal() {
     root.classList.add('scroll-reveal-enabled');
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add('scroll-reveal-visible');
-        observer.unobserve(entry.target);
+        if (entry.isIntersecting) {
+          entry.target.classList.add('scroll-reveal-visible');
+        } else {
+          entry.target.classList.remove('scroll-reveal-visible');
+        }
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -7% 0px' });
 
