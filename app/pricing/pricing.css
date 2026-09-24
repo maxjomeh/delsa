@@ -1,0 +1,36 @@
+/* DELSA subscription page, inspired by Cult Polar's plan-selection flow. */
+.pricing-page{min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#ff5a1f16,transparent 42%),var(--bg)}
+.pricing-header{height:88px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.pricing-header .brand,.pricing-footer .brand{gap:8px}.pricing-header .brand-mark,.pricing-footer .brand-mark{width:29px;height:29px}
+.pricing-header nav{display:flex;align-items:center;gap:30px;color:#c4c3c0;font-size:13px}.pricing-header nav a:hover,.pricing-footer>a:last-child:hover{color:var(--orange)}
+.pricing-hero{text-align:center;padding-top:76px;padding-bottom:44px}
+.pricing-hero>.eyebrow{justify-content:center}
+.pricing-hero h1{font-size:clamp(38px,6vw,68px);font-weight:500;line-height:1.45;letter-spacing:-1.7px;margin:16px 0 12px}
+.pricing-hero h1 em{font-style:normal;color:var(--orange)}
+.pricing-hero>p{max-width:650px;margin:0 auto;color:#aaa;font-size:15px;line-height:2}
+.pricing-promise{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-top:23px;color:#c5c1b8;font-size:12px}
+.pricing-promise span{display:inline-flex;align-items:center;gap:7px}.pricing-promise svg{color:var(--orange)}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px;align-items:stretch;padding-top:10px}
+.pricing-card{position:relative;display:flex;flex-direction:column;min-width:0;overflow:hidden;padding:27px 25px 23px;border:1px solid #393a3a;border-radius:14px;background:linear-gradient(160deg,#232323,#1c1c1c 75%);box-shadow:0 18px 55px #0002;animation:pricing-rise .55s both}
+.pricing-card:nth-child(2){animation-delay:.08s}.pricing-card:nth-child(3){animation-delay:.16s}
+.pricing-card-featured{border-color:#b84a22;background:radial-gradient(ellipse at 50% 0%,#ff5a1f20,transparent 58%),linear-gradient(160deg,#28231f,#1c1c1c 76%);box-shadow:0 18px 65px #ff5a1f0b}
+.pricing-ribbon{position:absolute;top:0;left:0;right:0;text-align:center;background:var(--orange);color:#17110d;font-size:11px;font-weight:600;padding:4px}
+.pricing-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.pricing-card-featured .pricing-card-top{margin-top:14px}
+.pricing-label{font-size:11px;color:#c5c2bb;border:1px solid #4a4a48;border-radius:20px;padding:3px 10px}
+.pricing-mark{width:36px;height:36px;display:grid;place-items:center;border:1px solid #45413e;border-radius:10px;background:#171717}.pricing-mark img{width:22px;height:22px}
+.pricing-card h2{font-size:23px;margin:0 0 5px;font-weight:500}.pricing-description{font-size:12px;line-height:1.9;min-height:48px;margin:0 0 17px;color:#a9aaa9}
+.pricing-amount{font-size:25px;font-weight:500;letter-spacing:-.3px;color:#f5f2ea}.pricing-note{font-size:10px;min-height:19px;margin:0 0 14px;color:#8a8f98}
+.pricing-card ul{list-style:none;padding:14px 0 16px;margin:0 0 17px;border-top:1px solid #343535;display:grid;gap:11px;flex:1}
+.pricing-card li{display:flex;align-items:flex-start;gap:9px;color:#d4d2cc;font-size:11px;line-height:1.8}.pricing-card li svg{color:var(--orange);margin-top:3px}
+.pricing-cta{width:100%;font-size:12px;padding:10px 13px;border-radius:7px}.pricing-disclaimer{text-align:center;font-size:11px;color:#8d8d89;margin-top:19px}
+.pricing-faq{display:grid;grid-template-columns:.75fr 1.25fr;gap:65px;margin-top:94px;padding-top:38px;padding-bottom:76px;border-top:1px solid var(--line)}
+.pricing-faq-heading h2{font-size:27px;margin:10px 0 5px}.pricing-faq-heading>p{font-size:12px;max-width:290px;line-height:1.9}
+.pricing-faq-heading .text-button{margin-top:8px}
+.pricing-questions details{border-bottom:1px solid #353636;padding:15px 0}.pricing-questions details:first-child{padding-top:0}
+.pricing-questions summary{display:flex;align-items:center;justify-content:space-between;gap:15px;cursor:pointer;list-style:none;font-size:13px}.pricing-questions summary::-webkit-details-marker{display:none}.pricing-questions summary span{font-size:19px;color:var(--orange);transition:transform .2s}.pricing-questions details[open] summary span{transform:rotate(45deg)}
+.pricing-questions details p{font-size:11px;line-height:2;margin:9px 25px 0 0;max-width:620px}
+.pricing-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:25px;padding-bottom:30px;border-top:1px solid var(--line);color:#8a8f98;font-size:11px}.pricing-footer .brand{font-size:25px;color:var(--ink)}.pricing-footer .brand-word{font-size:15px;color:var(--orange)}.pricing-footer>a:last-child{display:flex;align-items:center;gap:8px}
+@keyframes pricing-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:900px){.pricing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pricing-card:last-child{grid-column:1/-1;max-width:calc(50% - 9px);width:100%;justify-self:center}.pricing-faq{gap:35px}}
+@media(max-width:640px){.pricing-header{height:74px}.pricing-header nav{gap:14px;font-size:11px}.pricing-header nav a:first-child{display:none}.pricing-header .brand-word{font-size:17px}.pricing-hero{padding-top:48px;padding-bottom:29px}.pricing-hero h1{font-size:38px;letter-spacing:-1px}.pricing-hero>p{font-size:12px;line-height:2}.pricing-promise{gap:8px 14px;font-size:10px}.pricing-grid{grid-template-columns:1fr;gap:13px}.pricing-card:last-child{grid-column:auto;max-width:none}.pricing-card{padding:23px 20px 19px}.pricing-card-featured .pricing-card-top{margin-top:12px}.pricing-description{min-height:0}.pricing-card ul{gap:8px}.pricing-faq{grid-template-columns:1fr;gap:22px;margin-top:60px;padding-top:28px;padding-bottom:50px}.pricing-faq-heading h2{font-size:24px}.pricing-footer{flex-wrap:wrap}.pricing-footer>span{display:none}}
+@media(prefers-reduced-motion:reduce){.pricing-card{animation:none}}
