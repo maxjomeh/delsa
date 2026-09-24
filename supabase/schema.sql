@@ -52,7 +52,13 @@ set search_path = ''
 as $$
 begin
   insert into public.profiles (id, email, phone, full_name, role)
-  values (new.id, new.email, new.phone, coalesce(new.raw_user_meta_data ->> 'full_name', ''), 'user');
+  values (
+    new.id,
+    new.email,
+    coalesce(new.phone, new.raw_user_meta_data ->> 'phone'),
+    coalesce(new.raw_user_meta_data ->> 'full_name', ''),
+    'user'
+  );
   return new;
 end;
 $$;
