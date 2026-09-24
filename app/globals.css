@@ -245,3 +245,12 @@ html[data-theme=dark] .faq details{border-color:#3a3c3e}
 
 /* Keep pointer motion on the page-wide ambient field even if older base rules are present. */
 html[data-theme=light] body::before{background:radial-gradient(ellipse 48rem 40rem at var(--pointer-x) var(--pointer-y),#f4511e22,transparent 78%),radial-gradient(42rem 34rem at 16% 28%,#ffeadfcc,transparent 74%),radial-gradient(38rem 34rem at 82% 72%,#ffe5d3bb,transparent 72%),radial-gradient(26rem 26rem at 52% 5%,#fff2e8cc,transparent 70%)}
+
+/* Keep the main navigation in view and give each section room to arrive. */
+.floating-header{position:fixed;z-index:120;top:18px;transition:top .3s ease,background-color .3s ease,border-color .3s ease,box-shadow .3s ease}
+html[data-theme=light] .floating-header{background:#fffffff2;border-color:#17171712;box-shadow:0 10px 35px #1717170b;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+html{scroll-padding-top:110px}
+html.scroll-reveal-enabled .scroll-reveal{opacity:0;transform:translate3d(0,30px,0);filter:blur(5px);transition:opacity .75s cubic-bezier(.2,.75,.25,1),transform .85s cubic-bezier(.2,.75,.25,1),filter .85s ease;transition-delay:var(--reveal-delay,0ms);will-change:opacity,transform,filter}
+html.scroll-reveal-enabled .scroll-reveal.scroll-reveal-visible{opacity:1;transform:translate3d(0,0,0);filter:blur(0)}
+@media(max-width:760px){.floating-header{top:14px}}
+@media(prefers-reduced-motion:reduce){html.scroll-reveal-enabled .scroll-reveal{opacity:1;transform:none;filter:none;transition:none;will-change:auto}}
