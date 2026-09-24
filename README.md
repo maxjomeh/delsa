@@ -1,47 +1,31 @@
-# نسخه اولیه سایت و داشبورد دلسا
+# DELSA
 
-این پروژه پیش‌نمایش قابل اجراست؛ سایت عمومی، داشبورد مشتری و نمونه پنل مدیریت را دارد.
-رنگ‌ها: مشکی، نارنجی و سفید. زبان: فارسی و راست‌چین.
+سایت فارسی و راست‌چین دلسا با تمرکز فعلی بر APU (پایش و به‌روزرسانی قیمت).
 
-**وضعیت:** ساخت پروژه تأیید شده؛ هنوز در GitHub یا Vercel منتشر نشده است.
-ورود واقعی، پایگاه داده، انتشار محتوای مدیریت و اتصال پیام‌رسان‌ها هنوز پیاده‌سازی نشده‌اند.
-پنل مدیریت عمومی و فقط نمایشی است؛ هیچ داده محرمانه‌ای در آن قرار ندهید.
-
----
-
-# DELSA — first interface preview
-
-Persian RTL Next.js App Router project for GitHub and Vercel.
-
-## Run
-
-Node.js 22 or 24 LTS.
+## راه‌اندازی محلی
 
 ```sh
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
-Production verification: `npm run build`, then `npm start`.
+در `.env.local` مقدار `NEXT_PUBLIC_SUPABASE_URL` و `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` پروژه‌ی Supabase را وارد کنید. سپس فایل `supabase/schema.sql` را در SQL Editor همان پروژه اجرا کنید و در Authentication → URL Configuration نشانی‌های سایت محلی و Vercel Preview را به فهرست مجاز اضافه کنید.
 
-## Routes
+## ثبت مدیر
 
-- `/`: DELSA and APU introduction.
-- `/dashboard`: interactive customer workspace with clearly labeled sample data.
-- `/dashboard?tab=apu`: product search, status filter, review approval, simulated updates and CSV download.
-- `/dashboard?tab=channels`: channel selection preview.
-- `/admin`: PUBLIC, SAMPLE-ONLY management interface preview, NOT a secured admin application.
+1. مدیر با ایمیل خودش از `/signup` حساب بسازد و ایمیل را تأیید کند.
+2. در Supabase SQL Editor دستور انتهای `supabase/schema.sql` را با ایمیل خودش اجرا کند تا نقش `admin` شود.
+3. برای پنل مدیریت به `/admin/login` برود. نقش کاربر عادی در فرم عمومی ثبت‌نام قابل ارتقا نیست.
 
-## Current boundary
+## Vercel
 
-No authentication, database, real store credentials, message delivery, payment processing, scheduled execution or external channel integration exists yet. All sample changes are React memory state, discarded on refresh. The settings form and admin title editor preview changes locally only; they do not publish or persist anything. Never add private information to these public demo routes.
+در Project Settings → Environment Variables، متغیرهای `.env.example` را برای Preview و Production ثبت کنید. کلید `service_role` را هرگز در `NEXT_PUBLIC_*` نگذارید یا به مرورگر ندهید. ورود و ثبت‌نام پس از این تنظیم‌ها واقعی هستند؛ APU هنوز به فروشگاه/منبع قیمت وصل نشده و نمونه‌های صفحه داده‌ی نمایشی‌اند.
 
-## Deployment
+## مسیرها
 
-Create a private GitHub repository, push this project, then import that repository into Vercel using the Next.js preset. Root directory should be the directory containing this package.json. No environment variables are required for this demo. This project has not yet been pushed or deployed.
-
-Next delivery phase: real identity and sessions, database and tenant isolation, protected admin routes, editable CMS, server-side n8n integration, audited connector setup, then real service testing. Channel support must be verified individually before claiming availability. Keep all service secrets server-side and outside Git.
-
-The Vazirmatn typeface is bundled locally. No live store or messaging connections are configured.
-
-Official setup references: https://nextjs.org/docs/app/getting-started/installation and https://vercel.com/docs/git/vercel-for-github
+- `/`: صفحه‌ی اصلی متحرک و mobile-first با تمرکز APU
+- `/signup` و `/login`: ثبت‌نام و ورود ایمیل/رمز
+- `/dashboard`: فضای APU کاربر احراز هویت‌شده
+- `/admin/login` و `/admin`: ورود نقش‌محور و پنل ادمین
+- `/pricing`: صفحه‌ی دسترسی آغازین APU (پرداخت هنوز غیرفعال)
