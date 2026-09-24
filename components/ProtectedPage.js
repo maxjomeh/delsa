@@ -1,0 +1,26 @@
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { createClient } from '../lib/supabase/server';
+import { isSupabaseConfigured } from '../lib/supabase/config';
+import { ArrowUpLeft, LogOut, RefreshCw, ShieldCheck, CircleUserRound, Clock3 } from 'lucide-react';
+
+export async function UserDashboard() {
+  if (!isSupabaseConfigured()) return redirect('/login?error=setup');
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+  const { data: profile } = await supabase.from('profiles').select('full_name,role').eq('id',user.id).maybeSingle();
+  if (profile?.role === 'admin') redirect('/admin');
+  return <main className="panel-shell"><header className="panel-top"><Link href="/" className="brand"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link><div className="panel-user"><span>{profile?.full_name || user.email}</span><form action="/auth/signout" method="post"><button className="icon-button" aria-label="خروج"><LogOut size={17}/></button></form></div></header><div className="panel-main"><div className="panel-greeting"><span className="eyebrow">فضای کاری / APU</span><h1>سلام {profile?.full_name || 'خوش آمدی'}،</h1><p>مدیریت به‌روزرسانی قیمت محصولات از اینجا شروع می‌شود.</p></div><section className="panel-focus"><div className="focus-icon"><RefreshCw size={24}/></div><div><span className="eyebrow">APU · Automated Price Updates</span><h2>به‌روزرسانی هوشمند قیمت</h2><p>منابع قیمت را اضافه کن، محصولات را تطبیق بده و پیش از اعمال تغییرات آن‌ها را بررسی کن.</p></div><span className="soon-badge">در حال راه‌اندازی</span></section><section className="panel-grid"><article className="panel-card"><small>اتصال فروشگاه</small><strong>هنوز متصل نشده</strong><p>اتصال فروشگاه پس از تکمیل تنظیمات APU فعال می‌شود.</p></article><article className="panel-card"><small>محصول‌های پایش‌شده</small><strong>۰</strong><p>با اضافه کردن منبع داده، محصول‌ها در اینجا نمایش داده می‌شوند.</p></article><article className="panel-card"><small>آخرین اجرا</small><strong>—</strong><p>تاریخچه‌ی اجراها پس از اتصال APU در دسترس است.</p></article></section><section className="panel-note"><Clock3 size={19}/><div><b>APU به‌زودی فعال می‌شود</b><p>در حال حاضر حساب واقعی و امن است؛ اتصال فروشگاه و موتور تغییر قیمت هنوز راه‌اندازی نشده‌اند.</p></div></section><Link href="/" className="back-home">بازگشت به صفحه‌ی اصلی <ArrowUpLeft size={16}/></Link></div></main>;
+}
+
+export async function AdminDashboard() {
+  if (!isSupabaseConfigured()) return redirect('/admin/login?error=setup');
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/admin/login');
+  const { data: profile } = await supabase.from('profiles').select('full_name,role').eq('id',user.id).maybeSingle();
+  if (profile?.role !== 'admin') redirect('/login');
+  const { data: users = [] } = await supabase.from('profiles').select('id,email,full_name,role,created_at').order('created_at',{ascending:false}).limit(50);
+  return <main className="panel-shell"><header className="panel-top"><Link href="/" className="brand"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link><div className="panel-user"><span><ShieldCheck size={15}/> مدیر / {profile.full_name || user.email}</span><form action="/auth/signout" method="post"><button className="icon-button" aria-label="خروج"><LogOut size={17}/></button></form></div></header><div className="panel-main"><div className="panel-greeting"><span className="eyebrow">مدیریت دلسا</span><h1>نمای کلی سامانه</h1><p>وضعیت کاربران، آماده‌سازی APU و دسترسی‌های مدیریتی.</p></div><section className="panel-grid admin-stats"><article className="panel-card"><small>حساب‌های ثبت‌شده</small><strong>{users.length}</strong><p>نمایش حداکثر ۵۰ حساب اخیر</p></article><article className="panel-card"><small>وضعیت APU</small><strong>در حال آماده‌سازی</strong><p>ماژول قیمت‌گذاری هنوز به منبع فروشگاه وصل نیست.</p></article><article className="panel-card"><small>نقش شما</small><strong>مدیر سامانه</strong><p>دسترسی مدیریتی از پایگاه داده بررسی شده است.</p></article></section><section className="admin-users"><div className="admin-section-title"><div><span className="eyebrow">حساب‌ها</span><h2>کاربران اخیر</h2></div><span>{users.length} حساب</span></div>{users.length ? <div className="users-table"><div className="users-row users-head"><span>کاربر</span><span>ایمیل</span><span>نقش</span><span>تاریخ عضویت</span></div>{users.map((u)=><div className="users-row" key={u.id}><span><CircleUserRound size={16}/>{u.full_name||'بدون نام'}</span><span>{u.email}</span><span className={u.role==='admin'?'role-admin':'role-user'}>{u.role==='admin'?'مدیر':'کاربر'}</span><span>{new Date(u.created_at).toLocaleDateString('fa-IR')}</span></div>)}</div>:<p className="empty-users">هنوز حساب دیگری ثبت نشده است.</p>}</section><section className="panel-note"><ShieldCheck size={19}/><div><b>امنیت نقش‌ها</b><p>ثبت‌نام عمومی همیشه نقش کاربر می‌گیرد. برای افزودن مدیر، حساب را ابتدا بساز و سپس از SQL راهنمای پروژه نقش admin را دستی بده.</p></div></section></div></main>;
+}
