@@ -1,4 +1,4 @@
-import {Suspense} from 'react';
-import Workspace from '../../components/Workspace';
-export const metadata={title:'پیش‌نمایش مدیریت | دلسا',robots:{index:false,follow:false}};
-export default function Page(){return <Suspense fallback={<p>در حال بارگذاری…</p>}><Workspace admin/></Suspense>}
+import { AdminDashboard } from '../../components/ProtectedPage';
+import '../../components/dashboard.css';
+export const dynamic = 'force-dynamic';
+export default function AdminPage() { return <AdminDashboard/>; }
