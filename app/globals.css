@@ -248,8 +248,8 @@ html[data-theme=light] body::before{background:radial-gradient(ellipse 48rem 40r
 
 /* Keep the main navigation in view and give each section room to arrive. */
 .floating-header{position:fixed;z-index:120;top:18px;transition:top .3s ease,background-color .3s ease,border-color .3s ease,box-shadow .3s ease;backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}
-html[data-theme=light] .floating-header{background:rgba(255,255,255,.72);border-color:#17171716;box-shadow:0 10px 35px #1717170b}
-html[data-theme=dark] .floating-header{background:rgba(23,23,23,.68);border-color:#f5f2ea24;box-shadow:0 14px 50px #0004}
+html[data-theme=light] .floating-header{background:rgba(255,255,255,.72);border-color:#17171716;box-shadow:0 10px 35px #1717170b;backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}
+html[data-theme=dark] .floating-header{background:rgba(23,23,23,.68);border-color:#f5f2ea24;box-shadow:0 14px 50px #0004;backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}
 html{scroll-padding-top:110px}
 html.scroll-reveal-enabled .scroll-reveal{opacity:0;transform:translate3d(0,30px,0);filter:blur(5px);transition:opacity .75s cubic-bezier(.2,.75,.25,1),transform .85s cubic-bezier(.2,.75,.25,1),filter .85s ease;transition-delay:var(--reveal-delay,0ms);will-change:opacity,transform,filter}
 html.scroll-reveal-enabled .scroll-reveal.scroll-reveal-visible{opacity:1;transform:translate3d(0,0,0);filter:blur(0)}
