@@ -29,9 +29,10 @@ export async function AdminDashboard() {
   if (!user) redirect('/admin/login');
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
   if (profile?.role !== 'admin') redirect('/login');
-  const [{ data: users }, { data: products }] = await Promise.all([
+  const [{ data: users }, { data: products }, { data: subscriptions }] = await Promise.all([
     supabase.from('profiles').select('id,phone,email,full_name,role,created_at').order('created_at', { ascending: false }).limit(500),
     supabase.from('store_products').select('id,name,description,price,image_url,is_published,created_at').order('created_at', { ascending: false }).limit(100),
+    supabase.from('customer_subscriptions').select('id,customer_id,product_id,plan,expires_at').limit(5000),
   ]);
-  return <main className="panel-shell"><header className="panel-top"><Link href="/" className="brand"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link><div className="panel-user"><span><ShieldCheck size={15}/> مدیر سامانه</span><form action="/auth/signout" method="post"><button className="icon-button" aria-label="خروج"><LogOut size={17}/></button></form></div></header><AdminDashboardClient users={users || []} products={products || []}/></main>;
+  return <main className="panel-shell"><header className="panel-top"><Link href="/" className="brand"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link><div className="panel-user"><span><ShieldCheck size={15}/> مدیر سامانه</span><form action="/auth/signout" method="post"><button className="icon-button" aria-label="خروج"><LogOut size={17}/></button></form></div></header><AdminDashboardClient users={users || []} products={products || []} subscriptions={subscriptions || []}/></main>;
 }
