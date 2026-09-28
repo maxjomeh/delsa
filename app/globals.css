@@ -285,3 +285,9 @@ html.scroll-reveal-enabled .scroll-reveal{filter:none;transition:opacity .55s cu
 html.scroll-reveal-enabled .scroll-reveal.scroll-reveal-visible{filter:none}
 @media(max-width:760px){body::before{animation-duration:34s!important}.apu-glow{filter:none}.price-chart{filter:none}.orbit{animation-duration:46s}.floating-price{backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;animation-duration:7s}.hero-orbit,.hero-orbit-two{animation:none}}
 @media(prefers-reduced-motion:reduce){body::before{animation:none!important;transition:none!important}}
+
+/* Keep ambient motion visible while preserving reduced-motion preferences. */
+html body::before{animation:ambient-drift 26s ease-in-out infinite alternate!important;will-change:transform!important;transition:opacity .4s ease}
+html[data-pointer-active=true] body::before{animation-duration:18s!important;opacity:.98;filter:none!important}
+@media(pointer:coarse){html body::before{animation-duration:34s!important}}
+@media(prefers-reduced-motion:reduce){html body::before{animation:none!important;transition:none!important}}
