@@ -17,7 +17,7 @@ function normalizePhone(value) {
   return /^\+\d{8,15}$/.test(phone) ? phone : null;
 }
 
-function phoneLoginId(phone) {
+function legacyPhoneLoginId(phone) {
   return `phone-${phone.replace(/\D/g, '')}@delsa.invalid`;
 }
 
@@ -40,16 +40,29 @@ export default function AuthForm({ mode = 'login', admin = false }) {
     try {
       if (signup) {
         const { data, error: authError } = await supabase.auth.signUp({
-          email: phoneLoginId(phone), password,
+          phone, password,
           options: { data: { full_name: String(form.get('name') || '').trim(), phone } },
         });
         if (authError) throw authError;
         if (data.session) { router.replace('/dashboard'); router.refresh(); }
-        else setMessage('حساب ثبت شد؛ برای ورود فوری باید تأیید ایمیل در تنظیمات Supabase خاموش باشد.');
+        else setMessage('حساب ثبت شد؛ برای ورود بدون کد، تأیید شماره باید در تنظیمات Supabase خاموش باشد.');
         return;
       }
-      const { error: authError } = await supabase.auth.signInWithPassword({ email: phoneLoginId(phone), password });
-      if (authError) throw authError;
+      let { error: authError } = await supabase.auth.signInWithPassword({ phone, password });
+      if (authError) {
+        // Keep accounts created before phone auth was enabled usable during migration.
+        const legacyLogin = await supabase.auth.signInWithPassword({ email: legacyPhoneLoginId(phone), password });
+        if (!legacyLogin.error) authError = null;
+      }
+      if (authError) {
+        if (authError.code === 'phone_provider_disabled') {
+          throw new Error('ورود با شماره تماس هنوز در تنظیمات Supabase فعال نشده است.');
+        }
+        if (authError.code === 'phone_not_confirmed') {
+          throw new Error('تأیید شماره در Supabase فعال است؛ برای ورود بدون کد، آن را غیرفعال کن.');
+        }
+        throw authError;
+      }
       const { data: { user } } = await supabase.auth.getUser();
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
       if (admin && profile?.role !== 'admin') {
