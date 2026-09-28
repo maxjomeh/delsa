@@ -73,3 +73,26 @@ export async function DELETE(request) {
   if (error) return NextResponse.json({ error: 'حذف دسترسی انجام نشد.' }, { status: 400 });
   return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });
 }
+
+export async function PATCH(request) {
+  const { db, response } = await requireAdmin();
+  if (response) return response;
+  const origin = request.headers.get('origin');
+  if (origin && origin !== new URL(request.url).origin) return NextResponse.json({ error: 'درخواست معتبر نیست.' }, { status: 403 });
+  let body;
+  try { body = await request.json(); } catch { return NextResponse.json({ error: 'درخواست معتبر نیست.' }, { status: 400 }); }
+  const id = String(body.id || ''), customerId = String(body.customerId || '');
+  const platform = String(body.platform || '').trim(), username = String(body.username || '').trim();
+  if (!id || !customerId || !platform || platform.length > 80 || !username || username.length > 255)
+    return NextResponse.json({ error: 'نام پلتفرم و یوزرنیم را کامل کنید.' }, { status: 400 });
+  const changes = { platform, username };
+  if (body.password) {
+    if (typeof body.password !== 'string' || body.password.length > 500)
+      return NextResponse.json({ error: 'رمز نامعتبر است.' }, { status: 400 });
+    try { changes.password_ciphertext = encrypt(body.password); }
+    catch { return NextResponse.json({ error: 'کلید رمزگذاری آماده نیست.' }, { status: 503 }); }
+  }
+  const { data, error } = await db.from('customer_platform_credentials').update(changes).eq('id', id).eq('customer_id', customerId).select('id').maybeSingle();
+  if (error || !data) return NextResponse.json({ error: 'به‌روزرسانی دسترسی انجام نشد.' }, { status: 400 });
+  return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });
+}
