@@ -207,3 +207,23 @@ html.scroll-reveal-enabled .scroll-reveal.scroll-reveal-visible{opacity:1;transf
 @media(prefers-reduced-motion:reduce){
  html.scroll-reveal-enabled .scroll-reveal{opacity:1;transform:none;filter:none;transition:none;will-change:auto}
 }
+
+/* Seamless dark APU hero: keep illustration and copy inside the same canvas. */
+.apu-hero{background:#121211;color:#f5f2ea}
+.apu-hero-art{z-index:0;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;background:radial-gradient(ellipse at 16% 43%,#37261e 0,#1e1a17 42%,#121211 78%)}
+.apu-hero-art::before{display:none!important}
+.apu-hero-art::after{z-index:0;background:linear-gradient(90deg,transparent 0 44%,#121211 100%)}
+.apu-glow,.orbit{z-index:0}
+.price-chart{z-index:1}
+.floating-price,.orbit-dot{z-index:2}
+.apu-hero .cinematic-inner{color:#f5f2ea}
+.apu-headline{color:#f5f2ea}
+.apu-hero .cinematic-overline{color:#f5f2ea}
+.apu-hero .cinematic-intro{border-color:#f5f2ea2b}
+.apu-hero .cinematic-intro p{color:#f5f2eaaa}
+.apu-hero .hero-proof{color:#d4cec4}
+.site-header.floating-header{background:#171717b8;border-color:#f5f2ea24}
+@media(max-width:760px){
+ .apu-hero-art{inset:76px 0 auto;width:100%;height:clamp(220px,57vw,320px);background:radial-gradient(ellipse at 16% 40%,#362016 0,#201915 42%,#121211 78%)}
+ .apu-hero-art::after{background:linear-gradient(90deg,transparent 0,transparent 30%,#121211 74%),linear-gradient(0deg,#121211 0,transparent 47%)}
+}
