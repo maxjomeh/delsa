@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeft, ArrowUpLeft, BarChart3, Bot, Boxes, Check, ChevronDown, CircleHelp, Clock3, Gauge, Layers3, MessageSquareText, RefreshCw, ShieldCheck, ShoppingCart, Sparkles, TrendingUp, UsersRound, Workflow } from 'lucide-react';
+import { ArrowLeft, ArrowUpLeft, BarChart3, Bot, Boxes, Check, ChevronDown, CircleHelp, Clock3, Gauge, Layers3, MessageSquareText, RefreshCw, ShieldCheck, ShoppingBag, ShoppingCart, Sparkles, TrendingUp, UsersRound, Workflow } from 'lucide-react';
 
 const services=[
   { icon: Gauge, code:'APU / قیمت‌گذاری', title:'به‌روزرسانی قیمت‌ها', description:'قیمت را از چند منبع پایش کن، قانون‌های دلخواهت را تعریف کن و تغییرها را پیش از اجرا بازبینی کن.', status:'محصول اصلی', active:true, href:'#apu' },
