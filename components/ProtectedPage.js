@@ -4,18 +4,31 @@ import { createClient } from '../lib/supabase/server';
 import { isSupabaseConfigured } from '../lib/supabase/config';
 import { ArrowUpLeft, LogOut, RefreshCw, ShieldCheck, CircleUserRound, Clock3 } from 'lucide-react';
 
+function formatPhone(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  let national = digits;
+  if (digits.startsWith('98') && digits.length === 12) national = `0${digits.slice(2)}`;
+  else if (digits.length === 10 && digits.startsWith('9')) national = `0${digits}`;
+  if (national.length === 11 && national.startsWith('0')) {
+    national = `${national.slice(0, 4)} ${national.slice(4, 7)} ${national.slice(7)}`;
+  }
+  return national.replace(/[0-9]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]);
+}
+
+
+
 function phoneFromEmail(email) {
   const match = String(email || '').match(/^phone-(\d+)@delsa\.invalid$/i);
   if (!match) return '';
   const digits = match[1];
-  if (digits.startsWith('98') && digits.length === 12) return `+${digits}`;
-  if (digits.startsWith('0') && digits.length === 11) return `+98${digits.slice(1)}`;
-  if (digits.length === 10 && digits.startsWith('9')) return `+98${digits}`;
-  return `+${digits}`;
+  if (digits.startsWith('98') && digits.length === 12) return formatPhone(digits);
+  if (digits.startsWith('0') && digits.length === 11) return formatPhone(digits);
+  if (digits.length === 10 && digits.startsWith('9')) return formatPhone(digits);
+  return formatPhone(digits);
 }
 
 function profilePhone(profile) {
-  return profile?.phone || phoneFromEmail(profile?.email) || '—';
+  return formatPhone(profile?.phone) || phoneFromEmail(profile?.email) || '—';
 }
 
 
