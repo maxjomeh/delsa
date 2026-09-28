@@ -40,12 +40,12 @@ export default function AuthForm({ mode = 'login', admin = false }) {
     try {
       if (signup) {
         const { data, error: authError } = await supabase.auth.signUp({
-          phone, password,
+          email: legacyPhoneLoginId(phone), password,
           options: { data: { full_name: String(form.get('name') || '').trim(), phone } },
         });
         if (authError) throw authError;
         if (data.session) { router.replace('/dashboard'); router.refresh(); }
-        else setMessage('حساب ثبت شد؛ برای ورود بدون کد، تأیید شماره باید در تنظیمات Supabase خاموش باشد.');
+        else setMessage('حساب ساخته شد. حالا می‌توانی با شماره تماس و رمز عبور وارد شوی.');
         return;
       }
       let { error: authError } = await supabase.auth.signInWithPassword({ phone, password });
