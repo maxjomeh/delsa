@@ -37,12 +37,12 @@ export default function ThemeToggle() {
 
     function onPointerMove(event) {
       if (event.pointerType === 'touch') return;
-      targetX = event.clientX;
-      targetY = event.clientY;
+      root.style.setProperty('--pointer-x', `${event.clientX}px`);
+      root.style.setProperty('--pointer-y', `${event.clientY}px`);
       root.dataset.pointerActive = 'true';
       window.clearTimeout(hideTimer);
       hideTimer = window.setTimeout(() => delete root.dataset.pointerActive, 1200);
-      if (!frame) frame = window.requestAnimationFrame(animatePointer);
+      // CSS moves the ambient layer directly; no animation frame loop needed.
     }
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
