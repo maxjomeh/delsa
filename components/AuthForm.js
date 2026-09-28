@@ -52,7 +52,7 @@ export default function AuthForm({ mode = 'login', admin = false }) {
       if (authError) {
         // Keep accounts created before phone auth was enabled usable during migration.
         const legacyLogin = await supabase.auth.signInWithPassword({ email: legacyPhoneLoginId(phone), password });
-        if (!legacyLogin.error) authError = null;
+        authError = legacyLogin.error;
       }
       if (authError) {
         if (authError.code === 'phone_provider_disabled') {
