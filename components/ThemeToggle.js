@@ -16,43 +16,20 @@ export default function ThemeToggle() {
     const finePointer = window.matchMedia('(pointer: fine)').matches;
     if (reducedMotion || !finePointer) return;
 
-    let targetX = window.innerWidth * 0.5;
-    let targetY = window.innerHeight * 0.4;
-    let currentX = targetX;
-    let currentY = targetY;
-    let frame = 0;
     let hideTimer;
-
-    function animatePointer() {
-      currentX += (targetX - currentX) * 0.16;
-      currentY += (targetY - currentY) * 0.16;
-      root.style.setProperty('--pointer-x', `${currentX}px`);
-      root.style.setProperty('--pointer-y', `${currentY}px`);
-      if (Math.abs(targetX - currentX) > 0.5 || Math.abs(targetY - currentY) > 0.5) {
-        frame = window.requestAnimationFrame(animatePointer);
-      } else {
-        frame = 0;
-      }
-    }
 
     function onPointerMove(event) {
       if (event.pointerType === 'touch') return;
-      root.style.setProperty('--pointer-x', `${event.clientX}px`);
-      root.style.setProperty('--pointer-y', `${event.clientY}px`);
       root.dataset.pointerActive = 'true';
       window.clearTimeout(hideTimer);
-      hideTimer = window.setTimeout(() => delete root.dataset.pointerActive, 1200);
-      // CSS moves the ambient layer directly; no animation frame loop needed.
+      hideTimer = window.setTimeout(() => delete root.dataset.pointerActive, 650);
     }
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
     return () => {
       window.removeEventListener('pointermove', onPointerMove);
-      window.cancelAnimationFrame(frame);
       window.clearTimeout(hideTimer);
       delete root.dataset.pointerActive;
-      root.style.removeProperty('--pointer-x');
-      root.style.removeProperty('--pointer-y');
     };
   }, []);
 
