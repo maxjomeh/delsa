@@ -3,7 +3,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '../lib/supabase/client';
-import { ArrowUpLeft, LoaderCircle, ShieldCheck } from 'lucide-react';
+import { ArrowUpLeft, Eye, EyeOff, LoaderCircle, ShieldCheck } from 'lucide-react';
+
 
 function normalizePhone(value) {
   const latin = String(value || '')
@@ -29,6 +30,9 @@ export default function AuthForm({ mode = 'login', admin = false }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+
   async function submit(event) {
     event.preventDefault(); setBusy(true); setError(''); setMessage('');
     const form = new FormData(event.currentTarget);
@@ -80,10 +84,11 @@ export default function AuthForm({ mode = 'login', admin = false }) {
     <p>{signup ? 'برای دسترسی به محیط APU، حساب کاربری‌ات را بساز.' : admin ? 'با شماره‌ای وارد شو که دسترسی مدیر برای آن فعال شده است.' : 'برای ادامه به فضای کاری امن دلسا وارد شو.'}</p>
     {(setupError || !configured) && <div className="auth-notice">ورود واقعی هنوز فعال نشده است. مدیر پروژه باید URL و کلید عمومی Supabase را در تنظیمات Vercel وارد کند.</div>}
     <form onSubmit={submit}>
-      {signup && <label>نام نمایشی<input name="name" autoComplete="name" required placeholder="نام شما"/></label>}
+      {signup && <label>نام و نام خانوادگی<input name="name" autoComplete="name" required placeholder="نام شما"/></label>}
       <label>شماره تماس<input name="phone" type="tel" inputMode="tel" autoComplete="tel" required placeholder="۰۹۱۲۳۴۵۶۷۸۹"/></label>
-      <label>رمز عبور<input name="password" type="password" autoComplete={signup ? 'new-password' : 'current-password'} minLength={8} required placeholder="حداقل ۸ نویسه"/></label>
-      {signup && <label>تکرار رمز عبور<input name="password_confirmation" type="password" autoComplete="new-password" minLength={8} required placeholder="رمز عبور را دوباره وارد کن"/></label>}
+      <label>رمز عبور<div className="auth-password-wrap"><input name="password" type={showPassword ? 'text' : 'password'} autoComplete={signup ? 'new-password' : 'current-password'} minLength={8} required placeholder="حداقل ۸ نویسه"/><button className="auth-password-toggle" type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? 'مخفی کردن رمز عبور' : 'نمایش رمز عبور'} aria-pressed={showPassword}>{showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}</button></div></label>
+{signup && <label>تکرار رمز عبور<div className="auth-password-wrap"><input name="password_confirmation" type={showPasswordConfirmation ? 'text' : 'password'} autoComplete="new-password" minLength={8} required placeholder="رمز عبور را دوباره وارد کن"/><button className="auth-password-toggle" type="button" onClick={() => setShowPasswordConfirmation((visible) => !visible)} aria-label={showPasswordConfirmation ? 'مخفی کردن رمز عبور' : 'نمایش رمز عبور'} aria-pressed={showPasswordConfirmation}>{showPasswordConfirmation ? <EyeOff size={18}/> : <Eye size={18}/>}</button></div></label>}
+
       {error && <div className="auth-error" role="alert">{error}</div>}{message && <div className="auth-success" role="status">{message}</div>}
       <button className="button primary auth-submit" disabled={busy || !configured}>{busy ? <LoaderCircle className="spin" size={18}/> : signup ? 'ساخت حساب' : 'ورود امن'}<ArrowUpLeft size={18}/></button>
     </form>
