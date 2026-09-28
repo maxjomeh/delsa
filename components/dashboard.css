@@ -31,3 +31,8 @@
 .customer-detail .detail-access-form label{display:flex;flex-direction:column;align-items:stretch;gap:9px;color:#ccc;font-size:11px;min-width:0}
 .detail-access-form input{width:100%;min-height:40px}.detail-form-actions{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
 @media(prefers-reduced-motion:reduce){.widget-resize-width::after,.widget-resize-height::after{transition:none}}
+.admin-product-form-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.admin-product-form-actions>button:not(.credential-submit),.admin-product-edit{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:7px 12px;border:1px solid #ffffff28;border-radius:9px;background:#202020;color:#f5f2ea;font:inherit;font-size:11px;cursor:pointer}
+.admin-product-form-actions>button:disabled,.admin-product-edit:disabled{opacity:.5;cursor:default}
+.admin-product-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-width:0;padding:10px 0;border-bottom:1px solid #ffffff14}
+.admin-product-edit{margin-inline-start:auto;white-space:nowrap}
