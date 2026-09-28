@@ -12,7 +12,7 @@ function formatPhone(value) {
   if (national.length === 11 && national.startsWith('0')) {
     national = `${national.slice(0, 4)} ${national.slice(4, 7)} ${national.slice(7)}`;
   }
-  return national.replace(/[0-9]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]);
+  return national.replace(/ /g, '');
 }
 
 
