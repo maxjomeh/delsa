@@ -275,3 +275,13 @@ html.scroll-reveal-enabled .scroll-reveal{opacity:0;transform:translate3d(0,30px
 html.scroll-reveal-enabled .scroll-reveal.scroll-reveal-visible{opacity:1;transform:translate3d(0,0,0);filter:blur(0)}
 @media(max-width:760px){.floating-header{top:14px}}
 @media(prefers-reduced-motion:reduce){html.scroll-reveal-enabled .scroll-reveal{opacity:1;transform:none;filter:none;transition:none;will-change:auto}}
+
+
+/* Smooth ambient motion without cursor tracking or full-screen blur effects. */
+html[data-theme=light] body::before{background:radial-gradient(ellipse 42rem 36rem at 26% 38%,#f4511e18,transparent 78%),radial-gradient(42rem 34rem at 16% 28%,#ffeadfcc,transparent 74%),radial-gradient(38rem 34rem at 82% 72%,#ffe5d3bb,transparent 72%),radial-gradient(26rem 26rem at 52% 5%,#fff2e8cc,transparent 70%);opacity:.78;filter:none!important;will-change:transform}
+html[data-theme=dark] body::before{background:radial-gradient(ellipse 42rem 36rem at 26% 38%,#ff76231e,transparent 78%),radial-gradient(42rem 34rem at 16% 28%,#ffeadf19,transparent 74%),radial-gradient(38rem 34rem at 82% 72%,#ff762315,transparent 72%),radial-gradient(26rem 26rem at 52% 5%,#ff9a4510,transparent 70%);filter:none!important;will-change:transform}
+html[data-pointer-active=true] body::before{filter:none!important;opacity:.98;animation-duration:18s}
+html.scroll-reveal-enabled .scroll-reveal{filter:none;transition:opacity .55s cubic-bezier(.2,.75,.25,1),transform .55s cubic-bezier(.2,.75,.25,1);will-change:auto}
+html.scroll-reveal-enabled .scroll-reveal.scroll-reveal-visible{filter:none}
+@media(max-width:760px){body::before{animation-duration:34s!important}.apu-glow{filter:none}.price-chart{filter:none}.orbit{animation-duration:46s}.floating-price{backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;animation-duration:7s}.hero-orbit,.hero-orbit-two{animation:none}}
+@media(prefers-reduced-motion:reduce){body::before{animation:none!important;transition:none!important}}
