@@ -25,7 +25,7 @@ export default function PlatformCredentialsAdmin() {
     } catch (err) { setError(err.message || "ارتباط با سرور برقرار نشد."); }
   }
   useEffect(() => { load(); }, []);
-  const visible = credentials.filter((item) => item.customerId === form.customerId);
+  const visible = credentials.filter((item) => (item.customer_id || item.customerId) === form.customerId);
 
   async function add(event) {
     event.preventDefault(); setBusy(true); setError(""); setNotice("");
@@ -64,7 +64,7 @@ export default function PlatformCredentialsAdmin() {
     <div className="credential-heading"><div><span className="credential-eyebrow">مدیریت اطلاعات اتصال</span><h2 id="credential-title">دسترسی‌های مشتری</h2><p>اطلاعات ورود هر مشتری را برای پلتفرم‌های موردنیازش ثبت و مدیریت کنید.</p></div><span className="credential-count">{credentials.length} دسترسی</span></div>
     {error && <p className="credential-message is-error" role="alert">{error}</p>}{notice && <p className="credential-message is-success" role="status">{notice}</p>}
     <form className="credential-form" onSubmit={add}>
-      <label className="credential-field credential-customer"><span>مشتری</span><select required value={form.customerId} onChange={(e) => setForm({ ...form, customerId: e.target.value })}><option value="">انتخاب مشتری</option>{customers.map((c) => <option key={c.id} value={c.id}>{c.fullName || c.phone || c.email || c.id}</option>)}</select></label>
+      <label className="credential-field credential-customer"><span>مشتری</span><select required value={form.customerId} onChange={(e) => setForm({ ...form, customerId: e.target.value })}><option value="">انتخاب مشتری</option>{customers.map((c) => <option key={c.id} value={c.id}>{c.full_name || c.fullName || c.phone || c.email || c.id}</option>)}</select></label>
       <label className="credential-field"><span>نام پلتفرم</span><input required value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })} placeholder="مثلاً ترب" autoComplete="off" /></label>
       <label className="credential-field"><span>یوزرنیم</span><input required value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="نام کاربری مشتری" autoComplete="off" /></label>
       <label className="credential-field"><span>پسورد</span><div className="credential-password-input"><input required type={showPassword ? "text" : "password"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="رمز عبور" autoComplete="new-password" /><button type="button" onClick={() => setShowPassword((v) => !v)}>{showPassword ? "پنهان" : "نمایش"}</button></div></label>
