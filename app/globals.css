@@ -60,6 +60,20 @@ html[data-theme=dark]{color-scheme:dark;--bg:#171717;--panel:#202020;--panel2:#2
 @media(max-width:900px){.cinematic-hero{padding-top:155px;padding-bottom:26px}.cinematic-inner{padding-inline:28px}.cinematic-title{font-size:clamp(80px,21vw,180px)}.cinematic-intro{gap:20px}.cinematic-intro .hero-actions{flex-wrap:wrap;justify-content:flex-start}.cinematic-intro .button{padding-inline:16px}.cinematic-bottom{margin-top:28px}}
 @media(max-width:760px){.floating-header{top:14px;width:calc(100% - 28px);height:62px;padding-inline:13px;border-radius:13px}.floating-header nav{display:none}.floating-header .brand-mark{width:27px;height:27px}.floating-header .brand-word{font-size:17px}.floating-header .button{font-size:12px;padding:8px 11px;gap:7px}.cinematic-hero{min-height:100svh;align-items:flex-end;padding:125px 0 23px}.cinematic-inner{padding-inline:24px}.cinematic-label{font-size:11px}.cinematic-title{font-size:clamp(72px,21vw,126px);margin-top:20px}.cinematic-title>i{font-size:.15em}.cinematic-intro{display:block;margin-top:12px;padding-top:19px}.cinematic-overline{font-size:22px}.cinematic-intro p{font-size:13px;line-height:1.9}.cinematic-intro .hero-actions{display:flex;gap:9px;margin-top:20px}.cinematic-intro .hero-actions .button{flex:1;padding:10px 9px;font-size:12px;gap:8px;white-space:nowrap}.cinematic-bottom{align-items:flex-start;flex-direction:column;gap:15px;margin-top:24px}.cinematic-bottom .hero-channels{gap:7px;font-size:10px}.cinematic-bottom .hero-channels>span:first-child{width:100%;margin:0 0 2px}.cinematic-bottom .channel-pill{font-size:10px;padding:3px 8px}.scroll-cue{display:none}.hero-orbit{width:110vw;right:-60%;top:-27%}.hero-orbit-two{width:85vw;right:-39%;top:-22%}}
 @media(prefers-reduced-motion:reduce){.cinematic-title>span:first-child span{opacity:1;transform:none;filter:none;animation:none}.cinematic-pulse{animation:none}.scroll-cue svg{transition:none}}
+/* Dark mode contrast and lighter ambient effects */html[data-theme=dark] .soon-list div{color:#c6c6c6}
+html[data-theme=dark] .soon-list>div{color:#c6c6c6}html[data-theme=dark] .soon-list div b{color:#f0eee9}
+html[data-theme=dark] .soon-list b{color:#f0eee9}html[data-theme=dark] .soon-list .soon-label{color:#c6c6c6;border-color:#55585a}
+html[data-theme=dark] .soon-label{color:#c6c6c6;border-color:#55585a}
+body::before{animation:none!important;filter:none!important;transition:none!important;will-change:auto!important}
+html[data-theme=dark] body::before{background:radial-gradient(42rem 34rem at 16% 28%,#ff76231c,transparent 74%),radial-gradient(38rem 34rem at 82% 72%,#ff5a1f18,transparent 72%),radial-gradient(26rem 26rem at 52% 5%,#ff9a4510,transparent 70%)}
+body::after{content:"";position:fixed;z-index:-1;left:0;top:0;width:min(34rem,90vw);aspect-ratio:1;border-radius:50%;pointer-events:none;opacity:0;background:radial-gradient(circle,#f4511e1f 0,transparent 70%);transform:translate3d(var(--pointer-x),var(--pointer-y),0) translate(-50%,-50%);transition:opacity .28s ease;will-change:transform}
+html[data-pointer-active=true] body::after{opacity:1}
+html[data-theme=dark] body::after{background:radial-gradient(circle,#ff762324 0,transparent 70%)}
+html.scroll-reveal-enabled .scroll-reveal{filter:none;transition:opacity .45s ease,transform .45s ease;will-change:auto}
+html.scroll-reveal-enabled .scroll-reveal.scroll-reveal-visible{filter:none}
+.floating-header,html[data-theme=light] .floating-header,html[data-theme=dark] .floating-header{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+@media(max-width:760px){.floating-header,html[data-theme=light] .floating-header,html[data-theme=dark] .floating-header{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}}
+
 
 
 /* DELSA APU first, motion rich and mobile focused */
@@ -111,6 +125,12 @@ body{background:var(--bg);color:var(--ink);transition:background-color .24s ease
 .story-copy>p,.soon-heading p{color:#686d72}.story-copy li{color:#343638}.section-head>p{color:#686d72}
 
 /* Pricing and account pages use the same light canvas; dark mode keeps their original night palette. */
+
+
+/* Keep roadmap typography readable after the later light palette rules. */
+html[data-theme=dark] .soon-list>div{color:#dedede!important}
+html[data-theme=dark] .soon-list>div b{color:#fff!important}
+html[data-theme=dark] .soon-list>div .soon-label{color:#c6c6c6!important;border-color:#55585a!important}
 .pricing-page{background:radial-gradient(ellipse at 50% 0%,#f4511e0d,transparent 42%),var(--bg)}
 .pricing-header nav,.pricing-promise,.pricing-card-featured .pricing-card-top,.pricing-questions details{color:#555b60}
 .pricing-card{border-color:#e2e4e5;background:linear-gradient(160deg,#fff,#f8f8f7 75%);box-shadow:0 16px 48px #1717170a}
