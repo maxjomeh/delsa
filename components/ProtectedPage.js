@@ -4,6 +4,7 @@ import { createClient } from '../lib/supabase/server';
 import { isSupabaseConfigured } from '../lib/supabase/config';
 import { ArrowUpLeft, LogOut, RefreshCw, ShieldCheck, Clock3 } from 'lucide-react';
 import AdminDashboardClient from './AdminDashboardClient';
+import CustomerDashboard from './CustomerDashboard';
 
 function profilePhone(profile) {
   const digits = String(profile?.phone || profile?.email?.match(/^phone-(\d+)@delsa\.invalid$/i)?.[1] || '').replace(/\D/g, '');
@@ -17,9 +18,29 @@ export async function UserDashboard() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
-  const { data: profile } = await supabase.from('profiles').select('full_name,role').eq('id', user.id).maybeSingle();
+  const { data: profile } = await supabase.from('profiles').select('full_name,phone,email,role').eq('id', user.id).maybeSingle();
   if (profile?.role === 'admin') redirect('/admin');
-  return <main className="panel-shell"><header className="panel-top"><Link href="/" className="brand"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link><div className="panel-user"><span>{profile?.full_name || profilePhone({ phone: user.phone, email: user.email })}</span><form action="/auth/signout" method="post"><button className="icon-button" aria-label="خروج"><LogOut size={17}/></button></form></div></header><div className="panel-main"><div className="panel-greeting"><span className="eyebrow">فضای کاری / APU</span><h1>سلام {profile?.full_name || 'خوش آمدی'}،</h1><p>مدیریت به‌روزرسانی قیمت محصولات از اینجا شروع می‌شود.</p></div><section className="panel-focus"><div className="focus-icon"><RefreshCw size={24}/></div><div><span className="eyebrow">APU · Automated Price Updates</span><h2>به‌روزرسانی هوشمند قیمت</h2><p>منابع قیمت را اضافه کن، محصولات را تطبیق بده و پیش از اعمال تغییرات آن‌ها را بررسی کن.</p></div><span className="soon-badge">در حال راه‌اندازی</span></section><section className="panel-grid"><article className="panel-card"><small>اتصال فروشگاه</small><strong>هنوز متصل نشده</strong><p>اتصال فروشگاه پس از تکمیل تنظیمات APU فعال می‌شود.</p></article><article className="panel-card"><small>محصول‌های پایش‌شده</small><strong>۰</strong><p>با اضافه کردن منبع داده، محصول‌ها در اینجا نمایش داده می‌شوند.</p></article><article className="panel-card"><small>آخرین اجرا</small><strong>—</strong><p>تاریخچه‌ی اجراها پس از اتصال APU در دسترس است.</p></article></section><section className="panel-note"><Clock3 size={19}/><div><b>APU به‌زودی فعال می‌شود</b><p>در حال حاضر حساب واقعی و امن است؛ اتصال فروشگاه و موتور تغییر قیمت هنوز راه‌اندازی نشده‌اند.</p></div></section><Link href="/" className="back-home">بازگشت به صفحه‌ی اصلی <ArrowUpLeft size={16}/></Link></div></main>;
+  const [sources, rules, runs, messages, store, subscriptions] = await Promise.all([
+    supabase.from('apu_sources').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('apu_rules').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('apu_runs').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20),
+    supabase.from('support_messages').select('*').eq('user_id', user.id).order('created_at', { ascending: true }).limit(100),
+    supabase.from('customer_stores').select('name,website').eq('customer_id', user.id).maybeSingle(),
+    supabase.from('customer_subscriptions').select('id,product_id,plan,starts_at,expires_at,store_products(name)').eq('customer_id', user.id).order('expires_at', { ascending: false }),
+  ]);
+  const loadError = [sources, rules, runs, messages, store, subscriptions].some((result) => result.error);
+  return <CustomerDashboard
+    userId={user.id}
+    name={profile?.full_name || 'خوش آمدی'}
+    phone={profilePhone({ phone: profile?.phone || user.phone, email: profile?.email || user.email })}
+    initialSources={sources.data || []}
+    initialRules={rules.data || []}
+    initialRuns={runs.data || []}
+    initialMessages={messages.data || []}
+    store={store.data}
+    subscriptions={subscriptions.data || []}
+    loadError={loadError}
+  />;
 }
 
 export async function AdminDashboard() {
