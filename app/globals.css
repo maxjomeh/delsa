@@ -265,3 +265,19 @@ html.scroll-reveal-enabled .scroll-reveal.scroll-reveal-visible{opacity:1;transf
 .visitor-chat-popup header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#ff5a1f;color:#fff}.visitor-chat-popup header strong,.visitor-chat-popup header small{display:block}.visitor-chat-popup header small{font-size:10px;opacity:.85}.visitor-chat-popup header button{border:0;background:transparent;color:#fff}
 .visitor-chat-stream{flex:1;overflow:auto;padding:15px;display:flex;flex-direction:column;gap:10px}.visitor-chat-intro{font-size:12px;line-height:1.8}.visitor-bubble{align-self:flex-start;max-width:88%;padding:9px 12px;border-radius:13px;background:var(--panel2);border:1px solid var(--line)}.visitor-bubble.mine{align-self:flex-end;background:var(--orangeSoft);border-color:#ff5a1f30}.visitor-bubble small{font-size:10px;color:var(--orange)}.visitor-bubble p{margin:3px 0 0;color:var(--ink);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.visitor-chat-popup form{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border-top:1px solid var(--line)}.visitor-chat-popup form label{width:100%;font-size:11px}.visitor-chat-popup textarea,.visitor-chat-popup input{flex:1;min-width:0;resize:vertical;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);padding:8px;font-size:12px}.visitor-chat-popup form button{display:flex;align-items:center;gap:5px;border:0;border-radius:9px;background:#ff5a1f;color:#fff;padding:8px 12px;font-size:11px}.visitor-chat-error{padding:0 12px;margin:0;color:#d44224;font-size:11px}
 @media(max-width:540px){.theme-toggle,.visitor-chat-launch{bottom:12px;padding:0 12px;min-height:42px}.theme-toggle{left:12px}.visitor-chat-launch{right:12px}.theme-toggle span,.visitor-chat-launch span{display:none}.visitor-chat-popup{right:12px;bottom:64px}}
+
+/* Light presentation for sections that use a cinematic dark canvas by default. */
+html[data-theme=light] .apu-hero{background:#f8f6f3;color:#191919}
+html[data-theme=light] .apu-hero-art{background:radial-gradient(ellipse at 16% 43%,#ffe3d1 0,#f7eee7 42%,#f8f6f3 78%)}
+html[data-theme=light] .apu-hero-art::after{background:linear-gradient(90deg,transparent 0 44%,#f8f6f3 100%)}
+html[data-theme=light] .site-header.floating-header{background:#ffffffe0;border-color:#dedad5;color:#191919}
+html[data-theme=light] .site-header.floating-header .brand,html[data-theme=light] .site-header.floating-header nav,html[data-theme=light] .site-header.floating-header nav a{color:#191919}
+html[data-theme=light] .site-header.floating-header .button,html[data-theme=light] .mobile-store-link{background:#fff;color:#191919;border-color:#dedad5}
+html[data-theme=light] .cinematic-label,html[data-theme=light] .cinematic-overline,html[data-theme=light] .hero-proof,html[data-theme=light] .apu-hero .cinematic-intro p{color:#50545a}
+html[data-theme=light] .steps-section{background:radial-gradient(ellipse at 50% 100%,#ff5a1f12,transparent 55%),#f7f6f4;border-color:var(--line);color:var(--ink)}
+html[data-theme=light] .steps-section h2,html[data-theme=light] .steps-section h3{color:var(--ink)}
+html[data-theme=light] .steps-section .section-head>p,html[data-theme=light] .steps-grid p{color:#5f656a}
+html[data-theme=light] .steps-grid article,html[data-theme=light] .soon-list>div{background:#fff;border-color:var(--line);color:var(--ink)}
+html[data-theme=light] .soon-list b{color:var(--ink)}
+html[data-theme=light] .step-number{color:#d8d1ca}
+@media(max-width:760px){html[data-theme=light] .apu-hero-art{background:radial-gradient(ellipse at 16% 40%,#ffe3d1 0,#f7eee7 42%,#f8f6f3 78%)}html[data-theme=light] .apu-hero-art::after{background:linear-gradient(90deg,transparent 0,transparent 30%,#f8f6f3 74%),linear-gradient(0deg,#f8f6f3 0,transparent 47%)}}
