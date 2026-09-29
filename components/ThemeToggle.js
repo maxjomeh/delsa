@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(true);
 
   useEffect(() => {
     const root = document.documentElement;
-    const isDark = window.localStorage.getItem('delsa-theme') === 'dark';
+    const savedTheme = window.localStorage.getItem('delsa-theme');
+    const isDark = savedTheme ? savedTheme === 'dark' : true;
     setDark(isDark);
     root.dataset.theme = isDark ? 'dark' : 'light';
 
@@ -41,17 +42,15 @@ export default function ThemeToggle() {
   }
 
   return (
-    <>
-      <button
-        className="theme-toggle"
-        type="button"
-        onClick={toggleTheme}
-        aria-label={dark ? 'فعال‌کردن حالت روشن' : 'فعال‌کردن حالت تیره'}
-        title={dark ? 'حالت روشن' : 'حالت تیره'}
-      >
-        {dark ? <Sun size={18} aria-hidden="true"/> : <Moon size={18} aria-hidden="true"/>}
-        <span>{dark ? 'حالت روشن' : 'حالت تیره'}</span>
-      </button>
-    </>
+    <button
+      className="theme-toggle"
+      type="button"
+      onClick={toggleTheme}
+      aria-label={dark ? 'فعال‌کردن حالت روشن' : 'فعال‌کردن حالت تیره'}
+      title={dark ? 'حالت روشن' : 'حالت تیره'}
+    >
+      {dark ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
+      <span>{dark ? 'حالت روشن' : 'حالت تیره'}</span>
+    </button>
   );
 }
