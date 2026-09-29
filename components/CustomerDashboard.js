@@ -48,6 +48,10 @@ export default function CustomerDashboard({ userId, name, phone, initialSources,
     document.addEventListener('visibilitychange', update);
     return () => { clearInterval(timer); document.removeEventListener('visibilitychange', update); };
   }, []);
+  useEffect(() => {
+    const refresh = async () => { if (document.visibilityState !== 'visible') return; const { data } = await db.from('support_messages').select('id,user_id,sender_role,body,created_at').eq('user_id', userId).order('created_at', { ascending: true }).limit(500); if (data) setMessages(data); };
+    const timer = setInterval(refresh, 5000); document.addEventListener('visibilitychange', refresh); return () => { clearInterval(timer); document.removeEventListener('visibilitychange', refresh); };
+  }, [db, userId]);
   const activeSubscriptions = subscriptions.filter((item) => daysRemainingIran(item.expires_at, now) > 0);
 
   async function addSource(event) {

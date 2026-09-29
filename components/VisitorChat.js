@@ -1,0 +1,17 @@
+'use client';
+import {useCallback,useEffect,useState} from 'react';
+import {MessageCircle,Send,X} from 'lucide-react';
+import {createClient} from '../lib/supabase/client';
+const TOKEN_KEY='delsa-visitor-chat-token';
+export default function VisitorChat(){
+ const [open,setOpen]=useState(false),[chat,setChat]=useState(null),[body,setBody]=useState(''),[phone,setPhone]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const refresh=useCallback(async()=>{const token=localStorage.getItem(TOKEN_KEY);if(!token)return;const {data,error}=await createClient().rpc('visitor_chat_read',{p_token:token});if(!error)setChat(data);},[]);
+ useEffect(()=>{refresh();const show=()=>setOpen(true);window.addEventListener('delsa:open-chat',show);const timer=setInterval(()=>{if(document.visibilityState==='visible')refresh()},5000);return()=>{window.removeEventListener('delsa:open-chat',show);clearInterval(timer)}},[refresh]);
+ async function send(event){event.preventDefault();if(busy)return;setBusy(true);setError('');const db=createClient(),token=localStorage.getItem(TOKEN_KEY);let result;
+  if(!token){result=await db.rpc('visitor_chat_start',{p_body:body.trim()});if(!result.error){localStorage.setItem(TOKEN_KEY,result.data.token);setChat({chat_id:result.data.chat_id,phone:null,messages:result.data.messages});setBody('')}}
+  else if(!chat?.phone){result=await db.rpc('visitor_chat_send',{p_token:token,p_phone:phone.trim().replace(/[۰-۹]/g,d=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))).replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))});if(!result.error){setChat(result.data);setPhone('')}}
+  else{result=await db.rpc('visitor_chat_send',{p_token:token,p_body:body.trim()});if(!result.error){setChat(result.data);setBody('')}}
+  if(result.error)setError(result.error.message?.includes('wait')?'لطفاً چند لحظه دیگر دوباره تلاش کنید.':'ارسال انجام نشد. ورودی را بررسی کنید و دوباره تلاش کنید.');setBusy(false);
+ }
+ return <div className="visitor-chat-root"><button className="visitor-chat-launch" onClick={()=>setOpen(v=>!v)} aria-label="پشتیبانی آنلاین" aria-expanded={open}><MessageCircle size={22}/><span>پشتیبانی آنلاین</span></button>{open&&<section className="visitor-chat-popup" role="dialog" aria-label="چت با پشتیبانی دلسا"><header><div><strong>گفت‌وگو با دلسا</strong><small>پیام شما در پنل پشتیبانی ثبت می‌شود</small></div><button onClick={()=>setOpen(false)} aria-label="بستن چت"><X size={19}/></button></header><div className="visitor-chat-stream" aria-live="polite"><p className="visitor-chat-intro">سلام! پرسشتان را بنویسید تا از همین‌جا پاسخ بگیرید.</p>{chat?.messages?.map(item=><div key={item.id} className={'visitor-bubble '+(item.sender_role==='visitor'?'mine':'')}><small>{item.sender_role==='visitor'?'شما':item.sender_role==='admin'?'پشتیبانی دلسا':'دلسا'}</small><p>{item.body}</p></div>)}</div>{error&&<p className="visitor-chat-error" role="alert">{error}</p>}<form onSubmit={send}>{chat&&!chat.phone?<><label htmlFor="visitor-phone">شماره تماس برای پیگیری پاسخ</label><input id="visitor-phone" required type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="۰۹۱۲۳۴۵۶۷۸۹"/></>:<textarea required maxLength={2000} rows={2} value={body} onChange={e=>setBody(e.target.value)} placeholder="پیام خود را بنویسید…" aria-label="پیام"/>}<button disabled={busy||!(chat&&!chat.phone?phone.trim():body.trim())}><Send size={17}/>{busy?'در حال ارسال…':chat&&!chat.phone?'ثبت شماره':'ارسال'}</button></form></section>}</div>;
+}
