@@ -281,3 +281,6 @@ html[data-theme=light] .steps-grid article,html[data-theme=light] .soon-list>div
 html[data-theme=light] .soon-list b{color:var(--ink)}
 html[data-theme=light] .step-number{color:#d8d1ca}
 @media(max-width:760px){html[data-theme=light] .apu-hero-art{background:radial-gradient(ellipse at 16% 40%,#ffe3d1 0,#f7eee7 42%,#f8f6f3 78%)}html[data-theme=light] .apu-hero-art::after{background:linear-gradient(90deg,transparent 0,transparent 30%,#f8f6f3 74%),linear-gradient(0deg,#f8f6f3 0,transparent 47%)}}
+html[data-theme=light] .apu-headline{color:#222}
+html[data-theme=light] .floating-price{background:#fff;color:#222;border-color:#ddd7d2}
+html[data-theme=light] .floating-price b{color:#222}
