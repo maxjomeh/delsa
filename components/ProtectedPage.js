@@ -20,17 +20,19 @@ export async function UserDashboard() {
   if (!user) redirect('/login');
   const { data: profile } = await supabase.from('profiles').select('full_name,phone,email,role').eq('id', user.id).maybeSingle();
   if (profile?.role === 'admin') redirect('/admin');
-  const [sources, rules, runs, messages, store, subscriptions] = await Promise.all([
+  const [sources, rules, runs, messages, store, subscriptions, entitlement] = await Promise.all([
     supabase.from('apu_sources').select('*').eq('user_id', user.id).is('deleted_at', null).order('created_at', { ascending: false }),
     supabase.from('apu_rules').select('*').eq('user_id', user.id).is('deleted_at', null).order('created_at', { ascending: false }),
     supabase.from('apu_runs').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20),
     supabase.from('support_messages').select('*').eq('user_id', user.id).order('created_at', { ascending: true }).limit(100),
     supabase.from('customer_stores').select('name,website').eq('customer_id', user.id).maybeSingle(),
     supabase.from('customer_subscriptions').select('id,product_id,plan,starts_at,expires_at,store_products(name)').eq('customer_id', user.id).order('expires_at', { ascending: false }),
+    supabase.rpc('has_active_apu'),
   ]);
   const loadError = [sources, rules, runs, messages, store, subscriptions].some((result) => result.error);
   return <CustomerDashboard
     userId={user.id}
+    hasApu={Boolean(entitlement.data)}
     name={profile?.full_name || 'خوش آمدی'}
     phone={profilePhone({ phone: profile?.phone || user.phone, email: profile?.email || user.email })}
     initialSources={sources.data || []}

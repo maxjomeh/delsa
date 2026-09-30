@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
+import ApuWorkspace from './ApuWorkspace';
 const models={source_price:'قیمت از منبع',usd_subscription:'اشتراک دلاری',fixed_price:'قیمت ثابت'};
 const types={maximum_change_percent:'سقف تغییر قیمت',minimum_margin_percent:'حداقل حاشیه سود',fixed_price:'قیمت ثابت',custom:'قانون شخصی'};
 const fields={name:'نام',url:'لینک',pricing_model:'مدل قیمت',currency:'ارز',subscription_amount:'مبلغ',rule_type:'نوع قانون',value:'مقدار / توضیح',enabled:'وضعیت',deleted_at:'حذف'};
@@ -11,6 +12,7 @@ export default function CustomerApuDetails({customerId}){
  async function markRead(){const id=data?.history[0]?.id;if(!id)return;setBusy(true);try{const r=await fetch('/api/admin/customer-details',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customerId,action:'apu-seen',lastSeenId:id})});const v=await r.json();if(!r.ok)throw Error(v.error);setData(d=>({...d,lastSeenId:Math.max(d.lastSeenId,id)}));setError('')}catch(e){setError(e.message)}finally{setBusy(false)}}
  const unread=data?.history.filter(h=>h.id>data.lastSeenId).length||0;
  return <section className="detail-apu" aria-label="تنظیمات APU مشتری">
+ <ApuWorkspace key={customerId} customerId={customerId} admin/>
  <div className="detail-heading"><h3>تنظیمات APU مشتری</h3>{unread>0&&<span className="apu-new" role="status">{unread.toLocaleString('fa-IR')}{unread===100?'+':''} تغییر جدید</span>}</div>
  <p className="detail-empty">اطلاعات ذخیره‌شدهٔ مشتری · به‌روزرسانی هر ۵ ثانیه</p>
  {error&&<p className="admin-form-error" role="alert">{error}</p>}
