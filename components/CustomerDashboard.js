@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import ChatMessage from './ChatMessage';
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '../lib/supabase/client';
 import { daysRemainingIran } from '../lib/subscription-days';
@@ -51,7 +52,7 @@ export default function CustomerDashboard({ userId, name, phone, initialSources,
     return () => { clearInterval(timer); document.removeEventListener('visibilitychange', update); };
   }, []);
   useEffect(() => {
-    const refresh = async () => { if (document.visibilityState !== 'visible') return; const { data } = await db.from('support_messages').select('id,user_id,sender_role,body,created_at').eq('user_id', userId).order('created_at', { ascending: true }).limit(500); if (data) setMessages(data); };
+    const refresh = async () => { if (document.visibilityState !== 'visible') return; const { data } = await db.from('support_messages').select('*').eq('user_id', userId).order('created_at', { ascending: true }).limit(500); if (data) setMessages(data.filter(m=>!m.hidden_by?.includes(userId))); };
     const timer = setInterval(refresh, 5000); document.addEventListener('visibilitychange', refresh); return () => { clearInterval(timer); document.removeEventListener('visibilitychange', refresh); };
   }, [db, userId]);
   const activeSubscriptions = subscriptions.filter((item) => daysRemainingIran(item.expires_at, now) > 0);
@@ -87,6 +88,13 @@ export default function CustomerDashboard({ userId, name, phone, initialSources,
     const { error } = await db.from(table).update({ deleted_at: new Date().toISOString(), enabled: false }).eq('id', id).eq('user_id', userId).select('id').single();
     if (error) setNotice('حذف انجام نشد.'); else setter(collection.filter((row) => row.id !== id));
     setBusy(false);
+  }
+
+  async function messageAction(item,action,body) {
+    const {error}=await db.rpc('support_message_action',{p_kind:'customer',p_id:item.id,p_action:action,p_body:body});
+    if(error)throw error;
+    const result=await db.from('support_messages').select('*').eq('user_id',userId).order('created_at',{ascending:true}).limit(500);
+    if(result.error)throw result.error;setMessages(result.data.filter(m=>!m.hidden_by?.includes(userId)));
   }
 
   async function sendMessage(event) {
@@ -128,7 +136,7 @@ export default function CustomerDashboard({ userId, name, phone, initialSources,
 
         {tab === 'reports' && <section className="customer-panel customer-list-panel"><div className="customer-panel-title"><div><span>تاریخچهٔ فعالیت</span><h2>گزارش اجراهای APU</h2></div><span className="customer-count">{number(runs.length)} اجرا</span></div>{runs.length ? <div className="customer-run-table"><div className="run-table-head"><span>زمان اجرا</span><span>وضعیت</span><span>به‌روزرسانی</span><span>خطا</span></div>{runs.map((run) => <article key={run.id}><span>{dateTime(run.created_at)}</span><span className={'run-status ' + run.status}>{run.status === 'completed' ? 'موفق' : run.status === 'partial' ? 'ناقص' : 'ناموفق'}</span><strong>{number(run.updated_count)}</strong><span>{number(run.failed_count)}</span>{run.summary && <p>{run.summary}</p>}</article>)}</div> : <div className="customer-empty"><BarChart3 size={29}/><strong>هنوز گزارشی وجود ندارد</strong><p>گزارش‌ها با اجرای واقعی موتور APU اضافه می‌شوند. اینجا عدد نمونه نمایش داده نمی‌شود.</p></div>}<p className="customer-footnote"><Clock3 size={15}/> گزارش‌ها بعد از راه‌اندازی اتصال فروشگاه و موتور APU در همین صفحه قابل پیگیری خواهند بود.</p></section>}
 
-        {tab === 'support' && <section className="customer-panel customer-support-panel"><div className="customer-panel-title"><div><span>ارتباط مستقیم</span><h2>گفت‌وگو با پشتیبانی</h2></div><span className="support-online"><i/> پشتیبانی دلسا</span></div><div className="support-chat"><div className="support-welcome"><span><MessageCircle size={21}/></span><div><strong>سلام، چطور می‌تونیم کمکت کنیم؟</strong><p>پیامت برای تیم پشتیبانی ارسال می‌شود و پاسخ همین‌جا نمایش داده می‌شود.</p></div></div>{messages.length ? messages.map((item) => <article key={item.id} className={'support-message ' + (item.sender_role === 'customer' ? 'mine' : 'theirs')}><span>{item.sender_role === 'customer' ? 'شما' : 'پشتیبانی دلسا'}</span><p>{item.body}</p><time>{dateTime(item.created_at)}</time></article>) : <div className="support-empty">هنوز پیامی ثبت نشده. هر زمان خواستی پیام بده.</div>}</div><form className="support-compose" onSubmit={sendMessage}><textarea rows={2} maxLength={4000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="پیامت را اینجا بنویس…" aria-label="متن پیام"/><button className="customer-primary" disabled={!message.trim() || busy}><Send size={17}/>{busy ? 'در حال ارسال…' : 'ارسال پیام'}</button></form></section>}
+        {tab === 'support' && <section className="customer-panel customer-support-panel"><div className="customer-panel-title"><div><span>ارتباط مستقیم</span><h2>گفت‌وگو با پشتیبانی</h2></div><span className="support-online"><i/> پشتیبانی دلسا</span></div><div className="support-chat"><div className="support-welcome"><span><MessageCircle size={21}/></span><div><strong>سلام، چطور می‌تونیم کمکت کنیم؟</strong><p>پیامت برای تیم پشتیبانی ارسال می‌شود و پاسخ همین‌جا نمایش داده می‌شود.</p></div></div>{messages.length ? messages.filter(item=>!item.hidden_by?.includes(userId)).map((item) => <article key={item.id} className={'support-message ' + (item.sender_role === 'customer' ? 'mine' : 'theirs')}><span>{item.sender_role === 'customer' ? 'شما' : 'پشتیبانی دلسا'}</span><ChatMessage message={item} canEdit={item.sender_id===userId} canDeleteAll={item.sender_id===userId} onAction={(action,value)=>messageAction(item,action,value)}/><time>{dateTime(item.created_at)}</time></article>) : <div className="support-empty">هنوز پیامی ثبت نشده. هر زمان خواستی پیام بده.</div>}</div><form className="support-compose" onSubmit={sendMessage}><textarea rows={2} maxLength={4000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="پیامت را اینجا بنویس…" aria-label="متن پیام"/><button className="customer-primary" disabled={!message.trim() || busy}><Send size={17}/>{busy ? 'در حال ارسال…' : 'ارسال پیام'}</button></form></section>}
         <footer className="customer-footer"><span>DELSA · فرصت بیشتر برای کارهای مهم‌تر</span><span>اطلاعات حساب تو با دسترسی اختصاصی ذخیره می‌شود.</span></footer>
       </div>
     </section>
