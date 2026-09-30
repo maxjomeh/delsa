@@ -15,19 +15,33 @@ async function admin(request){
  return profile?.role==='admin'?{db,user}:{response:fail('دسترسی مدیر لازم است.',403)};
 }
 export async function GET(request){
- const {db,response}=await admin(request);if(response)return response;
+ const {db,user,response}=await admin(request);if(response)return response;
+ if(new URL(request.url).searchParams.get('apuSummary')==='1'){const {data,error}=await db.rpc('admin_apu_change_summary');return error?fail('تغییرات بارگذاری نشد.',503):ok({changes:data||[]});}
  const id=new URL(request.url).searchParams.get('customerId');if(!valid(id))return fail('مشتری نامعتبر است.');
  const results=await Promise.all([
   db.from('customer_stores').select('name,website').eq('customer_id',id).maybeSingle(),
   db.from('customer_subscriptions').select('id,product_id,plan,starts_at,expires_at').eq('customer_id',id).order('expires_at'),
-  db.from('customer_platform_credentials').select('id,platform,username').eq('customer_id',id).order('created_at',{ascending:false})]);
+  db.from('customer_platform_credentials').select('id,platform,username').eq('customer_id',id).order('created_at',{ascending:false}),
+  db.from('apu_sources').select('*').eq('user_id',id).is('deleted_at',null).order('created_at',{ascending:false}),
+  db.from('apu_rules').select('*').eq('user_id',id).is('deleted_at',null).order('created_at',{ascending:false}),
+  db.from('apu_change_history').select('*').eq('user_id',id).order('id',{ascending:false}).limit(100),
+  db.from('apu_history_reads').select('last_seen_id').eq('admin_id',user.id).eq('user_id',id).maybeSingle()]);
  if(results.some(r=>r.error))return fail('جدول‌های جزئیات مشتری آماده نیستند؛ migration را اجرا کنید.',503);
- return ok({store:results[0].data,subscriptions:results[1].data||[],credentials:results[2].data||[]});
+ return ok({store:results[0].data,subscriptions:results[1].data||[],credentials:results[2].data||[],sources:results[3].data||[],rules:results[4].data||[],history:results[5].data||[],lastSeenId:results[6].data?.last_seen_id||0});
 }
 export async function POST(request){
  const {db,user,response}=await admin(request);if(response)return response;
  let b;try{b=await request.json()}catch{return fail('درخواست نامعتبر است.')}
  const id=b.customerId;if(!valid(id))return fail('مشتری نامعتبر است.');
+ if(b.action==='apu-seen'){
+  if(!Number.isSafeInteger(b.lastSeenId)||b.lastSeenId<1)return fail('شناسه تغییر نامعتبر است.');
+  const {data:event}=await db.from('apu_change_history').select('id').eq('id',b.lastSeenId).eq('user_id',id).maybeSingle();
+  if(!event)return fail('تغییر پیدا نشد.',404);
+  const {data:cursor}=await db.from('apu_history_reads').select('last_seen_id').eq('admin_id',user.id).eq('user_id',id).maybeSingle();
+  if((cursor?.last_seen_id||0)>=b.lastSeenId)return ok({ok:true});
+  const {error}=await db.from('apu_history_reads').upsert({admin_id:user.id,user_id:id,last_seen_id:b.lastSeenId});
+  return error?fail('ثبت مشاهده انجام نشد.'):ok({ok:true});
+ }
  if(b.action==='store'){
   const name=String(b.name||'').trim(),website=String(b.website||'').trim();
   if(name.length>120||website.length>2048)return fail('اطلاعات فروشگاه طولانی است.');
