@@ -21,8 +21,8 @@ export async function UserDashboard() {
   const { data: profile } = await supabase.from('profiles').select('full_name,phone,email,role').eq('id', user.id).maybeSingle();
   if (profile?.role === 'admin') redirect('/admin');
   const [sources, rules, runs, messages, store, subscriptions] = await Promise.all([
-    supabase.from('apu_sources').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-    supabase.from('apu_rules').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('apu_sources').select('*').eq('user_id', user.id).is('deleted_at', null).order('created_at', { ascending: false }),
+    supabase.from('apu_rules').select('*').eq('user_id', user.id).is('deleted_at', null).order('created_at', { ascending: false }),
     supabase.from('apu_runs').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20),
     supabase.from('support_messages').select('*').eq('user_id', user.id).order('created_at', { ascending: true }).limit(100),
     supabase.from('customer_stores').select('name,website').eq('customer_id', user.id).maybeSingle(),

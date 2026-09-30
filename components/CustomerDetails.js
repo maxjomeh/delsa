@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
+import CustomerApuDetails from './CustomerApuDetails';
 import {daysRemainingIran} from '../lib/subscription-days';
 
 const plans={demo:'دمو (۷ روز)',month:'۱ ماهه',quarter:'۳ ماهه',year:'۱ ساله'};
@@ -32,6 +33,7 @@ export default function CustomerDetails({customer,products,onChanged,onSubscript
    {data.credentials.length?data.credentials.map(c=><div className="detail-line detail-credential" key={c.id}><b>{c.platform}</b><span dir="ltr">{c.username}</span><code dir="ltr">{secrets[c.id]||'••••••••'}</code><div className="detail-actions"><button onClick={()=>reveal(c.id)}>{secrets[c.id]?'پنهان':'نمایش'}</button><button onClick={()=>copyPassword(c.id)}>کپی رمز</button><button onClick={()=>{setAdding(false);setEditing({id:c.id,platform:c.platform,username:c.username,password:''})}}>ویرایش</button><button disabled={busy} onClick={()=>removeCredential(c.id)}>حذف</button></div></div>):<p className="detail-empty">هنوز دسترسی ثبت نشده است.</p>}
    {(adding||editing)&&<form className="detail-access-form" onSubmit={saveCredential}><label>نام پلتفرم<input required maxLength={80} value={form.platform} onChange={e=>setForm({...form,platform:e.target.value})} placeholder="مثلاً ترب"/></label><label>یوزرنیم<input required maxLength={255} dir="ltr" value={form.username} onChange={e=>setForm({...form,username:e.target.value})} placeholder="نام کاربری"/></label><label>{editing?'رمز جدید (اختیاری)':'پسورد'}<input required={!editing} maxLength={500} type="password" autoComplete="new-password" dir="ltr" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="رمز عبور"/></label><div className="detail-form-actions"><button disabled={busy} type="submit">{editing?'ذخیره تغییرات':'افزودن دسترسی'}</button><button type="button" onClick={()=>{setEditing(null);setAdding(false)}}>انصراف</button></div></form>}
   </>}
+  <CustomerApuDetails customerId={customer.id}/>
   <button className="detail-danger" disabled={busy} onClick={()=>{if(confirm('حساب و همه اطلاعات این مشتری برای همیشه حذف شود؟'))action({action:'delete-customer'})}}>حذف مشتری</button>
  </div>;
 }
