@@ -1,5 +1,6 @@
 'use client';
 
+import {FREE_BUILDER_ENABLED} from '../lib/site-builder';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import {Activity} from 'react';
@@ -127,7 +128,7 @@ export default function CustomerDashboard({ userId, initialTab='overview', hasAp
       <Link href="/" className="brand"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link>
       <div className="customer-account"><span className="customer-avatar">{name?.trim()?.[0] || 'د'}</span><span><strong>{name}</strong><small dir="ltr">{phone}</small></span></div>
       <span className="customer-nav-title">پنل مشتری</span>
-      <nav>{dashboardNav.map(([id, label, Icon]) => <button key={id} onClick={() => { setTab(id); setNotice(''); }} className={tab === id ? 'active' : ''}><Icon size={19}/>{label}{id === 'support' && <span className="nav-new">پیام</span>}</button>)}{builderAccess&&<button className={tab==='builder'?'active':''} onClick={()=>setTab('builder')}><PanelsTopLeft size={19}/>سایت‌ساز دلسا</button>}{apuAccess&&<div className="customer-nav-group"><button aria-expanded={apuOpen} onClick={()=>setApuOpen(v=>!v)} className={['apu','sources','rules'].includes(tab)?'active':''}><RefreshCw size={19}/>سیستم APU<span className="nav-new">{apuOpen?'−':'+'}</span></button>{apuOpen&&<div className="customer-nav-children">{[['apu','فاکتورها و گفت‌وگو',FileText],...nav.filter(([id])=>['sources','rules'].includes(id))].map(([id,label,Icon])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}><Icon size={16}/>{label}</button>)}</div>}</div>}</nav>
+      <nav>{dashboardNav.map(([id, label, Icon]) => <button key={id} onClick={() => { setTab(id); setNotice(''); }} className={tab === id ? 'active' : ''}><Icon size={19}/>{label}{id === 'support' && <span className="nav-new">پیام</span>}</button>)}{(builderAccess||FREE_BUILDER_ENABLED)&&<button className={tab==='builder'?'active':''} onClick={()=>setTab('builder')}><PanelsTopLeft size={19}/>سایت‌ساز دلسا</button>}{apuAccess&&<div className="customer-nav-group"><button aria-expanded={apuOpen} onClick={()=>setApuOpen(v=>!v)} className={['apu','sources','rules'].includes(tab)?'active':''}><RefreshCw size={19}/>سیستم APU<span className="nav-new">{apuOpen?'−':'+'}</span></button>{apuOpen&&<div className="customer-nav-children">{[['apu','فاکتورها و گفت‌وگو',FileText],...nav.filter(([id])=>['sources','rules'].includes(id))].map(([id,label,Icon])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}><Icon size={16}/>{label}</button>)}</div>}</div>}</nav>
       <div className="customer-sidebar-bottom"><div className="customer-help"><ShieldCheck size={19}/><strong>اطلاعات حساب امن است</strong><p>داده‌ها فقط برای حساب خودت در دسترس هستند.</p></div><form action="/auth/signout" method="post"><button className="customer-logout"><LogOut size={18}/>خروج از حساب</button></form><Link href="/" className="customer-back"><ArrowLeft size={17}/>بازگشت به سایت</Link></div>
     </aside>
     <section className="customer-content">
