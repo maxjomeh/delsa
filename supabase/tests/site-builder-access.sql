@@ -1,0 +1,47 @@
+-- Run in SQL Editor/MCP; all test changes are rolled back.
+begin;
+do $$
+declare a uuid; b uuid; sid uuid; cid uuid; n integer; denied boolean; d jsonb;
+begin
+ select id into a from public.profiles where role<>'admin' order by created_at limit 1;
+ select id into b from public.profiles where role<>'admin' and id<>a order by created_at limit 1;
+ if a is null or b is null then raise exception 'two customer accounts required'; end if;
+ insert into public.customer_subscriptions(customer_id,product_id,plan,starts_at,expires_at) values(a,'38ba2004-0021-4717-b06f-dc21493b83b5','demo',now()-interval '1 minute',now()+interval '1 day');
+ insert into public.customer_subscriptions(customer_id,product_id,plan,starts_at,expires_at) values(b,'38ba2004-0021-4717-b06f-dc21493b83b5','demo',now()-interval '1 minute',now()+interval '1 day');
+ d='{"color":"#ff642d","pages":[{"id":"home","slug":"","title":"خانه","blocks":[{"id":"hero","type":"hero","title":"نسخه اول","text":"آزمون"}]}]}'::jsonb;
+ perform set_config('request.jwt.claim.sub',a::text,true);
+ execute 'set local role authenticated';
+ if not public.has_site_builder_access() then raise exception 'active access missing'; end if;
+ insert into public.builder_sites(owner_id,name,slug,draft) values(a,'آزمون سایت‌ساز','test-'||substr(gen_random_uuid()::text,1,12),d) returning id into sid;
+ insert into public.builder_customers(site_id,full_name,notes) values(sid,'آزمون مشتری','private test') returning id into cid;
+ perform public.publish_builder_site(sid);
+ update public.builder_sites set draft=jsonb_set(draft,'{pages,0,blocks,0,title}','"پیش‌نویس تازه"') where id=sid;
+ if (select document#>>'{pages,0,blocks,0,title}' from public.builder_publications where site_id=sid)<>'نسخه اول' then raise exception 'draft leaked into publication'; end if;
+ if (select count(*) from public.builder_versions where site_id=sid)<>1 then raise exception 'version missing'; end if;
+ update public.builder_customers set tags='همکار' where id=cid;
+ perform set_config('request.jwt.claim.sub',b::text,true);
+ if exists(select 1 from public.builder_sites where id=sid) or exists(select 1 from public.builder_customers where id=cid) or exists(select 1 from public.builder_versions where site_id=sid) then raise exception 'cross tenant read'; end if;
+ update public.builder_customers set notes='forbidden' where id=cid; get diagnostics n=row_count;
+ if n<>0 then raise exception 'cross tenant update'; end if;
+ denied=false;
+ begin insert into public.builder_customers(site_id,full_name) values(sid,'forbidden'); exception when insufficient_privilege then denied=true; end;
+ if not denied then raise exception 'cross tenant insert allowed'; end if;
+ denied=false;begin perform public.publish_builder_site(sid);exception when others then denied=true;end;
+ if not denied then raise exception 'cross tenant publication'; end if;
+ execute 'reset role';
+ update public.customer_subscriptions set expires_at=now()-interval '1 second' where customer_id=a and product_id='38ba2004-0021-4717-b06f-dc21493b83b5';
+ perform set_config('request.jwt.claim.sub',a::text,true); execute 'set local role authenticated';
+ if public.has_site_builder_access() then raise exception 'expired access allowed'; end if;
+ update public.builder_sites set name='forbidden' where id=sid;get diagnostics n=row_count;
+ if n<>0 then raise exception 'expired write';end if;
+ if not exists(select 1 from public.builder_customers where id=cid) then raise exception 'expired historical read lost';end if;
+ execute 'reset role';perform set_config('request.jwt.claim.sub','',true);execute 'set local role anon';
+ if not exists(select 1 from public.builder_publications where site_id=sid and is_live) then raise exception 'public snapshot inaccessible'; end if;
+ denied=false;begin perform count(*) from public.builder_sites;exception when insufficient_privilege then denied=true;end;
+ if not denied then raise exception 'anon draft grant';end if;
+ denied=false;begin perform count(*) from public.builder_customers;exception when insufficient_privilege then denied=true;end;
+ if not denied then raise exception 'anon CRM grant';end if;
+ execute 'reset role';
+end $$;
+select 'PASS: ownership, publication snapshots, version history, CRM isolation, expired access, anonymous access' as result;
+rollback;
