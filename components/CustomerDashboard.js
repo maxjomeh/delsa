@@ -1,6 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import {Activity} from 'react';
+const InlineSiteBuilder=dynamic(()=>import('./InlineSiteBuilder'));
 import ChatMessage from './ChatMessage';
 import ApuWorkspace from './ApuWorkspace';
 import { useEffect, useMemo, useState } from 'react';
@@ -19,6 +22,7 @@ const ruleLabels = { maximum_change_percent: 'سقف تغییر قیمت', minim
 const nav = [
   ['overview', 'نمای کلی', BarChart3],
   ['account', 'اشتراک و فروشگاه', WalletCards],
+  ['builder', 'سایت‌ساز دلسا', PanelsTopLeft],
   ['sources', 'منابع قیمت', Database],
   ['rules', 'قوانین قیمت‌گذاری', SlidersHorizontal],
   ['reports', 'گزارش اجراها', FileText],
@@ -27,8 +31,8 @@ const nav = [
 
 const planLabels = { demo: 'دمو', month: 'یک‌ماهه', quarter: 'سه‌ماهه', year: 'یک‌ساله' };
 
-export default function CustomerDashboard({ userId, hasApu=false, name, phone, initialSources, initialRules, initialRuns, initialMessages, store, subscriptions, loadError }) {
-  const [tab, setTab] = useState('overview');
+export default function CustomerDashboard({ userId, initialTab='overview', hasApu=false, name, phone, initialSources, initialRules, initialRuns, initialMessages, store, subscriptions, loadError }) {
+  const [tab, setTab] = useState(initialTab==='builder'?'builder':'overview');
   const [apuAccess,setApuAccess]=useState(hasApu);
   useEffect(()=>{let alive=true;async function check(){const {data,error}=await createClient().rpc('has_active_apu');if(alive&&!error)setApuAccess(Boolean(data))}check();const timer=setInterval(check,60000);return()=>{alive=false;clearInterval(timer)}},[]);
   const [sources, setSources] = useState(initialSources);
@@ -116,14 +120,15 @@ export default function CustomerDashboard({ userId, hasApu=false, name, phone, i
       <Link href="/" className="brand"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link>
       <div className="customer-account"><span className="customer-avatar">{name?.trim()?.[0] || 'د'}</span><span><strong>{name}</strong><small dir="ltr">{phone}</small></span></div>
       <span className="customer-nav-title">پنل مشتری</span>
-      <nav><Link href="/dashboard/builder" className="customer-back"><PanelsTopLeft size={19}/>سایت‌ساز دلسا</Link>{dashboardNav.map(([id, label, Icon]) => <button key={id} onClick={() => { setTab(id); setNotice(''); }} className={tab === id ? 'active' : ''}><Icon size={19}/>{label}{id === 'support' && <span className="nav-new">پیام</span>}</button>)}</nav>
+      <nav>{dashboardNav.map(([id, label, Icon]) => <button key={id} onClick={() => { setTab(id); setNotice(''); }} className={tab === id ? 'active' : ''}><Icon size={19}/>{label}{id === 'support' && <span className="nav-new">پیام</span>}</button>)}</nav>
       <div className="customer-sidebar-bottom"><div className="customer-help"><ShieldCheck size={19}/><strong>اطلاعات حساب امن است</strong><p>داده‌ها فقط برای حساب خودت در دسترس هستند.</p></div><form action="/auth/signout" method="post"><button className="customer-logout"><LogOut size={18}/>خروج از حساب</button></form><Link href="/" className="customer-back"><ArrowLeft size={17}/>بازگشت به سایت</Link></div>
     </aside>
     <section className="customer-content">
       <header className="customer-topbar"><div><span>فضای مشتری</span><span className="customer-divider">/</span><strong>{currentNav?.[1]}</strong></div><span className="customer-status"><i/> {activeSubscriptions.length ? 'اشتراک فعال' : 'APU در حال راه‌اندازی'}</span></header>
       <div className="customer-main">
         {notice && <div className="customer-notice" role="status">{notice}<button onClick={() => setNotice('')} aria-label="بستن"><X size={17}/></button></div>}
-        <div className="customer-heading"><div><span className="customer-eyebrow">DELSA · APU</span><h1>{tab === 'overview' ? `سلام ${name?.split(' ')[0] || 'خوش آمدی'}،` : currentNav?.[1]}</h1><p>{tab === 'overview' ? 'منابع، قوانین و وضعیت به‌روزرسانی قیمت‌ها را از یک جا مدیریت کن.' : tab === 'account' ? 'محصولات فعال، زمان اشتراک و اطلاعات فروشگاهت را ببین.' : tab === 'apu' ? 'فاکتور، فایل، عکس و پیام صوتی را برای سیستم APU ارسال کن.' : tab === 'sources' ? 'منابع قیمت و اشتراک‌های ریالی یا دلاری را تعریف کن.' : tab === 'rules' ? 'محدودیت‌ها و منطق اختصاصی قیمت‌گذاری خودت را ثبت کن.' : tab === 'reports' ? 'تاریخچهٔ اجرای واقعی APU و نتیجهٔ هر اجرا در این بخش ثبت می‌شود.' : 'پیامت را برای تیم پشتیبانی بفرست و پاسخ را همین‌جا پیگیری کن.'}</p></div>{(tab === 'sources' || tab === 'rules') && <button className="customer-primary" onClick={() => {if(tab==='sources'){setEditingSource(null);setSource({name:'',url:'',pricing_model:'source_price',currency:'IRR',subscription_amount:''});setSourceForm(!sourceForm)}else{setEditingRule(null);setRule({name:'',rule_type:'maximum_change_percent',value:''});setRuleForm(!ruleForm)}}}><Plus size={18}/>{tab === 'sources' ? 'افزودن منبع' : 'افزودن قانون'}</button>}</div>
+        {tab!=='builder'&&<div className="customer-heading"><div><span className="customer-eyebrow">DELSA · APU</span><h1>{tab === 'overview' ? `سلام ${name?.split(' ')[0] || 'خوش آمدی'}،` : currentNav?.[1]}</h1><p>{tab === 'overview' ? 'منابع، قوانین و وضعیت به‌روزرسانی قیمت‌ها را از یک جا مدیریت کن.' : tab === 'account' ? 'محصولات فعال، زمان اشتراک و اطلاعات فروشگاهت را ببین.' : tab === 'apu' ? 'فاکتور، فایل، عکس و پیام صوتی را برای سیستم APU ارسال کن.' : tab === 'sources' ? 'منابع قیمت و اشتراک‌های ریالی یا دلاری را تعریف کن.' : tab === 'rules' ? 'محدودیت‌ها و منطق اختصاصی قیمت‌گذاری خودت را ثبت کن.' : tab === 'reports' ? 'تاریخچهٔ اجرای واقعی APU و نتیجهٔ هر اجرا در این بخش ثبت می‌شود.' : 'پیامت را برای تیم پشتیبانی بفرست و پاسخ را همین‌جا پیگیری کن.'}</p></div>{(tab === 'sources' || tab === 'rules') && <button className="customer-primary" onClick={() => {if(tab==='sources'){setEditingSource(null);setSource({name:'',url:'',pricing_model:'source_price',currency:'IRR',subscription_amount:''});setSourceForm(!sourceForm)}else{setEditingRule(null);setRule({name:'',rule_type:'maximum_change_percent',value:''});setRuleForm(!ruleForm)}}}><Plus size={18}/>{tab === 'sources' ? 'افزودن منبع' : 'افزودن قانون'}</button>}</div>}
+        <Activity mode={tab==='builder'?'visible':'hidden'}><InlineSiteBuilder userId={userId}/></Activity>
 
         {tab === 'overview' && <>
           <section className="customer-hero"><div className="customer-hero-icon"><RefreshCw size={24}/></div><div><span>Automated Price Updates</span><h2>قیمت‌گذاری، با قواعد خودت</h2><p>منابع، اشتراک دلاری و قانون‌های اختصاصی را آماده کن تا با فعال‌شدن موتور APU، اجرای قیمت‌گذاری بر اساس تنظیمات تو انجام شود.</p></div><span className="customer-coming">در حال آماده‌سازی</span></section>

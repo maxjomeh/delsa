@@ -8,3 +8,18 @@
 @media print{.sidebar,.toolbar,.hubHeader,.fileButton,.actions,.storeActions,.siteHeader nav,.storeNotice,.siteFooter{display:none!important}.shell{display:block}.workspace{padding:0}.website{background:white;color:black}.receipt{border:0;margin:0;max-width:none}.shopStats{display:none}}
 
 .products:has(.storeCatalog){padding:0;max-width:none}
+
+/* Embedded in the customer/admin dashboard; keep the parent sidebar visible. */
+.embedded.hub{max-width:none;padding:0;min-width:0}
+.embedded .heroIntro{padding:24px 0}
+.embedded .heroIntro h1{font-size:clamp(28px,4vw,46px)}
+.embedded.shell{display:block;min-height:0;min-width:0}
+.embedded .sidebar{position:static;height:auto;width:auto;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:18px;overflow:visible}
+.embedded .sidebar nav{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.embedded .sidebar nav button{width:auto}
+.embedded .workspace{padding:0;min-width:0}
+.embedded .toolbar{position:static;flex-wrap:wrap;gap:12px}
+.embedded .editorLayout{grid-template-columns:minmax(0,1fr)}
+.embedded .siteCards{grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+.siteSearch{display:flex;flex-direction:column;gap:6px;flex:1;min-width:min(100%,240px)}
+.siteSearch input{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
