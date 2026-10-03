@@ -2,6 +2,7 @@
 import {useEffect,useState} from 'react';
 import CustomerApuDetails from './CustomerApuDetails';
 import {daysRemainingIran} from '../lib/subscription-days';
+import {SITE_BUILDER_PRODUCT} from '../lib/site-builder';
 
 const plans={demo:'دمو (۷ روز)',month:'۱ ماهه',quarter:'۳ ماهه',year:'۱ ساله'};
 const emptyAccess={platform:'',username:'',password:''};
@@ -12,7 +13,7 @@ export default function CustomerDetails({customer,products,onChanged,onSubscript
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[clock,setClock]=useState(null);
  async function load(){const r=await fetch('/api/admin/customer-details?customerId='+encodeURIComponent(customer.id),{cache:'no-store'}),v=await r.json();if(!r.ok)throw Error(v.error);setData(v);setStore(v.store||{name:'',website:''});onSubscriptionsChanged?.(v.subscriptions||[]);}
  useEffect(()=>{load().catch(e=>setError(e.message));setClock(Date.now());const timer=setInterval(()=>setClock(Date.now()),60000);return()=>clearInterval(timer)},[customer.id]);
- async function action(payload){setBusy(true);setError('');setNotice('');try{const r=await fetch('/api/admin/customer-details',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customerId:customer.id,...payload})}),v=await r.json();if(!r.ok)throw Error(v.error);if(payload.action==='delete-customer'){onChanged?.();return}await load();if(payload.action==='role')onChanged?.()}catch(e){setError(e.message)}finally{setBusy(false)}}
+ async function action(payload){setBusy(true);setError('');setNotice('');try{const r=await fetch('/api/admin/customer-details',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customerId:customer.id,...payload})}),v=await r.json();if(!r.ok)throw Error(v.error);if(payload.action==='delete-customer'){onChanged?.();return}await load();if(payload.action==='subscription')setNotice(payload.productId===SITE_BUILDER_PRODUCT?'اشتراک سایت ساز ثبت شد؛ مشتری می‌تواند مستقیم از تب سایت‌ساز سایت بسازد.':'اشتراک ثبت / تمدید شد.');if(payload.action==='role')onChanged?.()}catch(e){setError(e.message)}finally{setBusy(false)}}
  async function removeSubscription(id){if(!confirm('اشتراک حذف شود؟'))return;setBusy(true);setError('');try{const r=await fetch('/api/admin/customer-details?customerId='+encodeURIComponent(customer.id)+'&id='+encodeURIComponent(id),{method:'DELETE'}),v=await r.json();if(!r.ok)throw Error(v.error);await load()}catch(e){setError(e.message)}finally{setBusy(false)}}
  async function passwordFor(id){const r=await fetch('/api/admin/platform-credentials',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({action:'reveal',id})}),v=await r.json();if(!r.ok)throw Error(v.error);return v.password}
  async function reveal(id){if(secrets[id]){setSecrets(s=>({...s,[id]:null}));return}try{setError('');const password=await passwordFor(id);setSecrets(s=>({...s,[id]:password}))}catch(e){setError(e.message)}}
@@ -23,7 +24,7 @@ export default function CustomerDetails({customer,products,onChanged,onSubscript
  return <div className="customer-detail" onClick={e=>e.stopPropagation()}>
   {error&&<p className="admin-form-error" role="alert">{error}</p>}{notice&&<p className="admin-form-success" role="status">{notice}</p>}
   <label>نقش <select value={customer.role} disabled={busy} onChange={e=>action({action:'role',role:e.target.value})}><option value="user">کاربر</option><option value="admin">مدیر</option></select></label>
-  <h3>اکانت‌های فعال</h3>
+  <h3>اکانت‌های فعال</h3><p className="detail-empty">با ثبت اشتراک «سایت ساز»، دسترسی ساخت و مدیریت سایت در پنل مشتری خودکار فعال می‌شود.</p>
   <div className="detail-inline"><select value={productId} onChange={e=>setProductId(e.target.value)}><option value="">انتخاب محصول فروشگاه</option>{products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select><select value={plan} onChange={e=>setPlan(e.target.value)}>{Object.entries(plans).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select><button disabled={busy||!productId} onClick={()=>action({action:'subscription',productId,plan})}>ثبت / تمدید</button></div>
   {!data?<p>در حال بارگذاری…</p>:<>
    {data.subscriptions.length===0&&<p className="detail-empty">اشتراکی ثبت نشده است.</p>}
