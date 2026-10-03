@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+const source=await readFile(new URL('../../lib/builder-commerce.js',import.meta.url),'utf8');
+const {parseCSV,importProductRows,productRows,blankProduct,blankVariant,effectivePrice,normalizeText}=await import('data:text/javascript;charset=utf-8,'+encodeURIComponent(source));
+assert.deepEqual(parseCSV('\ufeffa,b\r\n"line1\nline2","quote ""ok"""'),[['a','b'],['line1\nline2','quote "ok"']]);
+assert.throws(()=>parseCSV('a\n"unclosed'));
+assert.equal(effectivePrice({price:150,sale_price:0}),0);
+assert.equal(normalizeText('يک ۱۲٣'),'یک 123');
+const product={...blankProduct(),title:'قطعه آزمایشی',slug:'sample-part',images:['https://example.com/part.webp'],variants:[{...blankVariant(),sku:'PART-1',price:100000,sale_price:90000,stock:3}]};
+const rows=productRows([product]);const imported=importProductRows(rows.map(r=>r.map(x=>String(x))));assert.equal(imported[0].variants[0].price,100000);assert.equal(imported[0].images[0],product.images[0]);
+const invalid=structuredClone(rows).map(r=>r.map(String));invalid[1][8]='-1';assert.throws(()=>importProductRows(invalid));
+const duplicate=structuredClone(rows).map(r=>r.map(String));duplicate.push([...duplicate[1]]);assert.throws(()=>importProductRows(duplicate));
+const image=structuredClone(rows).map(r=>r.map(String));image[1][14]='javascript:alert(1)';assert.throws(()=>importProductRows(image));
+console.log('PASS: CSV quoting, multiline import, numeric validation, duplicate SKU, safe image URLs, Persian digits, zero-priced promotion');
