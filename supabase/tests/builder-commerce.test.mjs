@@ -12,3 +12,10 @@ const invalid=structuredClone(rows).map(r=>r.map(String));invalid[1][8]='-1';ass
 const duplicate=structuredClone(rows).map(r=>r.map(String));duplicate.push([...duplicate[1]]);assert.throws(()=>importProductRows(duplicate));
 const image=structuredClone(rows).map(r=>r.map(String));image[1][14]='javascript:alert(1)';assert.throws(()=>importProductRows(image));
 console.log('PASS: CSV quoting, multiline import, numeric validation, duplicate SKU, safe image URLs, Persian digits, zero-priced promotion');
+const {productSlug}=await import('data:text/javascript;charset=utf-8,'+encodeURIComponent(source));
+assert.match(productSlug('کفش ورزشی ۱۲'),/^[a-z0-9][a-z0-9-]+$/);
+const simple=importProductRows([['نام محصول','قیمت','موجودی'],['کفش ورزشی','۲۵۰٬۰۰۰','۳']]);
+assert.equal(simple[0].status,'published');assert.equal(simple[0].autoSlug,true);assert.equal(simple[0].variants[0].sku,'');assert.equal(simple[0].variants[0].price,250000);
+assert.throws(()=>importProductRows([['نام محصول','قیمت'],['کفش','']]),/ردیف 2/);
+assert.deepEqual(parseCSV('نام محصول;قیمت\r\nکفش;100'),[['نام محصول','قیمت'],['کفش','100']]);
+console.log('PASS: simple Persian CSV, automatic slug, published default, row errors, Excel separators');
