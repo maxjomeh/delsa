@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { ImagePlus, Pencil, Plus } from 'lucide-react';
+import { ImagePlus, Pencil, Plus, Archive, RotateCcw } from 'lucide-react';
 
 function priceLabel(value) {
   if (value === null || value === undefined || value === '') return 'قیمت اعلام نشده';
@@ -47,7 +47,10 @@ export default function StoreProductsAdmin({ editingProduct, onCancelEdit, onSav
 }
 
 export function StoreProductsList({ products = [], onEdit }) {
-  return <div className="admin-products-list"><div className="admin-products-list-title"><b>محصول‌های ثبت‌شده</b><span>{products.length.toLocaleString('fa-IR')} محصول</span></div>
-    {products.length ? products.map(product => <article className="admin-product-row" key={product.id}><span className="admin-product-thumb">{product.image_url ? <img src={product.image_url} alt=""/> : <ImagePlus size={18}/>}</span><span className="admin-product-row-copy"><b>{product.name}</b><small>{priceLabel(product.price)}</small></span><span className="admin-product-published"><i/> منتشرشده</span><button className="admin-product-edit" type="button" onClick={() => onEdit?.(product)}><Pencil size={14}/> ویرایش</button></article>) : <p className="empty-users">هنوز محصولی اضافه نشده است.</p>}
+  const [rows,setRows]=useState(products),[busy,setBusy]=useState(null),[error,setError]=useState('');
+  useEffect(()=>setRows(products),[products]);
+  async function toggle(product){if(busy||!window.confirm(product.is_published?'محصول از فروشگاه بایگانی شود؟ اشتراک‌های مشتریان حفظ می‌شوند.':'محصول دوباره منتشر شود؟'))return;setBusy(product.id);setError('');try{const response=await fetch('/api/admin/products',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:product.id,isPublished:!product.is_published})});const data=await response.json();if(!response.ok)throw Error(data.error);setRows(items=>items.map(p=>p.id===product.id?data.product:p))}catch(e){setError(e.message||'تغییر وضعیت انجام نشد.')}finally{setBusy(null)}}
+  return <div className="admin-products-list"><div className="admin-products-list-title"><b>محصول‌های ثبت‌شده</b><span>{rows.length.toLocaleString('fa-IR')} محصول</span></div>
+    {rows.length ? rows.map(product => <article className="admin-product-row" key={product.id}><span className="admin-product-thumb">{product.image_url ? <img src={product.image_url} alt=""/> : <ImagePlus size={18}/>}</span><span className="admin-product-row-copy"><b>{product.name}</b><small>{priceLabel(product.price)}</small></span><span className="admin-product-published">{product.is_published&&<i aria-hidden="true"/>}{product.is_published?'منتشرشده':'بایگانی'}</span><button className="admin-product-edit" type="button" onClick={() => onEdit?.(product)}><Pencil size={14}/> ویرایش</button><button className="admin-product-edit" disabled={Boolean(busy)} onClick={()=>toggle(product)}>{product.is_published?<Archive size={14}/>:<RotateCcw size={14}/>} {product.is_published?'بایگانی':'فعال‌سازی'}</button></article>) : <p className="empty-users">هنوز محصولی اضافه نشده است.</p>}{error&&<p role="alert" className="admin-form-error">{error}</p>}
   </div>;
 }

@@ -26,7 +26,7 @@ export async function UserDashboard({initialTab='overview'}={}) {
     supabase.from('apu_runs').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20),
     supabase.from('support_messages').select('*').eq('user_id', user.id).order('created_at', { ascending: true }).limit(100),
     supabase.from('customer_stores').select('name,website').eq('customer_id', user.id).maybeSingle(),
-    supabase.from('customer_subscriptions').select('id,product_id,plan,starts_at,expires_at,store_products(name)').eq('customer_id', user.id).order('expires_at', { ascending: false }),
+    supabase.from('customer_subscriptions').select('id,product_id,plan,starts_at,expires_at,store_products(name,service_code)').eq('customer_id', user.id).order('expires_at', { ascending: false }),
     supabase.rpc('has_active_apu'),
   ]);
   const loadError = [sources, rules, runs, messages, store, subscriptions].some((result) => result.error);
