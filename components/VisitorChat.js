@@ -6,7 +6,7 @@ import {createClient} from '../lib/supabase/client';
 import ChatMessage from './ChatMessage';
 const TOKEN_KEY='delsa-visitor-chat-token';
 export default function VisitorChat(){
- const pathname=usePathname(),hidden=pathname?.startsWith('/admin'),stream=useRef(null),pinned=useRef(true);
+ const pathname=usePathname(),hidden=pathname?.startsWith('/admin')||pathname?.startsWith('/s/'),stream=useRef(null),pinned=useRef(true);
  const [open,setOpen]=useState(false),[chat,setChat]=useState(null),[body,setBody]=useState(''),[name,setName]=useState(''),[phone,setPhone]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const refresh=useCallback(async()=>{const token=localStorage.getItem(TOKEN_KEY);if(!token)return;const {data,error}=await createClient().rpc('visitor_chat_read',{p_token:token});if(!error)setChat(data);},[]);
  useEffect(()=>{if(hidden)return;refresh();const show=()=>setOpen(true);window.addEventListener('delsa:open-chat',show);const timer=setInterval(()=>{if(document.visibilityState==='visible')refresh()},5000);return()=>{window.removeEventListener('delsa:open-chat',show);clearInterval(timer)}},[refresh,hidden]);

@@ -9,7 +9,7 @@ import { daysRemainingIran } from '../lib/subscription-days';
 import {
   ArrowLeft, BarChart3, Check, CircleHelp, Clock3, Database, ExternalLink,
   FileText, LogOut, MessageCircle, Plus, RefreshCw, Send, ShieldCheck,
-  SlidersHorizontal, Trash2, WalletCards, X,
+  SlidersHorizontal, Trash2, WalletCards, X, PanelsTopLeft,
 } from 'lucide-react';
 
 const number = (value) => new Intl.NumberFormat('fa-IR').format(value ?? 0);
@@ -116,7 +116,7 @@ export default function CustomerDashboard({ userId, hasApu=false, name, phone, i
       <Link href="/" className="brand"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link>
       <div className="customer-account"><span className="customer-avatar">{name?.trim()?.[0] || 'د'}</span><span><strong>{name}</strong><small dir="ltr">{phone}</small></span></div>
       <span className="customer-nav-title">پنل مشتری</span>
-      <nav>{dashboardNav.map(([id, label, Icon]) => <button key={id} onClick={() => { setTab(id); setNotice(''); }} className={tab === id ? 'active' : ''}><Icon size={19}/>{label}{id === 'support' && <span className="nav-new">پیام</span>}</button>)}</nav>
+      <nav><Link href="/builder" className="customer-back"><PanelsTopLeft size={19}/>سایت‌ساز دلسا</Link>{dashboardNav.map(([id, label, Icon]) => <button key={id} onClick={() => { setTab(id); setNotice(''); }} className={tab === id ? 'active' : ''}><Icon size={19}/>{label}{id === 'support' && <span className="nav-new">پیام</span>}</button>)}</nav>
       <div className="customer-sidebar-bottom"><div className="customer-help"><ShieldCheck size={19}/><strong>اطلاعات حساب امن است</strong><p>داده‌ها فقط برای حساب خودت در دسترس هستند.</p></div><form action="/auth/signout" method="post"><button className="customer-logout"><LogOut size={18}/>خروج از حساب</button></form><Link href="/" className="customer-back"><ArrowLeft size={17}/>بازگشت به سایت</Link></div>
     </aside>
     <section className="customer-content">
