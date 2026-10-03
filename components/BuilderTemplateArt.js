@@ -1,5 +1,5 @@
 import styles from './SiteBuilder.module.css';
-const names={studio:'استودیوی خلاق',catalog:'بازار کاتالوگ',consultant:'مشاور حرفه‌ای'};
+const names={studio:'قالب آوان',catalog:'قالب ویترین',consultant:'قالب سپهر'};
 export default function BuilderTemplateArt({template='studio',compact=false}){
  return <div className={`${styles.templateIllustration} ${styles['art_'+template]} ${compact?styles.templateThumb:''}`} aria-hidden="true">
  {compact&&<div className={styles.thumbBar}><b>{names[template]}</b><span>● ● ●</span></div>}
