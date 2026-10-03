@@ -19,5 +19,5 @@ export default function InlineSiteBuilder({userId,isAdmin=false,owners=[]}){
  },[db,ready]);
  if(error)return <div role="alert"><p>{error}</p><button onClick={()=>setAttempt(n=>n+1)}>تلاش دوباره</button></div>;
  if(!result)return <p role="status">در حال بارگذاری سایت‌ها…</p>;
- return <SiteBuilder userId={userId} initialSites={result.sites} access={result.access} embedded isAdmin={isAdmin} owners={owners}/>;
+ return <SiteBuilder userId={userId} initialSites={result.sites} access={result.access} embedded isAdmin={isAdmin} owners={owners} onFreeStarted={()=>setResult(previous=>({...previous,access:true}))}/>;
 }
