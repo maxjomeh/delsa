@@ -63,7 +63,9 @@ export async function PATCH(request) {
   if(access instanceof NextResponse)return access;
   let body;
   try{body=await request.json()}catch{return NextResponse.json({error:'درخواست معتبر نیست.'},{status:400})}
-  const result=fields(body);
+  const statusOnly=Object.hasOwn(body||{},'isPublished');
+  if(statusOnly&&typeof body.isPublished!=='boolean')return NextResponse.json({error:'وضعیت معتبر نیست.'},{status:400});
+  const result=statusOnly?{value:{is_published:body.isPublished}}:fields(body);
   if(result.error)return NextResponse.json({error:result.error},{status:400});
   const id=String(body.id||'');
   if(!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(id))return NextResponse.json({error:'شناسهٔ محصول معتبر نیست.'},{status:400});
