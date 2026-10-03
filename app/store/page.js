@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft, ArrowUpLeft, ShoppingBag } from 'lucide-react';
+import { SITE_BUILDER_PRODUCT } from '../../lib/site-builder';
 import { createClient } from '../../lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -26,7 +27,7 @@ export default async function StorePage() {
       {visibleProducts.length ? <section className="store-product-grid" aria-label="محصول‌ها">{visibleProducts.map(product => <article className="store-product-card" key={product.id}>
         <div className="store-product-image">{product.image_url ? <img src={product.image_url} alt={product.name} loading="lazy"/> : <span><ShoppingBag size={30}/></span>}</div>
         <div className="store-product-copy"><span className="store-product-label">DELSA</span><h2>{product.name}</h2><p>{product.description || 'برای دریافت اطلاعات بیشتر دربارهٔ این محصول با ما در ارتباط باشید.'}</p></div>
-        <div className="store-product-bottom"><strong>{priceLabel(product.price)}</strong><Link href="/login">اطلاعات بیشتر <ArrowLeft size={16}/></Link></div>
+        <div className="store-product-bottom"><strong>{priceLabel(product.price)}</strong><Link href={product.id===SITE_BUILDER_PRODUCT?'/builder':'/login'}>اطلاعات بیشتر <ArrowLeft size={16}/></Link></div>
       </article>)}</section> : <section className="store-empty"><span><ShoppingBag size={25}/></span><h2>{error ? 'فروشگاه در حال آماده‌سازی است' : 'محصولی برای نمایش ثبت نشده است'}</h2><p>با اضافه‌شدن محصول از پنل مدیریت، همین‌جا نمایش داده می‌شود.</p><Link className="button primary" href="/">بازگشت به صفحهٔ اصلی <ArrowUpLeft size={17}/></Link></section>}
     </main>
     <footer className="wrap footer store-footer"><Link href="/" className="brand"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link><span>Digital Engagement Layer System Automation</span><Link href="/admin/login">ورود مدیر</Link></footer>
