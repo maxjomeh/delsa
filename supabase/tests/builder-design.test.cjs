@@ -16,3 +16,6 @@ const injected={...site.newBlock('links'),items:['ناامن | javascript:alert(
 const faq=render(React.createElement(extra.default,{block:site.newBlock('faq')}));assert(faq.includes('<details>')&&faq.includes('<summary>'));
 const progress=render(React.createElement(extra.default,{block:{...site.newBlock('progress'),items:['فارسی | ۸۰','بیش از سقف | 999','منفی | -2']}}));assert(progress.includes('value="80"'));assert(progress.includes('value="100"'));assert(progress.includes('value="0"'));
 console.log('PASS: legacy compatibility, saved/mobile design round trip, safe CSS bounds, new elements and immutable reorder');
+
+for(const t of site.templates){const d=site.normalizeDocument(site.starter(t.id,"آزمون فروشگاه"));assert.equal(d.template,t.id);assert(d.pages[0].blocks.some(b=>b.type==="products"));assert(render(React.createElement(view,{name:"آزمون فروشگاه",document:d})).includes("آزمون فروشگاه"));}
+assert.equal(site.templates.length,9);
