@@ -13,7 +13,7 @@ assert(overview([sub('site_builder')]).includes('ورود به سایت‌ساز
 assert(overview([sub('apu')]).includes('منابع فعال APU'));
 assert(!overview([sub('apu')]).includes('ورود به سایت‌ساز'));
 assert(overview([]).includes('هنوز اشتراک فعالی نداری'));
-const Dashboard=load('components/CustomerDashboard.js',{'react':fakeReact,'next/link':({children,...p})=>React.createElement('a',p,children),'next/dynamic':()=>()=>null,'./ChatMessage':()=>null,'./ApuWorkspace':()=>null,'./CustomerServiceOverview':Overview,'../lib/supabase/client':{createClient:()=>({})},'../lib/subscription-days':{daysRemainingIran:()=>1},'lucide-react':icons}).default;
+const Dashboard=load('components/CustomerDashboard.js',{'../lib/site-builder':{FREE_BUILDER_ENABLED:true},'react':fakeReact,'next/link':({children,...p})=>React.createElement('a',p,children),'next/dynamic':()=>()=>null,'./ChatMessage':()=>null,'./ApuWorkspace':()=>null,'./CustomerServiceOverview':Overview,'../lib/supabase/client':{createClient:()=>({})},'../lib/subscription-days':{daysRemainingIran:()=>1},'lucide-react':icons}).default;
 const dash=subs=>renderToStaticMarkup(React.createElement(Dashboard,{userId:'test',name:'مشتری',hasApu:subs.some(s=>s.product_id==='apu'),subscriptions:subs,initialSources:[],initialRules:[],initialRuns:[],initialMessages:[]}));
 assert(!dash([sub('site_builder')]).includes('سیستم APU'));
 assert(dash([sub('apu')]).includes('سیستم APU'));
@@ -39,3 +39,10 @@ const Page=load(path,mocks).default;
 if(expected)await assert.rejects(Page(),{message:'REDIRECT:'+expected});else assert(await Page());
 }
 (async()=>{for(const p of ['app/login/page.js','app/admin/login/page.js']){await testLogin(p,{id:'u'},'admin','/admin');await testLogin(p,{id:'u'},'user','/dashboard');await testLogin(p,null,null,null)}console.log('PASS: service-specific overview/menu and customer/admin session return routing');})();
+
+assert(dash([sub("crm")]).includes("سیما · CRM"));
+assert(!dash([]).includes("سیما · CRM"));
+assert(!dash([{...sub("crm"),expires_at:"2020-01-01"}]).includes("سیما · CRM"));
+assert(!dash([{...sub("crm"),starts_at:"2098-01-01"}]).includes("سیما · CRM"));
+assert(overview([sub("crm")]).includes("ورود به سیما"));
+console.log("PASS: CRM navigation follows active subscriptions; unassigned, expired and future access hidden");
