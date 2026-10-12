@@ -1,0 +1,15 @@
+const ts=require('typescript'),fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path'),crypto=require('node:crypto');
+const m={exports:{}};const env={PLATFORM_CREDENTIALS_ENCRYPTION_KEY:Buffer.alloc(32,1).toString('base64')};
+vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.resolve(__dirname,'../../lib/crm/instagram.js'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{module:m,exports:m.exports,require:n=>n==='@supabase/supabase-js'?{}:require(n),Buffer,URL,URLSearchParams,process:{env},AbortSignal,Date});
+const {seal,unseal,verifyInstagramSignature,instagramEvents,instagramConfiguration}=m.exports;
+assert.equal(instagramConfiguration('https://www.delsaai.ir').ready,false);
+assert.equal(unseal(seal('sima-test-state')),'sima-test-state');
+const encrypted=seal('sima-test-state').split('.');encrypted[2]=Buffer.from('tampered').toString('base64url');assert.throws(()=>unseal(encrypted.join('.')));
+const raw=Buffer.from('{"test":1}'),secret='test-only-secret',signature='sha256='+crypto.createHmac('sha256',secret).update(raw).digest('hex');
+assert(verifyInstagramSignature(raw,signature,secret));assert(!verifyInstagramSignature(Buffer.from('changed'),signature,secret));assert(!verifyInstagramSignature(raw,'sha256=invalid',secret));assert(!verifyInstagramSignature(raw,signature,''));
+const event={sender:{id:'123'},recipient:{id:'456'},timestamp:Date.now(),message:{mid:'event-id',text:'روز و ماه تولد: ۰۳/۱۵'}};
+assert.equal(instagramEvents({object:'instagram',entry:[{id:'456',messaging:[event]}]}).length,1);
+assert.equal(instagramEvents({object:'instagram',entry:[{id:'456',messaging:[{...event,message:{...event.message,is_echo:true}}]}]}).length,0);
+assert.equal(instagramEvents({object:'instagram',entry:[{id:'999',messaging:[event]}]}).length,0);
+assert.equal(instagramEvents({object:'instagram',entry:[{id:'456',messaging:[{...event,timestamp:Date.now()+3600000}]}]}).length,0);
+console.log('PASS: encrypted state, tamper rejection, signed webhook verification, echo suppression and account validation');
