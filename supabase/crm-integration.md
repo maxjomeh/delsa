@@ -1,6 +1,6 @@
 # Sima V1 integration contract
 
-Production installation of crm-workspace.sql is pending explicit approval. The production UI remains on the access placeholder until installation and tests succeed.
+Production installation of crm-workspace.sql was explicitly approved and completed on 2026-10-12. Transactional integration tests passed; fixtures rolled back.
 
 `crm_ingest_message(p_customer jsonb, p_event jsonb)` accepts an authenticated customer's context. It derives tenant_id from auth.uid(), requires an active CRM subscription, and never accepts a tenant override. Anonymous callers cannot execute it. The eventual server connector must obtain a securely scoped customer context; do not give n8n the site's service-role key or customer passwords.
 

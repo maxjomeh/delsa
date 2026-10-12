@@ -1,4 +1,4 @@
--- PENDING explicit production approval. Not installed.
+-- Approved and installed 2026-10-12; rollback integration tests passed.
 begin;
 create function public.has_active_crm() returns boolean language sql stable security invoker set search_path='' as $$ select auth.uid() is not null and exists(select 1 from public.customer_subscriptions s join public.store_products p on p.id=s.product_id where s.customer_id=auth.uid() and p.service_code='crm' and s.starts_at<=now() and s.expires_at>now()); $$;
 revoke all on function public.has_active_crm() from public,anon;
@@ -54,25 +54,25 @@ create function private.crm_after_write() returns trigger language plpgsql secur
 revoke all on function private.crm_after_write() from public,anon,authenticated;
 do $$ declare t text;begin foreach t in array array['crm_settings','crm_customers','crm_interactions','crm_leads','crm_orders','crm_tasks'] loop execute format('create trigger crm_record_write after insert or update on public.%I for each row execute function private.crm_after_write()',t);end loop;end $$;
 -- Authenticated intake contract for the future channel bridge. Never trusts a supplied tenant ID.
-create function public.crm_ingest_message(p_customer jsonb,p_event jsonb) returns jsonb language plpgsql security invoker set search_path='' as $$
-declare tenant uuid=auth.uid();cid uuid;phoneid uuid;socialid uuid;msg uuid;eventid text;channel text;phone text;social text;customername text;begin
+create or replace function public.crm_ingest_message(p_customer jsonb,p_event jsonb) returns jsonb language plpgsql security invoker set search_path='' as $$
+declare tenant uuid=auth.uid();cid uuid;phoneid uuid;socialid uuid;msg uuid;eventid text;event_channel text;customer_phone text;social text;customername text;begin
  if tenant is null or not public.has_active_crm() then raise exception 'crm_access_denied';end if;
  if jsonb_typeof(p_customer)<>'object' or jsonb_typeof(p_event)<>'object' or octet_length(p_customer::text)>10000 or octet_length(p_event::text)>20000 then raise exception 'crm_invalid_event';end if;
- eventid=nullif(trim(p_event->>'event_id'),'');channel=trim(p_event->>'channel');
- if eventid is null or length(eventid)>240 or channel is null or channel not in ('instagram','whatsapp','telegram','bale','eitaa','rubika','soroush','website','phone') then raise exception 'crm_invalid_event';end if;
- perform pg_advisory_xact_lock(hashtextextended(tenant::text||channel||eventid,0));
- select id,customer_id into msg,cid from public.crm_interactions where tenant_id=tenant and crm_interactions.channel=crm_ingest_message.channel and external_event_id=eventid;
+ eventid=nullif(trim(p_event->>'event_id'),'');event_channel=trim(p_event->>'channel');
+ if eventid is null or length(eventid)>240 or event_channel is null or event_channel not in ('instagram','whatsapp','telegram','bale','eitaa','rubika','soroush','website','phone') then raise exception 'crm_invalid_event';end if;
+ perform pg_advisory_xact_lock(hashtextextended(tenant::text||event_channel||eventid,0));
+ select id,customer_id into msg,cid from public.crm_interactions where tenant_id=tenant and crm_interactions.channel=event_channel and external_event_id=eventid;
  if found then return jsonb_build_object('customer_id',cid,'interaction_id',msg,'duplicate',true);end if;
- phone=regexp_replace(translate(coalesce(p_customer->>'phone',''),'۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩','01234567890123456789'),'[[:space:]()+-]','','g');
- if phone~'^(0098|98)9[0-9]{9}$' then phone='0'||right(phone,10);end if;
+ customer_phone=regexp_replace(translate(coalesce(p_customer->>'phone',''),'۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩','01234567890123456789'),'[[:space:]()+-]','','g');
+ if customer_phone~'^(0098|98)9[0-9]{9}$' then customer_phone='0'||right(customer_phone,10);end if;
  social=lower(trim(both '@' from trim(coalesce(p_customer->>'instagram',''))));
- if phone='' and social='' then raise exception 'crm_identity_required';end if;
- if phone<>'' then select id into phoneid from public.crm_customers where tenant_id=tenant and crm_customers.phone=crm_ingest_message.phone;end if;
+ if customer_phone='' and social='' then raise exception 'crm_identity_required';end if;
+ if customer_phone<>'' then select id into phoneid from public.crm_customers where tenant_id=tenant and crm_customers.phone=customer_phone;end if;
  if social<>'' then select id into socialid from public.crm_customers where tenant_id=tenant and lower(instagram)=social;end if;
  if phoneid is not null and socialid is not null and phoneid<>socialid then raise exception 'crm_identity_conflict';end if;
  cid=coalesce(phoneid,socialid);customername=coalesce(nullif(trim(p_customer->>'name'),''),'مشتری جدید');
- if cid is null then insert into public.crm_customers(tenant_id,name,phone,instagram) values(tenant,customername,phone,social) returning id into cid;end if;
- insert into public.crm_interactions(tenant_id,customer_id,channel,direction,kind,body,external_event_id,occurred_at) values(tenant,cid,channel,'inbound','message',p_event->>'body',eventid,coalesce((p_event->>'occurred_at')::timestamptz,now())) returning id into msg;
+ if cid is null then insert into public.crm_customers(tenant_id,name,phone,instagram) values(tenant,customername,customer_phone,social) returning id into cid;end if;
+ insert into public.crm_interactions(tenant_id,customer_id,channel,direction,kind,body,external_event_id,occurred_at) values(tenant,cid,event_channel,'inbound','message',p_event->>'body',eventid,coalesce((p_event->>'occurred_at')::timestamptz,now())) returning id into msg;
  return jsonb_build_object('customer_id',cid,'interaction_id',msg,'duplicate',false);
 end $$;
 revoke all on function public.crm_ingest_message(jsonb,jsonb) from public,anon;
