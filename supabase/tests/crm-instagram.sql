@@ -1,0 +1,26 @@
+begin;
+do $$ declare ownerid uuid;otherid uuid;conn uuid;account text;first jsonb;again jsonb;denied boolean;begin
+ select s.customer_id into ownerid from public.customer_subscriptions s join public.store_products p on p.id=s.product_id where p.service_code='crm' and s.starts_at<=now() and s.expires_at>now() limit 1;
+ select id into otherid from public.profiles where id<>ownerid and role<>'admin' limit 1;
+ if ownerid is null or otherid is null then raise exception 'test accounts needed';end if;
+ account='999'||floor(random()*100000000000000)::bigint::text;
+ execute 'set local role service_role';
+ conn=public.crm_connect_instagram(ownerid,account,'sima_test','not-a-real-token-ciphertext',now()+interval '1 hour');
+ first=public.crm_receive_instagram(account,'123456789','test-event','پیام آزمون',now());
+ again=public.crm_receive_instagram(account,'123456789','test-event','پیام آزمون',now());
+ if not (again->>'duplicate')::boolean or first->>'interaction_id'<>again->>'interaction_id' then raise exception 'webhook idempotency';end if;
+ if not exists(select 1 from public.crm_customers where id=(first->>'customer_id')::uuid and tenant_id=ownerid) then raise exception 'webhook tenant routing';end if;
+ if (public.crm_receive_instagram('000000000','123456789','unknown-event','نباید ثبت شود',now())->>'ignored')<>'true' then raise exception 'unknown account';end if;
+ execute 'reset role';perform set_config('request.jwt.claim.sub',ownerid::text,true);execute 'set local role authenticated';
+ if not exists(select 1 from public.crm_channel_connections where id=conn) then raise exception 'owner connection read';end if;
+ denied=false;begin perform public.crm_receive_instagram(account,'123456789','untrusted','غیرمجاز',now());exception when insufficient_privilege then denied=true;end;if not denied then raise exception 'customer cannot invoke bridge';end if;
+ denied=false;begin perform 1 from private.crm_channel_tokens;exception when insufficient_privilege then denied=true;end;if not denied then raise exception 'tokens exposed';end if;
+ perform set_config('request.jwt.claim.sub',otherid::text,true);
+ if exists(select 1 from public.crm_channel_connections where id=conn) or exists(select 1 from public.crm_channel_identities where connection_id=conn) then raise exception 'cross tenant identity read';end if;
+ execute 'reset role';execute 'set local role service_role';
+ perform public.crm_disconnect_instagram(ownerid,conn);
+ if (public.crm_receive_instagram(account,'123456789','after-disconnect','نباید ثبت شود',now())->>'ignored')<>'true' then raise exception 'disconnect enforcement';end if;
+ execute 'reset role';
+end $$;
+select 'PASS: verified server intake, account-scoped identity, duplicate protection, token isolation and disconnect' result;
+rollback;
