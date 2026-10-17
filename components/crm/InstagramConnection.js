@@ -1,0 +1,15 @@
+'use client';
+import {useEffect,useState} from 'react';
+import styles from './SimaWorkspace.module.css';
+export default function InstagramConnection(){
+ const [data,setData]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ async function load(){try{const r=await fetch('/api/crm/instagram',{cache:'no-store'}),value=await r.json();if(!r.ok)throw new Error(value.error);setData(value);}catch(e){setError(e.message||'وضعیت اتصال دریافت نشد.');}}
+ useEffect(()=>{load();},[]);
+ async function action(action,id){setBusy(true);setError('');try{const r=await fetch('/api/crm/instagram',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,id})}),value=await r.json();if(!r.ok)throw new Error(value.error);if(value.url){const url=new URL(value.url);if(url.protocol!=='https:'||url.hostname!=='www.instagram.com')throw new Error('نشانی اتصال معتبر نیست.');window.location.assign(value.url);}else await load();}catch(e){setError(e.message||'اتصال انجام نشد.');}finally{setBusy(false);}}
+ const result=typeof window!=='undefined'?new URLSearchParams(window.location.search).get('sima_connection'):null;
+ const resultNames={connected:'پیج متصل شد؛ دریافت پیام‌های جدید آماده است.',cancelled:'اتصال توسط شما لغو شد.',failed:'اتصال کامل نشد؛ تنظیمات برنامه و دسترسی پیج را بررسی کنید.',invalid_state:'زمان درخواست اتصال پایان یافته؛ دوباره شروع کنید.',login_required:'برای تکمیل اتصال، وارد حساب خود شوید.',subscription_required:'اشتراک فعال سیما لازم است.',unconfigured:'تنظیمات اتصال هنوز آماده نیست.'};
+ return <div className={styles.panel}><h3>اتصال رسمی اینستاگرام</h3><p>با اجازهٔ صاحب پیج حرفه‌ای، پیام‌های متنی جدید به پروندهٔ مخاطب متصل می‌شوند. رمز پیج در سیما دریافت نمی‌شود.</p>{resultNames[result]&&<p role="status">{resultNames[result]}</p>}{error&&<p role="alert" className={styles.error}>{error}</p>}
+ {!data&&!error&&<p role="status">بررسی وضعیت اتصال…</p>}
+ {data&&<><div className={styles.connection}><strong>{data.configured?'آمادهٔ اتصال پیج':'نیازمند تنظیم اتصال توسط دلسا'}</strong><span>{data.configured?'با دکمهٔ زیر دسترسی پیج خود را تأیید کنید.':'تنظیمات برنامهٔ اینستاگرام هنوز ثبت نشده؛ دریافت دایرکت فعال نیست.'}</span></div><button disabled={busy||!data.configured} onClick={()=>action('connect')}>اتصال پیج اینستاگرام</button><div className={styles.records}>{data.connections.map(c=>{const expired=new Date(c.expires_at)<=new Date();return <article key={c.id}><div><strong dir="ltr">@{c.username||'Instagram'}</strong><small>{c.status==='disconnected'?'قطع شده':expired?'نیازمند اتصال دوباره':'متصل'}</small>{c.last_received_at&&<small>آخرین دریافت: {new Date(c.last_received_at).toLocaleString('fa-IR',{timeZone:'Asia/Tehran'})}</small>}<small>اعتبار دسترسی تا {new Date(c.expires_at).toLocaleDateString('fa-IR',{timeZone:'Asia/Tehran'})}</small></div>{c.status!=='disconnected'&&<button disabled={busy} onClick={()=>action('disconnect',c.id)}>قطع اتصال</button>}</article>;})}</div><p>پاسخ‌گویی و پرسیدن سؤال به‌صورت خودکار، خواندن عکس و صدا و وارد کردن تاریخچهٔ قدیمی هنوز فعال نیستند. ثبت اطلاعات از پیام‌های صریح در بخش «اطلاعات جدید» انجام می‌شود.</p></>}
+ </div>;
+}

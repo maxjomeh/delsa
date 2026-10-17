@@ -1,0 +1,16 @@
+const ts=require('typescript'),fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
+const moduleObject={exports:{}};
+vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.resolve(__dirname,'../../components/crm/information.js'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{module:moduleObject,exports:moduleObject.exports});
+const {nextInformation,normalizedBirthday,present}=moduleObject.exports;
+const now=Date.UTC(2026,9,12),c={id:'c',status:'active',custom_fields:{}},base={enabled:true,ask_enabled:true,question:'پرسش',condition:'always'};
+const fields=[{...base,id:'a',key:'birthday',label:'تولد',priority:30,condition:'after_purchase'},{...base,id:'b',key:'need',label:'نیاز',priority:90}];
+assert.equal(nextInformation(c,fields,[],{},now).id,'b');
+assert.equal(nextInformation({...c,custom_fields:{need:'قطعه'}},fields,[],{},now),null);
+assert.equal(nextInformation({...c,custom_fields:{need:'قطعه'}},fields,[],{hasPurchase:true},now).id,'a');
+assert.equal(nextInformation(c,fields,[{customer_id:'c',field_id:'b',status:'declined'}],{},now),null);
+assert.equal(nextInformation(c,fields,[{customer_id:'c',field_id:'a',last_asked_at:new Date(now-1000).toISOString()}],{},now),null);
+assert.equal(nextInformation({...c,do_not_contact:true},fields,[],{hasPurchase:true},now),null);
+assert.equal(nextInformation(c,fields,[],{urgent:true},now),null);
+assert.equal(nextInformation(c,fields,[{customer_id:'c',field_id:'b',next_ask_at:new Date(now+1000).toISOString()}],{},now),null);
+assert.equal(normalizedBirthday('۰۳/۱۵'),'03/15');assert.equal(normalizedBirthday('12/31'),null);assert.equal(normalizedBirthday('13/01'),null);assert(present(0));assert(!present([]));
+console.log('PASS: one contextual question, priority, optional data, cooldown, no repetition and Persian birthday normalization');

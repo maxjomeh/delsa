@@ -1,0 +1,23 @@
+begin;
+do $$ declare a uuid;b uuid;sid uuid;pid uuid;second uuid;n text;denied boolean;sl text='editor-test-'||substr(gen_random_uuid()::text,1,8);begin
+ select id into a from public.profiles where role<>'admin' order by created_at limit 1;
+ select id into b from public.profiles where role<>'admin' and id<>a order by created_at limit 1;
+ insert into public.customer_subscriptions(customer_id,product_id,plan,starts_at,expires_at) values(a,'38ba2004-0021-4717-b06f-dc21493b83b5','demo',now()-interval '1 minute',now()+interval '1 day');
+ perform set_config('request.jwt.claim.sub',a::text,true);execute 'set local role authenticated';
+ insert into public.builder_sites(owner_id,name,slug,draft) values(a,'آزمون فرم',sl,'{"pages":[{"id":"home","slug":"","title":"خانه","blocks":[]}]}') returning id into sid;
+ n=public.generate_builder_sku(sid);if n<>'100001' then raise exception 'unexpected starting sku';end if;
+ pid=public.save_builder_product(sid,null,'{"title":"محصول نمونه","slug":"test-product","auto_slug":true,"kind":"simple","status":"published","category":"آزمون","brand":"برند نمونه"}','[{"label":"پیش‌فرض","sku":"","price":100,"stock":5,"manage_stock":true}]');
+ if (select sku from public.builder_variants where product_id=pid)<>'100002' then raise exception 'automatic sku failed';end if;
+ second=public.save_builder_product(sid,null,'{"title":"محصول نمونه","slug":"test-product","auto_slug":true,"kind":"simple","status":"published"}','[{"label":"پیش‌فرض","sku":"","price":100,"stock":5,"manage_stock":true}]');
+ if (select slug from public.builder_products where id=second)<>'test-product-2' then raise exception 'slug uniqueness failed';end if;
+ if not exists(select 1 from public.builder_catalog_terms where site_id=sid and name='آزمون' and active) then raise exception 'term persistence failed';end if;
+ perform public.remove_builder_catalog_term(sid,'category','آزمون');
+ if (select category from public.builder_products where id=pid)<>'' or exists(select 1 from public.builder_catalog_terms where site_id=sid and kind='category' and name='آزمون' and active) then raise exception 'remove category failed';end if;
+ perform set_config('request.jwt.claim.sub',b::text,true);
+ denied=false;begin perform public.generate_builder_sku(sid);exception when others then denied=true;end;if not denied then raise exception 'cross store sku';end if;
+ if exists(select 1 from public.builder_catalog_terms where site_id=sid) then raise exception 'cross store terms';end if;
+ execute 'reset role';perform set_config('request.jwt.claim.sub','',true);execute 'set local role anon';
+ denied=false;begin perform public.generate_builder_sku(sid);exception when insufficient_privilege then denied=true;end;if not denied then raise exception 'anonymous sku';end if;
+ execute 'reset role';raise notice 'PASS: SKU sequence, auto slug collision, persistent terms, removal and isolation';
+end $$;
+rollback;

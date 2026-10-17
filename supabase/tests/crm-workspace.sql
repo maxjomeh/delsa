@@ -1,0 +1,32 @@
+-- Run after installing crm-workspace.sql; every fixture is rolled back.
+begin;
+do $$ declare ownerid uuid;otherid uuid;c uuid;i uuid;n integer;denied boolean;ing jsonb;again jsonb;begin
+ select s.customer_id into ownerid from public.customer_subscriptions s join public.store_products p on p.id=s.product_id where p.service_code='crm' and s.starts_at<=now() and s.expires_at>now() limit 1;
+ select id into otherid from public.profiles where id<>ownerid and role<>'admin' limit 1;
+ if ownerid is null or otherid is null then raise exception 'test accounts needed';end if;
+ perform set_config('request.jwt.claim.sub',ownerid::text,true);execute 'set local role authenticated';
+ if not public.has_active_crm() then raise exception 'subscription denied';end if;
+ insert into public.crm_settings(tenant_id,followup_hours) values(ownerid,24) on conflict(tenant_id) do update set followup_hours=24,automation_enabled=true;
+ insert into public.crm_customers(tenant_id,name) values(ownerid,'پرونده آزمون') returning id into c;
+ insert into public.crm_interactions(tenant_id,customer_id,direction,kind,body,external_event_id) values(ownerid,c,'outbound','offer','پیشنهاد آزمون','test-offer-'||c) returning id into i;
+ select count(*) into n from public.crm_tasks where source_interaction_id=i and status='scheduled';if n<>1 then raise exception 'offer scheduling';end if;
+ denied=false;begin insert into public.crm_interactions(tenant_id,customer_id,direction,kind,body,external_event_id) values(ownerid,c,'outbound','offer','تکراری','test-offer-'||c);exception when unique_violation then denied=true;end;if not denied then raise exception 'duplicate event';end if;
+ insert into public.crm_interactions(tenant_id,customer_id,direction,body) values(ownerid,c,'inbound','پاسخ مشتری');
+ if exists(select 1 from public.crm_tasks where source_interaction_id=i and status='scheduled') then raise exception 'reply cancellation';end if;
+ insert into public.crm_interactions(tenant_id,customer_id,direction,kind,body) values(ownerid,c,'outbound','offer','پیشنهاد تازه');
+ insert into public.crm_orders(tenant_id,customer_id,reference,amount,status) values(ownerid,c,'test-'||c,1000,'paid');
+ if exists(select 1 from public.crm_tasks where customer_id=c and status='scheduled') then raise exception 'purchase cancellation';end if;
+ update public.crm_customers set do_not_contact=true where id=c;
+ insert into public.crm_interactions(tenant_id,customer_id,direction,kind,body) values(ownerid,c,'outbound','offer','بدون پیگیری');
+ if exists(select 1 from public.crm_tasks where customer_id=c and status='scheduled') then raise exception 'contact optout';end if;
+ if not exists(select 1 from public.crm_events where entity_id=c) then raise exception 'audit missing';end if;
+ ing=public.crm_ingest_message(jsonb_build_object('instagram','test-'||c),jsonb_build_object('channel','instagram','event_id','event-'||c,'body','نیاز به محصول'));
+ again=public.crm_ingest_message(jsonb_build_object('instagram','test-'||c),jsonb_build_object('channel','instagram','event_id','event-'||c,'body','نیاز به محصول'));
+ if not (again->>'duplicate')::boolean or (ing->>'interaction_id')<>(again->>'interaction_id') then raise exception 'intake idempotency';end if;
+ denied=false;begin insert into public.crm_customers(tenant_id,name) values(otherid,'غیرمجاز');exception when insufficient_privilege then denied=true;end;if not denied then raise exception 'cross tenant write';end if;
+ perform set_config('request.jwt.claim.sub',otherid::text,true);
+ if exists(select 1 from public.crm_customers where id=c) then raise exception 'cross tenant read';end if;
+ execute 'reset role';
+end $$;
+select 'PASS: active entitlement, tenant isolation, offer scheduling, duplicate detection, cancellation on reply/purchase/optout and audit' as result;
+rollback;
