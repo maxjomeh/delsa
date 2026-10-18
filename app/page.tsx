@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import {Button} from '../components/ui/button';
 import {HomepageEffects,HeroHeadline} from '../components/HomepageEffects';
 const HeroOrbit3D=dynamic(()=>import('../components/HeroOrbit3D'));
-import PremiumShowcase from '../components/PremiumShowcase';
 import s from './home-ecosystem.module.css';
 
 const products=[
@@ -21,7 +20,7 @@ const steps=[
 ];
 export const metadata={title:'دلسا | اکوسیستم هوشمند کسب‌وکار',description:'محصولات دلسا: APU، دورپین، سیما و سایت‌ساز؛ راهکارهای هوشمند برای قیمت‌گذاری، تأمین کالا، ارتباط با مشتری و ساخت فروشگاه.'};
 export default function Home(){return <div className="delsa-home"><HomepageEffects/>
-<header className="site-header floating-header wrap"><Link href="/" className="brand" aria-label="خانه دلسا"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link><nav aria-label="منوی اصلی"><a href="#products">محصولات</a><a href="#ecosystem">اکوسیستم دلسا</a><a href="#how">نحوه کار</a><Link href="/store">فروشگاه</Link><Link href="/pricing">تعرفه‌ها</Link></nav><Link className="mobile-store-link" href="/store">محصولات</Link><Link className="button small" href="/login">ورود به پنل <ArrowUpLeft size={17}/></Link></header>
+<header className="site-header floating-header wrap"><Link href="/" className="brand" aria-label="خانه دلسا"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link><nav aria-label="منوی اصلی"><a href="#products">محصولات</a><a href="#how">نحوه کار</a><Link href="/store">فروشگاه</Link><Link href="/pricing">تعرفه‌ها</Link></nav><Link className="mobile-store-link" href="/store">محصولات</Link><Link className="button small" href="/login">ورود به پنل <ArrowUpLeft size={17}/></Link></header>
 <main>
 <section className={s.hero}>
  <div className={s.heroGlow} aria-hidden="true"/>
@@ -47,7 +46,7 @@ export default function Home(){return <div className="delsa-home"><HomepageEffec
  <p className={s.availabilityNote}>قابلیت‌ها و زمان فعال‌سازی هر سرویس به وضعیت ارائه و اشتراک آن بستگی دارد. برای مشاهده محصولات منتشرشده و تعرفه‌ها به فروشگاه مراجعه کنید.</p>
  </div>
 </section>
-<div id="ecosystem"><PremiumShowcase title="چهار راهکار، یک اکوسیستم یکپارچه." description="دلسا ابزارهای جداگانه را در یک تجربه منسجم کنار هم قرار می‌دهد؛ هر سیستم در جای خودش، با یک پنل مشترک برای کسب‌وکار شما." /></div>
+
 <section id="how" className={s.how}><div className={s.container}><div className={s.sectionHeader}><div><span className={s.eyebrow}>HOW IT WORKS</span><h2>ساده شروع کن، هوشمند رشد کن.</h2></div><p>از انتخاب اولین محصول تا مدیریت چند سرویس، همه‌چیز حول نیاز کسب‌وکار تو طراحی می‌شود.</p></div><div className={s.steps}>{steps.map(x=><article key={x.number}><span>{x.number}</span><h3>{x.title}</h3><p>{x.body}</p></article>)}</div></div></section>
 <section className={s.useCases}><div className={s.container}><div className={s.useCaseHead}><span className={s.eyebrow}>ONE PLATFORM, MULTIPLE WORKFLOWS</span><h2>محصولات دلسا کنار هم چه می‌کنند؟</h2><p>هر ابزار کار خودش را انجام می‌دهد؛ ترکیب آن‌ها امکان ساخت فرایندهای یکپارچه‌تر را فراهم می‌کند.</p></div><div className={s.useCaseGrid}><article><span><Workflow size={24}/></span><h3>از منبع کالا تا قیمت فروش</h3><p>دورپین اطلاعات منابع تأمین را مدیریت می‌کند و APU می‌تواند قوانین قیمت‌گذاری فروشگاه را اعمال کند.</p></article><article><span><MessagesSquare size={24}/></span><h3>از بازدیدکننده تا مشتری</h3><p>سایت‌ساز بستر فروش را فراهم می‌کند و سیما به مدیریت مکالمات و پیگیری مشتریان کمک می‌کند.</p></article></div></div></section>
 <section className={s.faq}><div className={s.container}><span className={s.eyebrow}>FAQ</span><h2>پرسش‌های رایج</h2><details><summary>آیا برای استفاده از دلسا باید همه محصولات را تهیه کنم؟</summary><p>خیر. می‌توانی با سرویس متناسب با نیازت شروع کنی و بعداً محصولات دیگر را اضافه کنی.</p></details><details><summary>محصول‌های فعال من کجا نمایش داده می‌شوند؟</summary><p>پس از ورود، سرویس‌های فعال‌شده در داشبورد اختصاصی حساب نمایش داده می‌شوند.</p></details><details><summary>کدام محصولات برای خرید آماده‌اند؟</summary><p>آخرین فهرست سرویس‌های منتشرشده و شرایط فعال‌سازی در فروشگاه دلسا مشخص می‌شود.</p></details></div></section>
