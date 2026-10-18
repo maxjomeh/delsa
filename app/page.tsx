@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import {ArrowLeft,ArrowUpLeft,CheckCircle2,ChevronDown,ShieldCheck,Sparkles,RefreshCw,Workflow,MessagesSquare,Store,ShoppingCart,Globe2,Layers3} from 'lucide-react';
 import ChatLaunch from '../components/ChatLaunch';
+import dynamic from 'next/dynamic';
+import {Button} from '../components/ui/button';
+import {HomepageEffects,HeroHeadline} from '../components/HomepageEffects';
+const HeroOrbit3D=dynamic(()=>import('../components/HeroOrbit3D'));
 import PremiumShowcase from '../components/PremiumShowcase';
 import s from './home-ecosystem.module.css';
 
@@ -16,7 +20,7 @@ const steps=[
  {number:'03',title:'همه‌چیز را در یک‌جا مدیریت کن',body:'اطلاعات، تنظیمات و گزارش‌های سیستم‌های متصل را از پنل دلسا دنبال کن.'}
 ];
 export const metadata={title:'دلسا | اکوسیستم هوشمند کسب‌وکار',description:'محصولات دلسا: APU، دورپین، سیما و سایت‌ساز؛ راهکارهای هوشمند برای قیمت‌گذاری، تأمین کالا، ارتباط با مشتری و ساخت فروشگاه.'};
-export default function Home(){return <>
+export default function Home(){return <div className="delsa-home"><HomepageEffects/>
 <header className="site-header floating-header wrap"><Link href="/" className="brand" aria-label="خانه دلسا"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link><nav aria-label="منوی اصلی"><a href="#products">محصولات</a><a href="#ecosystem">اکوسیستم دلسا</a><a href="#how">نحوه کار</a><Link href="/store">فروشگاه</Link><Link href="/pricing">تعرفه‌ها</Link></nav><Link className="mobile-store-link" href="/store">محصولات</Link><Link className="button small" href="/login">ورود به پنل <ArrowUpLeft size={17}/></Link></header>
 <main>
 <section className={s.hero}>
@@ -24,12 +28,12 @@ export default function Home(){return <>
  <div className={s.heroLayout}>
   <div className={s.heroCopy}>
    <span className={s.kicker}><Sparkles size={15}/> DELSA · BUSINESS AUTOMATION</span>
-   <h1>یک دلسا.<br/><em>برای تمام کسب‌وکارت.</em></h1>
+   <HeroHeadline><h1>یک دلسا.<br/><em>برای تمام کسب‌وکارت.</em></h1></HeroHeadline>
    <p>قیمت‌گذاری، تأمین کالا، ارتباط با مشتری و ساخت فروشگاه؛ ابزارهای هوشمندی که کنار هم، مسیر مدیریت کسب‌وکار را ساده‌تر می‌کنند.</p>
-   <div className={s.heroActions}><Link href="#products" className={s.mainAction}>کشف محصولات <ArrowUpLeft size={19}/></Link><Link href="/signup" className={s.secondaryAction}>شروع با دلسا <ArrowLeft size={18}/></Link></div>
+   <div className={s.heroActions}><Button asChild size="lg"><Link href="#products">کشف محصولات <ArrowUpLeft size={19}/></Link></Button><Button asChild variant="outline" size="lg"><Link href="/signup">شروع با دلسا <ArrowLeft size={18}/></Link></Button></div>
    <div className={s.trust}><span><ShieldCheck size={15}/> یک پنل مشترک</span><span><Layers3 size={15}/> محصولات ماژولار</span><span><Globe2 size={15}/> قابل توسعه</span></div>
   </div>
-  <div className={s.heroVisual} aria-label="نمایش مفهومی چهار محصول دلسا">
+  <div className={s.heroVisual} aria-label="نمایش مفهومی چهار محصول دلسا"><HeroOrbit3D/>
    <div className={s.ring} aria-hidden="true"/>
    <div className={s.hub}><img src="/delsa-mark.svg" alt=""/><b>DELSA</b><small>SMART BUSINESS HUB</small></div>
    {products.map((p,i)=><div className={s.satellite} key={p.id} data-slot={i}><span className={s.satelliteIcon}><p.icon size={22}/></span><span><b>{p.name}</b><small>{p.tag}</small></span></div>)}
@@ -50,4 +54,4 @@ export default function Home(){return <>
 <section className={s.closing}><div className={s.container}><div><span className={s.eyebrow}>BUILD WITH DELSA</span><h2>برای قدم بعدی کسب‌وکارت آماده‌ای؟</h2><p>محصول مناسب خودت را پیدا کن و از یک پنل مشترک شروع کن.</p></div><div className={s.closeActions}><Link className={s.mainAction} href="/store">مشاهده محصولات <ArrowUpLeft size={18}/></Link><ChatLaunch/></div></div></section>
 </main>
 <footer className="wrap footer"><Link href="/" className="brand"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link><span>Digital Engagement Layer System Automation</span><Link href="/admin/login">ورود مدیر</Link></footer>
-</>}
+</div>}
