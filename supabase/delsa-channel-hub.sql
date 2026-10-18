@@ -41,11 +41,14 @@ begin
    return jsonb_build_object('ignored',true,'reason','connection_unavailable');
  end if;
 
- if not exists(
-   select 1 from public.delsa_channel_grants g
+ -- Hold a SHARE lock on the grant while the intake transaction runs.
+ -- A concurrent revoke waits until an already-authorized intake commits;
+ -- subsequent intakes observe the revoked state.
+ perform 1 from public.delsa_channel_grants g
    where g.connection_id=conn.id and g.tenant_id=conn.tenant_id
      and g.service_code='crm' and g.allowed=true
- ) then
+   for share;
+ if not found then
    return jsonb_build_object('ignored',true,'reason','service_grant_disabled');
  end if;
 
