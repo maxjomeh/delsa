@@ -14,7 +14,7 @@ Updated 2026-10-18. Branch is stacked on CIMA inbox PR #5.
 
 ## To activate the official Meta connection
 
-1. Apply the audited SQL schema in supabase/delsa-channel-hub.sql to the intended DELSA Supabase project. Run the SQL assertions from supabase/tests/delsa-channel-hub.sql.
+1. Database deployed 2026-10-18: migration 20261018083809_delsa_channel_hub_instagram_grants_v1 is installed on the existing DELSA delsa-backend Supabase project; transactional permission assertions in supabase/tests/delsa-channel-hub.sql passed. Recheck migration state before using a different environment.
 2. Create a Meta Developer app configured for the Instagram API with Instagram Login. Use an eligible Instagram professional account for private testing; public onboarding may require App Review and business verification.
 3. Put these secrets directly in the Vercel project's protected server environment, never in chat or GitHub:
    - INSTAGRAM_APP_ID
