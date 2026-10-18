@@ -1,13 +1,13 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {Plus,GripVertical,Copy,Trash2,ArrowUp,ArrowDown,Undo2,Redo2,Monitor,Smartphone,Maximize2,Minimize2,Layers,Paintbrush,Type,Image,MousePointer2,LayoutGrid,Minus,MoveVertical,Package,Mail,Upload,Search,Settings2,Save,X,CircleHelp,MessageSquareQuote,ChartNoAxesColumn,Tags,ListOrdered,UsersRound,Images,Video,Quote,ListChecks,Megaphone,Handshake,Link2,Clock,ChartNoAxesCombined,Table2} from 'lucide-react';
+import {Plus,GripVertical,Copy,Trash2,ArrowUp,ArrowDown,Undo2,Redo2,Monitor,Smartphone,Maximize2,Minimize2,Layers,Paintbrush,Type,Image,MousePointer2,LayoutGrid,Minus,MoveVertical,Package,Mail,Upload,Search,Settings2,Save,X,CircleHelp,MessageSquareQuote,ChartNoAxesColumn,Tags,ListOrdered,UsersRound,Images,Video,Quote,ListChecks,Megaphone,Handshake,Link2,Clock,ChartNoAxesCombined,Table2,Sparkles} from 'lucide-react';
 import {blockLabels,newBlock,uid,safeUrl,elementGroups,elementMeta} from '../lib/site-builder';
 import {reorderBlock} from '../lib/builder-design';
 import BuilderSiteView from './BuilderSiteView';
 import BuilderElementItems from './BuilderElementItems';
 import BuilderDialog from './BuilderDialog';
 import ui from './BuilderVisualEditor.module.css';
-const icons={hero:LayoutGrid,text:Type,features:Layers,contact:Mail,image:Image,products:Package,heading:Type,button:MousePointer2,divider:Minus,spacer:MoveVertical,faq:CircleHelp,testimonials:MessageSquareQuote,stats:ChartNoAxesColumn,pricing:Tags,steps:ListOrdered,team:UsersRound,gallery:Images,video:Video,quote:Quote,checklist:ListChecks,alert:Megaphone,logos:Handshake,links:Link2,hours:Clock,progress:ChartNoAxesCombined,table:Table2};
+const icons={showcase:Sparkles,hero:LayoutGrid,text:Type,features:Layers,contact:Mail,image:Image,products:Package,heading:Type,button:MousePointer2,divider:Minus,spacer:MoveVertical,faq:CircleHelp,testimonials:MessageSquareQuote,stats:ChartNoAxesColumn,pricing:Tags,steps:ListOrdered,team:UsersRound,gallery:Images,video:Video,quote:Quote,checklist:ListChecks,alert:Megaphone,logos:Handshake,links:Link2,hours:Clock,progress:ChartNoAxesCombined,table:Table2};
 const descriptions={hero:'عنوان، تصویر و دعوت به اقدام',text:'معرفی و توضیحات',features:'کارت‌های ویژگی و خدمات',contact:'دعوت به تماس',image:'تصویر و توضیح',products:'محصولات منتشرشدهٔ فروشگاه',heading:'یک تیتر مستقل',button:'لینک یا تماس',divider:'تفکیک سادهٔ محتوا',spacer:'فضای تنفس بین المان‌ها'};
 export default function BuilderVisualEditor({site,db,document:doc,pageId,onPage,onChange,access,busy,onSave,onPublish,allowUploads=true}){
  const page=doc.pages.find(p=>p.id===pageId)||doc.pages[0];

@@ -1,0 +1,8 @@
+'use client';
+import {useEffect,useState} from 'react';
+import {Canvas,useFrame} from '@react-three/fiber';
+import * as THREE from 'three';
+import {useRef} from 'react';
+import styles from './HeroOrbit3D.module.css';
+function OrbitalSystem(){const group=useRef(null);useFrame((state,delta)=>{if(group.current){group.current.rotation.y+=delta*.11;group.current.rotation.x=Math.sin(state.clock.elapsedTime*.15)*.08}});return <group ref={group}><ambientLight intensity={1.5}/><pointLight position={[3,4,5]} color="#ff8a4b" intensity={32}/><mesh rotation={[.45,.3,.3]}><icosahedronGeometry args={[1.24,1]}/><meshStandardMaterial color="#ff7239" metalness={.62} roughness={.18} flatShading/></mesh>{[0,1,2].map((n)=><mesh key={n} rotation={[Math.PI*(n+1)/5,Math.PI*n/3,Math.PI/6]}><torusGeometry args={[2.12,.008,8,120]}/><meshBasicMaterial color={n===0?'#ff9b6c':'#9d7364'} transparent opacity={.52}/></mesh>)}{[0,1,2,3].map((n)=><mesh key={'sat'+n} position={[Math.cos(n*Math.PI/2)*2.12,Math.sin(n*Math.PI/2)*1.55,Math.sin(n)*.65]}><octahedronGeometry args={[.16,0]}/><meshStandardMaterial color="#ffc19d" emissive="#b34d1a" emissiveIntensity={.6}/></mesh>)}</group>}
+export default function HeroOrbit3D(){const [enabled,setEnabled]=useState(false);useEffect(()=>{const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;const mobile=matchMedia('(max-width: 760px)').matches;setEnabled(!reduced&&!mobile)},[]);return <div className={styles.scene} aria-hidden="true">{enabled?<Canvas dpr={[1,1.5]} gl={{alpha:true,antialias:true,powerPreference:'low-power'}} camera={{position:[0,0,6.5],fov:48}} fallback={<div className={styles.fallback}/> }><OrbitalSystem/></Canvas>:<div className={styles.fallback}><span>✦</span></div>}</div>}
