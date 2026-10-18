@@ -1,1 +1,9 @@
-:root{--delsa-accent:#ff6b35;--delsa-accent-light:#ffa775;--delsa-bg:#101114;--delsa-surface:#1c1d23;--delsa-card:#25262e;--delsa-text:#f8f6f3;--delsa-muted:#bab7b5;--delsa-border:#ffffff1e;--delsa-border-strong:#ffffff5c;--delsa-glass:#ffffff0b;--delsa-radius:22px;--delsa-shadow:0 25px 80px #0008;--orange:#ff6b35;--orangeSoft:#fff0e9}html[data-theme=dark]{--orange:#ff6b35;--orangeSoft:#332017}.delsa-home{color:var(--delsa-text);background:var(--delsa-bg)}.delsa-home :focus-visible{outline-color:var(--delsa-accent)}.delsa-home .floating-header{background:#17181fd9;border-color:var(--delsa-border)}.delsa-home .brand-word{color:var(--delsa-text)}@media(prefers-reduced-motion:reduce){.delsa-home *, .delsa-home *:before,.delsa-home *:after{scroll-behavior:auto!important}}
+:root{--delsa-accent:#ff6b35;--delsa-accent-light:#e85c22;--delsa-bg:#faf9f7;--delsa-surface:#ffffff;--delsa-surface-alt:#f1eee9;--delsa-card:#ffffff;--delsa-text:#19191d;--delsa-muted:#625f61;--delsa-border:#dedbd7;--delsa-border-strong:#bbb5b0;--delsa-glass:#ffffffd9;--delsa-hero-glow:#ff6b3529;--delsa-radius:22px;--delsa-shadow:0 25px 80px #0002;--orange:#ff6b35;--orangeSoft:#fff0e9}
+html[data-theme=dark]{--delsa-accent:#ff793d;--delsa-accent-light:#ffab78;--delsa-bg:#101114;--delsa-surface:#191a20;--delsa-surface-alt:#202128;--delsa-card:#24252c;--delsa-text:#f8f6f3;--delsa-muted:#b8b3b4;--delsa-border:#ffffff24;--delsa-border-strong:#ffffff50;--delsa-glass:#1a1b20e8;--delsa-hero-glow:#ff6b3525;--delsa-shadow:0 25px 80px #0008;--orange:#ff793d;--orangeSoft:#332017}
+.delsa-home{color:var(--delsa-text);background:var(--delsa-bg)}
+.delsa-home :focus-visible{outline-color:var(--delsa-accent)}
+.delsa-home .floating-header{background:var(--delsa-glass);border-color:var(--delsa-border);color:var(--delsa-text)}
+.delsa-home .floating-header nav{color:var(--delsa-muted)}
+.delsa-home .brand-word{color:var(--delsa-text)}
+.delsa-home .footer{background:var(--delsa-bg);color:var(--delsa-muted)}
+@media(prefers-reduced-motion:reduce){.delsa-home *, .delsa-home *:before,.delsa-home *:after{scroll-behavior:auto!important}}
