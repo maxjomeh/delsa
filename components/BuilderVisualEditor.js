@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {Plus,GripVertical,Copy,Trash2,ArrowUp,ArrowDown,Undo2,Redo2,Monitor,Smartphone,Maximize2,Minimize2,Layers,Paintbrush,Type,Image,MousePointer2,LayoutGrid,Minus,MoveVertical,Package,Mail,Upload,Search,Settings2,Save,X,CircleHelp,MessageSquareQuote,ChartNoAxesColumn,Tags,ListOrdered,UsersRound,Images,Video,Quote,ListChecks,Megaphone,Handshake,Link2,Clock,ChartNoAxesCombined,Table2} from 'lucide-react';
+import {Plus,GripVertical,Copy,Trash2,ArrowUp,ArrowDown,Undo2,Redo2,Monitor,Smartphone,Maximize2,Minimize2,Layers,Paintbrush,Type,Image,MousePointer2,LayoutGrid,Minus,MoveVertical,Package,Mail,Upload,Search,Settings2,Save,X,CircleHelp,MessageSquareQuote,ChartNoAxesColumn,Tags,ListOrdered,UsersRound,Images,Video,Quote,ListChecks,Megaphone,Handshake,Link2,Clock,ChartNoAxesCombined,Table2,Sparkles} from 'lucide-react';
 import {blockLabels,newBlock,uid,safeUrl,elementGroups,elementMeta} from '../lib/site-builder';
 import {reorderBlock} from '../lib/builder-design';
 import BuilderSiteView from './BuilderSiteView';
