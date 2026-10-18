@@ -1,5 +1,5 @@
 'use client';
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {buildConversations, inboxTotals} from '../../lib/crm/inbox.mjs';
 import styles from './SimaInbox.module.css';
 
@@ -33,6 +33,11 @@ export default function SimaInbox({db, userId, customers, interactions, informat
   const selected = rows.find(r => r.id === activeId) || rows[0] || null;
   const question = selected && informationQueue.find(q => q.customer_id === selected.id);
   const outgoing = mode !== 'inbound';
+
+  // Selecting a different thread should start with its actual recorded channel.
+  useEffect(() => {
+    setChannel(selected && channels[selected.last.channel] ? selected.last.channel : 'manual');
+  }, [selected?.id, selected?.last.channel]);
 
   async function save(event) {
     event.preventDefault();
