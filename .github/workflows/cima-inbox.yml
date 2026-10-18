@@ -1,0 +1,27 @@
+name: CIMA inbox tests
+on:
+  push:
+    branches:
+      - feat/cima-unified-inbox-v1-20261018
+  pull_request:
+    paths:
+      - 'components/crm/**'
+      - 'lib/crm/inbox.mjs'
+      - 'tests/cima-inbox.test.mjs'
+      - '.github/workflows/cima-inbox.yml'
+jobs:
+  test-inbox:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate CIMA inbox logic
+        run: node --test tests/cima-inbox.test.mjs
+      - name: Check source and build
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
