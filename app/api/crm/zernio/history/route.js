@@ -76,7 +76,7 @@ export async function POST(request){
    };
   });
   if(events.length){
-   const {error:writeError}=await db.from('crm_zernio_events').upsert(events,{onConflict:'event_id',ignoreDuplicates:true});
+   const {error:writeError}=await db.rpc('crm_zernio_insert_historical',{p_events:events});
    if(writeError)throw writeError;
   }
   state.messages_discovered+=events.length;
