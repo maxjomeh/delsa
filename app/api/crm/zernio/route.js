@@ -71,7 +71,7 @@ export async function POST(request){
  try{
   const profileId=await provisionProfile(user.id);
   if(body.action==='prepare')return json({ok:true,profileReady:true,profileId});
-  const redirectUrl=new URL('/dashboard?tab=crm',new URL(request.url).origin).toString();
+  const redirectUrl=new URL('/dashboard?tab=crm&sima_section=connections',new URL(request.url).origin).toString();
   const scopes='messaging,comments';
   const result=await zernioRequest('GET',`/v1/connect/${body.platform}`,{query:{profileId,redirect_url:redirectUrl,scopes}});
   const url=new URL(result.authUrl);
