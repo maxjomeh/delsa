@@ -153,6 +153,10 @@ export default function CustomerIntelligence({db,userId,customers,interactions,o
     </>}
    </aside>
   </div>
+  <div className={styles.dynamicTable}>
+    <div className={styles.dynamicHeading}><div><h4>جدول اطلاعات مشتریان</h4><p>فیلدهای صنفی و ستون‌هایی که سیما از سؤال‌های پرتکرار یاد می‌گیرد</p></div><span>{readable(fields.filter(f=>f.enabled).length)} ستون اختصاصی</span></div>
+    <div className={styles.dynamicScroll}><table><thead><tr><th>مشتری</th><th>شماره تماس</th><th>اینستاگرام</th>{fields.filter(f=>f.enabled).slice(0,30).map(f=><th key={f.id}>{f.label}</th>)}</tr></thead><tbody>{customers.map(c=><tr key={c.id}><td><button type="button" onClick={()=>choose(c.id)}>{c.name}</button></td><td dir="ltr">{c.phone||'—'}</td><td dir="ltr">{c.instagram||c.custom_fields?.social_username||'—'}</td>{fields.filter(f=>f.enabled).slice(0,30).map(f=>{const value=c.custom_fields?.[f.key];return <td key={f.id}>{Array.isArray(value)?value.join('، '):value!=null&&value!==''?String(value):'—'}</td>;})}</tr>)}</tbody></table></div>
+  </div>
   <div className={styles.footnote}>خلاصهٔ نیازها بر اساس واژه‌های موجود در پیام‌های دریافتی و بدون ارسال متن به سرویس هوش مصنوعی خارجی ساخته می‌شود؛ این دسته‌بندی ممکن است نیاز به اصلاح انسانی داشته باشد. هر بخش بر اساس حداکثر ۵۰۰ رکورد اخیرِ بارگذاری‌شدهٔ سیما محاسبه می‌شود.</div>
  </div>;
 }
