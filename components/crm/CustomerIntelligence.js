@@ -137,7 +137,7 @@ export default function CustomerIntelligence({db,userId,customers,interactions,o
       <div className={styles.groupTitle}><h4>تاریخچهٔ فعالیت‌های ثبت‌شده</h4><small>حداکثر ۹۰ رویداد اخیر از داده‌های بارگذاری‌شده</small></div>
       <form className={styles.addNote} onSubmit={saveNote}><label htmlFor="sima-customer-note">افزودن یادداشت داخلی</label><textarea id="sima-customer-note" value={note} maxLength={8000} onChange={e=>setNote(e.target.value)} placeholder="مثلاً نیاز جدید مشتری، ترجیح خرید، نتیجهٔ گفت‌وگو…"/><button type="submit" disabled={saving||!note.trim()}><Send size={14}/> {saving?'در حال ثبت…':'ثبت یادداشت'}</button></form>
       <div className={styles.activityFilters}>{[['all','همه'],['interaction','تعامل'],['order','سفارش'],['lead','فرصت'],['task','پیگیری']].map(([k,v])=><button type="button" key={k} className={activityFilter===k?styles.chosen:''} onClick={()=>setActivityFilter(k)}>{v}</button>)}</div>
-      <History items={timeline}/>
+      <CustomerFullHistory key={customer.id} db={db} tenantId={userId} customerId={customer.id} fallback={timeline} filter={activityFilter}/>
      </div>}
     </>}
    </section>
@@ -154,6 +154,42 @@ export default function CustomerIntelligence({db,userId,customers,interactions,o
    </aside>
   </div>
   <div className={styles.footnote}>خلاصهٔ نیازها بر اساس واژه‌های موجود در پیام‌های دریافتی و بدون ارسال متن به سرویس هوش مصنوعی خارجی ساخته می‌شود؛ این دسته‌بندی ممکن است نیاز به اصلاح انسانی داشته باشد. هر بخش بر اساس حداکثر ۵۰۰ رکورد اخیرِ بارگذاری‌شدهٔ سیما محاسبه می‌شود.</div>
+ </div>;
+}
+
+function CustomerFullHistory({db,tenantId,customerId,fallback,filter}){
+ const [rows,setRows]=useState([]);
+ const [page,setPage]=useState(0);
+ const [hasMore,setHasMore]=useState(true);
+ const [loading,setLoading]=useState(false);
+ const [error,setError]=useState('');
+ useEffect(()=>{
+  let cancelled=false;
+  (async()=>{
+   setLoading(true);setError('');
+   try{
+    const {data,error}=await db.from('crm_interactions')
+      .select('id,customer_id,kind,channel,direction,body,occurred_at,created_at')
+      .eq('tenant_id',tenantId).eq('customer_id',customerId)
+      .order('occurred_at',{ascending:false}).range(page*100,page*100+99);
+    if(error)throw error;
+    if(!cancelled){
+     setRows(old=>{const map=new Map((page===0?[]:old).map(r=>[r.id,r]));for(const r of data)map.set(r.id,r);return [...map.values()];});
+     setHasMore(data.length===100);
+    }
+   }catch{if(!cancelled)setError('دریافت پیام‌های قدیمی‌تر انجام نشد.');}
+   finally{if(!cancelled)setLoading(false);}
+  })();
+  return()=>{cancelled=true;};
+ },[db,tenantId,customerId,page]);
+ const messageRows=rows.map(r=>({id:'i:'+r.id,type:'interaction',label:r.kind==='note'?'یادداشت':r.kind==='call'?'تماس':r.kind==='offer'?'پیشنهاد':'پیام',kind:r.kind,direction:r.direction,channel:r.channel,text:r.body,at:r.occurred_at||r.created_at}));
+ const all=new Map(fallback.map(r=>[r.id,r]));for(const item of messageRows)all.set(item.id,item);
+ const items=[...all.values()].filter(r=>filter==='all'||r.type===filter).sort((a,b)=>Date.parse(b.at)-Date.parse(a.at));
+ return <div>
+  <History items={items}/>
+  {error&&<p role="alert" className={styles.emptyText}>{error}</p>}
+  {hasMore&&<button type="button" disabled={loading} className={styles.loadHistory} onClick={()=>setPage(x=>x+1)}>{loading?'در حال دریافت پیام‌ها…':'بارگذاری ۱۰۰ پیام قدیمی‌تر'}</button>}
+  {!hasMore&&<small className={styles.historyEnd}>انتهای تاریخچهٔ ثبت‌شده در سیما</small>}
  </div>;
 }
 function History({items}){
