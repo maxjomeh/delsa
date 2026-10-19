@@ -52,51 +52,57 @@ function phoneCandidates(rows){
  return proposals;
 }
 async function learn(db,tenant){
+ // Phase 0: learning NEVER changes verified customer facts or CRM schema.
+ // Candidates are stored with an exact source and require explicit review.
  const rows=await interactions(db,tenant);
- const {data:customers,error:customerError}=await db.from('crm_customers').select('id,phone,custom_fields').eq('tenant_id',tenant).limit(5000);
+ const {data:customers,error:customerError}=await db.from('crm_customers').select('id,phone').eq('tenant_id',tenant).limit(5000);
  if(customerError)throw customerError;
- const customerById=new Map(customers.map(c=>[c.id,c]));
- let phones=0,phoneReview=0;
+ const customerById=new Map((customers||[]).map(c=>[c.id,c]));
+ let phoneProposals=0,phoneConflicts=0,fieldProposals=0;
+ const propose=async value=>{
+  const q=db.from('crm_learning_suggestions').select('id')
+   .eq('tenant_id',tenant).eq('kind',value.kind).eq('field_key',value.field_key).eq('proposed_value',value.proposed_value);
+  if(value.customer_id)q.eq('customer_id',value.customer_id);
+  else q.is('customer_id',null);
+  const {data:existing,error:checkError}=await q.limit(1);
+  if(checkError)throw checkError;
+  if(existing?.length)return false;
+  const {error}=await db.from('crm_learning_suggestions').insert({...value,tenant_id:tenant,status:'pending'});
+  if(error&&error.code!=='23505')throw error;
+  return !error;
+ };
  for(const [customerId,p] of phoneCandidates(rows)){
-  const customer=customerById.get(customerId);if(!customer)continue;
-  if(customer.phone&&customer.phone!==p.phone){phoneReview++;continue;}
-  if(!customer.phone){
-   const {error}=await db.from('crm_customers').update({phone:p.phone,updated_at:new Date().toISOString()}).eq('id',customerId).eq('tenant_id',tenant).eq('phone','');
-   if(!error)phones++;
-   else phoneReview++;
-  }
+  const customer=customerById.get(customerId);if(!customer||customer.phone===p.phone)continue;
+  const conflict=!!customer.phone;
+  const created=await propose({
+   customer_id:customerId,kind:'phone',field_key:'phone',proposed_value:p.phone,
+   evidence_quote:p.quote||'شماره تماس در پیام مشتری مطرح شده است.',
+   evidence_interaction_id:p.sourceId,confidence:conflict?.72:.9,support_count:1
+  });
+  if(created)phoneProposals++;
+  if(conflict)phoneConflicts++;
  }
- const proposed=discoverFields(rows,{minOccurrences:3,minCustomers:2});
- const existingResult=await db.from('crm_field_definitions').select('id,key,label').eq('tenant_id',tenant);
- if(existingResult.error)throw existingResult.error;
- const fields=[];let newFields=0,extractions=0;
- for(const group of proposed){
-  if(restricted.test(group.label)||existingResult.data.some(x=>x.label===group.label&&x.key!==group.key))continue;
-  const incoming={tenant_id:tenant,key:group.key,label:group.label,type:'text',priority:50,question:group.question,condition:'always',enabled:true,ask_enabled:false};
-  let {data:field,error:fieldError}=await db.from('crm_field_definitions').select('id,label,key').eq('tenant_id',tenant).eq('key',group.key).maybeSingle();
-  if(fieldError)continue;
-  if(!field){
-   const created=await db.from('crm_field_definitions').insert(incoming).select('id,label,key').single();
-   if(created.error){const v=await db.from('crm_field_definitions').select('id,label,key').eq('tenant_id',tenant).eq('key',group.key).maybeSingle();field=v.data;}
-   else {field=created.data;newFields++;}
-  }
-  if(!field)continue;
-  const candidates=fieldCandidates(rows,group);
-  let reviewCount=0;
-  for(const candidate of candidates){
-   if(!customerById.has(candidate.customerId))continue;
-   const {data:current}=await db.from('crm_information_states').select('status').eq('tenant_id',tenant).eq('customer_id',candidate.customerId).eq('field_id',field.id).maybeSingle();
-   if(current?.status==='confirmed'||current?.status==='declined'||current?.status==='review')continue;
-   const {error}=await db.from('crm_information_states').upsert({
-     tenant_id:tenant,customer_id:candidate.customerId,field_id:field.id,status:'review',
-     source:'explicit_message',source_interaction_id:candidate.interactionId,source_quote:candidate.quote,
-     proposed_value:candidate.value,updated_at:new Date().toISOString()
-   },{onConflict:'tenant_id,customer_id,field_id'});
-   if(!error){reviewCount++;extractions++;}
-  }
-  fields.push({label:group.label,occurrences:group.occurrences,distinctCustomers:group.distinctCustomers,reviewCount});
+ const {data:definitions,error:definitionsError}=await db.from('crm_field_definitions').select('key,label').eq('tenant_id',tenant);
+ if(definitionsError)throw definitionsError;
+ const fields=[];
+ const groups=discoverFields(rows,{minOccurrences:3,minCustomers:2});
+ for(const group of groups){
+  if(restricted.test(group.label)||(definitions||[]).some(x=>x.key===group.key||x.label===group.label))continue;
+  const evidence=group.sourceInteractions?.[0];
+  if(!evidence)continue;
+  const created=await propose({
+   customer_id:null,kind:'new_field',field_key:group.key,proposed_value:group.label,
+   evidence_quote:String(evidence.body||group.question).slice(0,500),
+   evidence_interaction_id:evidence.id,confidence:.7,support_count:group.distinctCustomers||2
+  });
+  if(created)fieldProposals++;
+  fields.push({label:group.label,occurrences:group.occurrences,distinctCustomers:group.distinctCustomers,reviewCount:0,status:'pending_owner_approval'});
  }
- return {messagesAnalyzed:rows.length,customersAnalyzed:customers.length,phoneUpdates:phones,phoneConflicts:phoneReview,newFields,extractions,fields,kind:'local_tfidf_learning',externalAiEnabled:false};
+ return {
+  messagesAnalyzed:rows.length,customersAnalyzed:customers.length,phoneUpdates:0,
+  phoneProposals,phoneConflicts,newFields:0,fieldProposals,extractions:0,fields,
+  kind:'local_tfidf_learning',externalAiEnabled:false,reviewRequired:true
+ };
 }
 export async function GET(){
  const ctx=await context();if(!ctx.tenant)return respond({error:'login_or_subscription_required'},ctx.status);
