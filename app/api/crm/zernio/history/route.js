@@ -55,7 +55,7 @@ export async function POST(request){
     return NextResponse.json({done:true,conversations:state.conversations_scanned,messages:state.messages_discovered});
    }
    if(!objectId(conv.accountId)||typeof conv.id!=='string'||typeof conv.participantId!=='string'||!conv.participantId)throw new Error('conversation_identity_missing');
-   state.current_conversation={id:conv.id,accountId:conv.accountId,participantId:conv.participantId,participantName:conv.participantName||'',participantUsername:conv.participantUsername||'',platform:'instagram',nextListCursor:page.pagination?.nextCursor||null,hasMoreConversations:!!page.pagination?.hasMore};
+   state.current_conversation={id:conv.id,accountId:conv.accountId,participantId:conv.participantId,participantName:conv.participantName||'',participantUsername:conv.participantUsername||'',participantPicture:conv.participantPicture||'',platform:'instagram',nextListCursor:page.pagination?.nextCursor||null,hasMoreConversations:!!page.pagination?.hasMore};
    state.message_cursor=null;
    // Save the conversation checkpoint before fetching messages.
    const {error:cpError}=await db.from('crm_zernio_history_sync').upsert({...state,status:'running',updated_at:new Date().toISOString()});
@@ -71,7 +71,7 @@ export async function POST(request){
    return {event_id:id,tenant_id:user.id,profile_id:profile.profile_id,account_id:c.accountId,event_type:inbound?'message.received':'message.sent',
     payload:{id,event:inbound?'message.received':'message.sent',timestamp:m.createdAt||m.sentAt||new Date().toISOString(),
      account:{accountId:c.accountId,profileId:profile.profile_id,platform:'instagram'},
-     conversation:{id:c.id,participantId:c.participantId,participantName:c.participantName,participantUsername:c.participantUsername},
+     conversation:{id:c.id,participantId:c.participantId,participantName:c.participantName,participantUsername:c.participantUsername,participantPicture:c.participantPicture},
      message:{id:m.id,text:m.message||'',sentAt:m.createdAt||m.sentAt,attachments:m.attachments||[]}}
    };
   });
