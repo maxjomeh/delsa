@@ -72,3 +72,20 @@ test('all 25 selected CRM events can normalize with official account context or 
   }
  }
 });
+
+
+test('customer connects Instagram in one click without supplying a profile or provider API key',()=>{
+ const {readFileSync}=require('node:fs');
+ const {join}=require('node:path');
+ const route=readFileSync(join(process.cwd(),'app/api/crm/zernio/route.js'),'utf8');
+ const screen=readFileSync(join(process.cwd(),'components/crm/ZernioConnection.js'),'utf8');
+ const workspace=readFileSync(join(process.cwd(),'components/crm/SimaWorkspace.js'),'utf8');
+ assert.match(route,/const profileId=await provisionProfile\(user\.id\);/);
+ assert.match(route,/if\(!entitled\)return json\(/);
+ assert.match(route,/body\.action==='connect'/);
+ assert.match(route,/sima_section=connections/);
+ assert.match(screen,/action:'connect',platform:'instagram'/);
+ assert.doesNotMatch(screen,/action:'prepare'/);
+ assert.match(workspace,/section==='connections'&&<ZernioConnection\/>/);
+ assert.doesNotMatch(workspace,/<InstagramConnection\/>/);
+});
