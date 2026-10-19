@@ -55,3 +55,24 @@
 .needItem p{font-size:11px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere;margin:7px 0;color:var(--ci-text)}
 .needItem small{font-size:10px;color:var(--ci-sub)}
 @media(prefers-reduced-motion:reduce){.needItem{animation:none}}
+
+/* SIMA spacious expressive surface — legible in both themes, respects tokens. */
+.shell{width:100%;font-size:14px;position:relative;isolation:isolate}
+.shell:before{content:"";position:absolute;pointer-events:none;z-index:-1;top:-80px;left:5%;right:1%;height:330px;background:radial-gradient(ellipse at 14% 15%,color-mix(in srgb,var(--ci-accent) 16%,transparent),transparent 60%),radial-gradient(ellipse at 80% 35%,color-mix(in srgb,var(--ci-accent) 10%,transparent),transparent 65%);filter:blur(25px)}
+.columns{grid-template-columns:minmax(245px,275px) minmax(0,1fr) minmax(255px,310px);gap:15px}
+.queue,.main,.insight{backdrop-filter:blur(14px);border-color:color-mix(in srgb,var(--ci-accent) 11%,var(--ci-line));box-shadow:0 20px 45px color-mix(in srgb,var(--ci-accent) 6%,transparent),0 8px 28px #00000009}
+.topline{padding:27px 6px 27px}.topline h3{font-size:clamp(25px,2.9vw,35px)}.topline p,.learnHead p{font-size:13px}
+.profileTitle h3{font-size:26px}.profileHead{padding:29px 25px 22px}
+.queueName strong{font-size:13px}.queueName small{font-size:11px}
+.groupTitle h4{font-size:15px}.contactGrid strong,.dynamicFields strong{font-size:13px}
+.contactGrid small,.dynamicFields small{font-size:11px}
+.event p{font-size:13px}.eventHeading strong{font-size:12px}
+.nextCard strong{font-size:14px}.nextCard p{font-size:12px}.scorePanel h4{font-size:20px}
+.main,.queue,.insight{transition:border-color .3s ease,box-shadow .3s ease,background-color .3s ease}
+.main:hover,.queue:hover,.insight:hover{border-color:color-mix(in srgb,var(--ci-accent) 22%,var(--ci-line));box-shadow:0 20px 48px color-mix(in srgb,var(--ci-accent) 9%,transparent)}
+.avatar,.largeAvatar{overflow:hidden}.avatar img,.largeAvatar img{height:100%;width:100%;object-fit:cover;border-radius:inherit}
+.learnPanel{background:linear-gradient(135deg,color-mix(in srgb,var(--ci-accent) 11%,var(--ci-bg)),var(--ci-bg) 54%,color-mix(in srgb,var(--ci-accent) 4%,var(--ci-bg)));border:1px solid color-mix(in srgb,var(--ci-accent) 25%,var(--ci-line));padding:19px 23px;border-radius:18px;margin-bottom:17px;box-shadow:0 12px 35px color-mix(in srgb,var(--ci-accent) 5%,transparent)}
+.learnHead{display:flex;align-items:center;justify-content:space-between;gap:15px}.learnHead span{display:inline-flex;align-items:center;gap:8px;font-size:16px;font-weight:800}.learnHead svg{color:var(--ci-accent)}.learnHead p{color:var(--ci-sub);margin:9px 0 0;line-height:1.9}.learnHead button,.learnBody>button{display:inline-flex;align-items:center;gap:7px;border-color:color-mix(in srgb,var(--ci-accent) 27%,var(--ci-line));white-space:nowrap}.learnBody{padding-top:16px;display:grid;gap:11px;animation:ci-enter .3s ease}.learnBody>p{font-size:12px;color:var(--ci-sub);line-height:1.9}.learnItem{background:var(--ci-bg);border:1px solid var(--ci-line);border-radius:13px;padding:15px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.learnItem>div:first-child{display:grid;gap:7px;min-width:0}.learnItem strong{font-size:13px}.learnItem small{font-size:11px;color:var(--ci-sub)}.learnItem p{font-size:12px;line-height:1.8;margin:0;overflow-wrap:anywhere}.learnItem>div:last-child{display:flex;gap:7px;flex-wrap:wrap}.learnItem button{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+@media(max-width:1180px){.columns{grid-template-columns:minmax(215px,245px) minmax(0,1fr)}.insight{grid-column:2}}
+@media(max-width:730px){.learnHead{align-items:flex-start;flex-direction:column}.learnItem{flex-direction:column}.columns{display:block}.topline h3{font-size:24px}}
+@media(prefers-reduced-motion:reduce){.main,.queue,.insight,.learnBody{transition:none;animation:none}}

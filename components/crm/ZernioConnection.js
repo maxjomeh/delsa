@@ -8,6 +8,8 @@ export default function ZernioConnection(){
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState('');
  const [notice,setNotice]=useState('');
+ const [history,setHistory]=useState(null);
+ const [syncing,setSyncing]=useState(false);
 
  async function reload(){
   setLoading(true);
@@ -38,6 +40,7 @@ export default function ZernioConnection(){
    else setNotice('از صفحهٔ تأیید بازگشتید. اگر پیج هنوز دیده نمی‌شود، کمی بعد وضعیت را به‌روزرسانی کنید.');
   }
   load();
+  fetch('/api/crm/zernio/history').then(r=>r.ok?r.json():null).then(r=>{if(active&&r)setHistory(r.sync);}).catch(()=>{});
   return()=>{active=false;};
  },[]);
 
@@ -64,6 +67,21 @@ export default function ZernioConnection(){
   }
  }
 
+ async function syncHistory(){
+  if(syncing)return;
+  setSyncing(true);setError('');setNotice('');
+  try{
+   for(let i=0;i<20;i++){
+    const response=await fetch('/api/crm/zernio/history',{method:'POST',headers:{'Content-Type':'application/json'}});
+    const result=await response.json();
+    if(!response.ok)throw new Error(result.error||'بازیابی مکالمات متوقف شد.');
+    setHistory({status:result.done?'completed':'running',conversations_scanned:result.conversations,messages_discovered:result.messages});
+    if(result.done){setNotice('تاریخچهٔ قابل دریافت با موفقیت بازیابی شد.');break;}
+    if(i===19)setNotice('۲۰ صفحه بررسی شد؛ برای ادامه دوباره روی دکمه کلیک کنید.');
+   }
+  }catch(e){setError(e.message||'بازیابی موقتاً متوقف شد؛ مجدداً تلاش کنید.');}
+  finally{setSyncing(false);}
+ }
  const ready=data?.enabled===true&&data?.entitled===true;
  const instagram=data?.accounts?.filter(a=>a.platform==='instagram')||[];
  return <div className={styles.panel}>
@@ -81,11 +99,18 @@ export default function ZernioConnection(){
     </button>
     <button type="button" disabled={busy||loading} onClick={()=>reload()}>به‌روزرسانی وضعیت</button>
    </div>
+   <section className={styles.connection} aria-label="بازیابی تاریخچه قدیمی اینستاگرام">
+    <strong>بازیابی مکالمات قبل از اتصال</strong>
+    <span>Zernio پیام‌های تاریخی را جدا از Webhook ارائه می‌کند. می‌توانید تمام صفحات قابل دسترسی را بدون ایجاد رکورد تکراری وارد سیما کنید.</span>
+    <span>مکالمات بررسی‌شده: {Number(history?.conversations_scanned||0).toLocaleString('fa-IR')} · پیام‌های یافت‌شده: {Number(history?.messages_discovered||0).toLocaleString('fa-IR')}</span>
+    <button type="button" disabled={syncing||loading||history?.status==='completed'} onClick={syncHistory}>{syncing?'در حال بازیابی…':history?.status==='completed'?'بازیابی تکمیل شد':'شروع / ادامه بازیابی چت‌های قدیمی'}</button>
+    <small>برای جلوگیری از محدودیت درخواست‌ها، بازیابی مرحله‌ای است. سقف بازیابی قدیمی Meta معمولاً ۵۰۰ مکالمه و ۵۰۰ پیام اخیر هر مکالمه است.</small>
+   </section>
    <div className={styles.records}>
     {instagram.map(a=><article key={a.id}><div><strong dir="ltr">@{a.username||'Instagram'}</strong><small>{a.connected?'متصل به سیما':a.needsReconnect?'نیاز به اتصال مجدد':'اتصال غیرفعال'}</small></div></article>)}
     {!instagram.length&&<p>هنوز پیجی به کسب‌وکار شما وصل نشده است. با دکمهٔ «اتصال اینستاگرام» شروع کنید.</p>}
    </div>
   </>}
-  <small>اتصال برای پیج‌های حرفه‌ای Business یا Creator پشتیبانی می‌شود. این مرحله دریافت مجوز و اتصال حساب است؛ تبدیل خودکار رویدادها به پروندهٔ CRM و ارسال پیام خودکار هنوز فعال نیست. اگر همین پیج را قبلاً از روش قدیمی متصل کرده‌اید، پیش از اتصال دوباره وضعیت آن را با پشتیبانی دلسا بررسی کنید.</small>
+  <small>اتصال برای پیج‌های حرفه‌ای Business یا Creator پشتیبانی می‌شود. پیام‌های جدید در CRM ثبت می‌شوند؛ بازیابی قدیمی از دکمهٔ بالا انجام می‌شود. هیچ پاسخ خودکاری بدون بررسی اطمینان ارسال نمی‌شود. اگر همین پیج را قبلاً از روش قدیمی متصل کرده‌اید، پیش از اتصال دوباره وضعیت آن را با پشتیبانی دلسا بررسی کنید.</small>
  </div>;
 }
