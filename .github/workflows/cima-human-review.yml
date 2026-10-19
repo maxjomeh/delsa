@@ -1,0 +1,28 @@
+name: CIMA Human Review Foundation
+on:
+  push:
+    branches: [feat/cima-human-review-foundation-20261019]
+  pull_request:
+    paths:
+      - 'app/api/crm/intelligence/**'
+      - 'app/api/crm/reviews/**'
+      - 'components/crm/HumanReviewWorkspace*'
+      - 'components/crm/SimaWorkspace.js'
+      - 'supabase/migrations/20261019_cima*'
+      - 'tests/cima-human-review-foundation.test.mjs'
+      - '.github/workflows/cima-human-review.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: node --test tests/cima-human-review-foundation.test.mjs
+      - run: node --test tests/customer-intelligence.test.mjs
+      - run: node --test tests/zernio-history-ml.test.mjs
+      - run: npm run build
