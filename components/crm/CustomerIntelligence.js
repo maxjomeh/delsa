@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import {customerIntelligence,rankCustomers} from '../../lib/crm/customer-intelligence.mjs';
 import styles from './CustomerIntelligence.module.css';
+import LearningPanel from './LearningPanel';
 
 const readable=n=>Number(n||0).toLocaleString('fa-IR');
 const stamp=v=>v&&Number.isFinite(Date.parse(v))?new Date(v).toLocaleString('fa-IR',{timeZone:'Asia/Tehran',dateStyle:'medium',timeStyle:'short'}):'ثبت نشده';
@@ -92,13 +93,14 @@ export default function CustomerIntelligence({db,userId,customers,interactions,o
    <div><div className={styles.eyebrow}><Sparkles size={14}/> DELSA / SIMA CUSTOMER INTELLIGENCE</div><h3>پروفایل هوشمند مشتریان</h3><p>داده‌های واقعی، تاریخچهٔ ارتباطات و اقدام بعدی در یک نمای واحد</p></div>
    <button type="button" className={styles.primary} onClick={onAdd}><Plus size={16}/> مشتری جدید</button>
   </div>
+  <LearningPanel onRefresh={onRefresh}/>
   <div className={styles.columns}>
    <aside className={styles.queue+(mobileDetail?' '+styles.hideMobile:'')} aria-label="فهرست مشتریان">
     <div className={styles.sideHeader}><div><span className={styles.eyebrow}>MY CUSTOMERS</span><h4>مشتریان <span className={styles.count}>{readable(customers.length)}</span></h4></div><UserRound size={19}/></div>
     <label className={styles.search}><Search size={16}/><input aria-label="جست‌وجوی مشتری" value={query} onChange={e=>{setQuery(e.target.value);setMobileDetail(false);}} placeholder="نام، شماره، اینستاگرام، برچسب…"/></label>
     <div className={styles.filters} role="group" aria-label="فیلتر مشتریان">{filters.map(([k,v])=><button key={k} type="button" aria-pressed={filter===k} className={filter===k?styles.chosen:''} onClick={()=>{setFilter(k);setMobileDetail(false);}}>{v}{counts[k]>0&&<small>{readable(counts[k])}</small>}</button>)}</div>
     <div className={styles.queueItems}>{visible.map((p,i)=><button key={p.customer.id} type="button" aria-current={selected?.customer.id===p.customer.id?'true':undefined} className={styles.queueItem+(selected?.customer.id===p.customer.id?' '+styles.queueActive:'')} style={{'--i':Math.min(i,10)}} onClick={()=>choose(p.customer.id)}>
-     <span className={styles.avatar}>{initials(p.customer.name)}</span>
+     <span className={styles.avatar}>{/^https:\/\//.test(p.customer.custom_fields?.social_avatar_url||'')?<img src={p.customer.custom_fields.social_avatar_url} alt="" loading="lazy" referrerPolicy="no-referrer"/>:initials(p.customer.name)}</span>
      <span className={styles.queueName}><strong>{p.customer.name}</strong><small>{p.needsReply?'پیام منتظر پاسخ':p.overdue?'پیگیری سررسید شده':p.customer.instagram?'@'+p.customer.instagram:(statusNames[p.customer.status]||'پرونده مشتری')}</small></span>
      <span className={styles.queueScore}>{p.score==null?'—':readable(p.score)}</span>
     </button>)}</div>
@@ -108,7 +110,7 @@ export default function CustomerIntelligence({db,userId,customers,interactions,o
    <section className={styles.main+(mobileDetail?' '+styles.showMobile:'')} aria-label="پرونده انتخاب‌شده">
     {!selected?<div className={styles.blank}><UserRound size={36}/><h4>مشتری انتخاب نشده است</h4><p>برای دیدن پرونده یک مشتری از فهرست انتخاب کنید.</p></div>:<>
      <button type="button" className={styles.back} onClick={()=>setMobileDetail(false)}><ArrowRight size={16}/> بازگشت به فهرست</button>
-     <header className={styles.profileHead}><span className={styles.largeAvatar}>{initials(customer.name)}</span><div className={styles.profileTitle}><div className={styles.eyebrow}>CUSTOMER 360° PROFILE</div><h3>{customer.name}</h3><div className={styles.profileBadges}><span>{statusNames[customer.status]||'مشتری'}</span>{customer.instagram&&<span dir="ltr">@{customer.instagram}</span>}{customer.do_not_contact&&<span className={styles.warn}>عدم تماس</span>}</div></div><button type="button" className={styles.edit} onClick={()=>onEdit(customer)}><Pencil size={15}/> ویرایش پرونده</button></header>
+     <header className={styles.profileHead}><span className={styles.largeAvatar}>{/^https:\/\//.test(customer.custom_fields?.social_avatar_url||'')?<img src={customer.custom_fields.social_avatar_url} alt="" loading="lazy" referrerPolicy="no-referrer"/>:initials(customer.name)}</span><div className={styles.profileTitle}><div className={styles.eyebrow}>CUSTOMER 360° PROFILE</div><h3>{customer.name}</h3><div className={styles.profileBadges}><span>{statusNames[customer.status]||'مشتری'}</span>{customer.instagram&&<span dir="ltr">@{customer.instagram}</span>}{customer.do_not_contact&&<span className={styles.warn}>عدم تماس</span>}</div></div><button type="button" className={styles.edit} onClick={()=>onEdit(customer)}><Pencil size={15}/> ویرایش پرونده</button></header>
      <div className={styles.miniStats}><div><span><MessageSquare size={14}/> تعاملات ثبت‌شده</span><strong>{readable(selected.interactionCount)}</strong></div><div><span><ShoppingBag size={14}/> خریدهای ثبت‌شده</span><strong>{readable(selected.orderCount)}</strong></div><div><span><TrendingUp size={14}/> مجموع خرید ثبت‌شده</span><strong>{money(selected.spend)}</strong></div></div>
      <div className={styles.tabs} role="tablist" aria-label="بخش پرونده">{tabs.map(([k,v])=><button role="tab" aria-selected={tab===k} type="button" className={tab===k?styles.tabActive:''} key={k} onClick={()=>setTab(k)}>{v}</button>)}</div>
      {tab==='summary'?<div className={styles.content}>
