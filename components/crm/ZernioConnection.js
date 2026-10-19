@@ -68,7 +68,7 @@ export default function ZernioConnection(){
  const instagram=data?.accounts?.filter(a=>a.platform==='instagram')||[];
  return <div className={styles.panel}>
   <h3>اتصال اینستاگرام کسب‌وکار</h3>
-  <p>بدون ورود به Zernio، پیج کاری خود را از همین داشبورد وصل کنید. با تأیید شما در صفحهٔ رسمی اینستاگرام، حساب فقط به فضای کسب‌وکار شما در سیما مرتبط می‌شود. رمز اینستاگرام را از شما نمی‌گیریم.</p>
+  <p>پیج کاری خود را مستقیماً از همین داشبورد وصل کنید. با تأیید شما در صفحهٔ رسمی اینستاگرام، حساب فقط به فضای کسب‌وکار شما در سیما مرتبط می‌شود. رمز اینستاگرام را از شما نمی‌گیریم.</p>
   {loading&&<p role="status">در حال بررسی وضعیت اتصال…</p>}
   {error&&<p className={styles.error} role="alert">{error}</p>}
   {notice&&<p role="status">{notice}</p>}
