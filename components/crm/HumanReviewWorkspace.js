@@ -36,7 +36,7 @@ export default function HumanReviewWorkspace(){
  useEffect(()=>{
   if(!selected)return;
   let active=true;
-  setHistoryLoading(true);setMessages([]);
+  setSelectedVersion(null);setHistoryLoading(true);setMessages([]);
   fetch('/api/crm/reviews?'+new URLSearchParams({caseId:selected.id,customerId:selected.customer_id}),{cache:'no-store'})
    .then(async r=>{const j=await r.json();if(!r.ok)throw Error(j.error);return j;})
    .then(j=>{if(!active)return;setMessages(j.messages||[]);setSelectedVersion(j.review.conversation_version);
