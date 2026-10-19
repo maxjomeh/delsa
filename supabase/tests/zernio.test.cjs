@@ -41,7 +41,7 @@ test('Zernio accepts the whole supported inbox and loyalty event catalog',async(
  assert.equal(ZERNIO_EVENTS.length,25);
  assert.equal(new Set(ZERNIO_EVENTS).size,25);
  for(const event of ZERNIO_EVENTS){
-  const accountless=/^(contact\\.|sequence\\.|workflow\\.run\\.)/.test(event);
+  const accountless=event.startsWith('contact.')||event.startsWith('sequence.')||event.startsWith('workflow.run.');
   const payload={id:eventId,event,profiles:[{id:profile,externalId:tenant}]};
   if(!accountless)payload.account={accountId:account,profileId:profile};
   const normalized=validatedZernioEvent(payload);
