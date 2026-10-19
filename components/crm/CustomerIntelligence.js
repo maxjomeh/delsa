@@ -30,6 +30,7 @@ export default function CustomerIntelligence({db,userId,customers,interactions,o
  const [error,setError]=useState('');
  const [success,setSuccess]=useState('');
  const [busyTask,setBusyTask]=useState('');
+ const [busyLead,setBusyLead]=useState('');
  const profiles=useMemo(()=>customerIntelligence(customers,interactions,orders,leads,tasks,informationQueue),[customers,interactions,orders,leads,tasks,informationQueue]);
  const visible=useMemo(()=>rankCustomers(profiles,filter,query),[profiles,filter,query]);
  const selected=visible.find(p=>p.customer.id===selectedId)||visible[0]||null;
@@ -61,6 +62,19 @@ export default function CustomerIntelligence({db,userId,customers,interactions,o
   if(dbError)setError('تغییر وضعیت پیگیری ذخیره نشد.');
   else{setSuccess('وضعیت پیگیری ثبت شد.');onRefresh?.();}
   setBusyTask('');
+ }
+ async function advanceLead(lead){
+  const stages=['new','qualified','offered','won'];
+  const index=stages.indexOf(lead.stage);
+  if(!selected||busyLead||index<0||index>=stages.length-1)return;
+  setBusyLead(lead.id);setError('');setSuccess('');
+  const {data:updated,error:dbError}=await db.from('crm_leads')
+   .update({stage:stages[index+1]})
+   .eq('id',lead.id).eq('tenant_id',userId).eq('customer_id',selected.customer.id).eq('stage',lead.stage)
+   .select('id').maybeSingle();
+  if(dbError||!updated)setError('مرحلهٔ فرصت تغییر نکرد؛ دسترسی و وضعیت فعلی را بررسی کنید.');
+  else{setSuccess('مرحلهٔ فرصت فروش ثبت شد.');await onRefresh?.();}
+  setBusyLead('');
  }
  const counts={
   needs_reply:profiles.filter(p=>p.needsReply).length,
@@ -104,7 +118,7 @@ export default function CustomerIntelligence({db,userId,customers,interactions,o
       {!!customer.notes?.trim()&&<div className={styles.noteBox}><StickyNote size={16}/><div><strong>یادداشت پرونده</strong><p>{customer.notes}</p></div></div>}
       {!!customFields.length&&<><div className={styles.groupTitle}><h4>اطلاعات اختصاصی</h4><small>{readable(customFields.length)} فیلد</small></div><div className={styles.dynamicFields}>{customFields.map(([k,v])=><div key={k}><small>{labels.get(k)||k}</small><strong>{Array.isArray(v)?v.join('، '):String(v)}</strong></div>)}</div></>}
       <div className={styles.groupTitle}><h4>فرصت‌های فروش</h4><small>{readable(selected.opportunities.length)} فرصت باز</small></div>
-      {selected.opportunities.length?<div className={styles.leadItems}>{selected.opportunities.slice(0,5).map(l=><div key={l.id}><strong>{l.title}</strong><span>{stageNames[l.stage]||'در جریان'}</span>{l.amount!=null&&<small>{money(l.amount)}</small>}</div>)}</div>:<p className={styles.emptyText}>فرصت فروش فعالی برای این مشتری ثبت نشده است.</p>}
+      {selected.opportunities.length?<div className={styles.leadItems}>{selected.opportunities.slice(0,5).map(l=><div key={l.id} className={styles.leadCard}><div className={styles.leadTop}><strong>{l.title}</strong><span>{stageNames[l.stage]||'در جریان'}</span>{l.amount!=null&&<small>{money(l.amount)}</small>}</div><div className={styles.stageTrack} role="group" aria-label="مراحل فرصت فروش">{['new','qualified','offered','won'].map((stage,i)=><span key={stage} className={['new','qualified','offered','won'].indexOf(l.stage)>=i?styles.stageDone:''}>{stageNames[stage]}</span>)}</div><button type="button" disabled={!!busyLead} onClick={()=>advanceLead(l)}>{busyLead===l.id?'در حال ثبت…':'بردن به مرحله بعد ←'}</button></div>)}</div>:<p className={styles.emptyText}>فرصت فروش فعالی برای این مشتری ثبت نشده است.</p>}
       <div className={styles.groupTitle}><h4>آخرین فعالیت‌ها</h4><button type="button" onClick={()=>setTab('activity')}>دیدن همه <ChevronLeft size={14}/></button></div>
       <History items={selected.timeline.slice(0,5)}/>
      </div>:<div className={styles.content}>
