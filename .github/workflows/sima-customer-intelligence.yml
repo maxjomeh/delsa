@@ -1,0 +1,27 @@
+name: SIMA customer intelligence verification
+on:
+  push:
+    branches:
+      - feat/sima-customer-intelligence-20261019
+  pull_request:
+    paths:
+      - 'components/crm/CustomerIntelligence*'
+      - 'components/crm/SimaWorkspace.js'
+      - 'lib/crm/customer-intelligence.mjs'
+      - 'tests/customer-intelligence.test.mjs'
+      - '.github/workflows/sima-customer-intelligence.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: node --test tests/customer-intelligence.test.mjs
+      - run: node --test supabase/tests/zernio.test.cjs
+      - run: node --test tests/cima-inbox.test.mjs
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
