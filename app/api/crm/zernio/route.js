@@ -56,7 +56,7 @@ export async function GET(){
   const profileId=await ownProfile(user.id);
   if(!profileId)return json({configured,enabled:true,entitled:true,profileReady:false,accounts:[]});
   const result=await zernioRequest('GET','/v1/accounts',{query:{profileId}});
-  return json({configured,enabled:true,entitled:true,profileReady:true,accounts:(result.accounts||[]).map(a=>publicAccount(a,profileId)).filter(Boolean)});
+  return json({configured,enabled:true,entitled:true,profileReady:true,profileId,accounts:(result.accounts||[]).map(a=>publicAccount(a,profileId)).filter(Boolean)});
  }catch{return json({error:'دریافت اطلاعات Zernio فعلاً ممکن نیست.',configured,enabled:true},503);}
 }
 export async function POST(request){
@@ -66,9 +66,11 @@ export async function POST(request){
  if(!entitled)return json({error:'اشتراک فعال سیما لازم است.'},403);
  if(!enabled())return json({error:'اتصال Zernio هنوز برای دلسا فعال نشده است.'},503);
  let body;try{body=await request.json();}catch{return json({error:'درخواست معتبر نیست.'},400);}
- if(body?.action!=='connect'||!ZERNIO_PLATFORMS.includes(body?.platform))return json({error:'این پلتفرم هنوز آمادهٔ اتصال نیست.'},400);
+ if(body?.action!=='prepare'&&body?.action!=='connect')return json({error:'درخواست معتبر نیست.'},400);
+ if(body.action==='connect'&&!ZERNIO_PLATFORMS.includes(body.platform))return json({error:'این پلتفرم هنوز آمادهٔ اتصال نیست.'},400);
  try{
   const profileId=await provisionProfile(user.id);
+  if(body.action==='prepare')return json({ok:true,profileReady:true,profileId});
   const redirectUrl=new URL('/dashboard?tab=crm',new URL(request.url).origin).toString();
   const scopes='messaging,comments';
   const result=await zernioRequest('GET',`/v1/connect/${body.platform}`,{query:{profileId,redirect_url:redirectUrl,scopes}});
