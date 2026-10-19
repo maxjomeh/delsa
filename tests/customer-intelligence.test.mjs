@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {customerIntelligence,rankCustomers} from '../lib/crm/customer-intelligence.mjs';
+import {customerIntelligence,rankCustomers,detectCustomerNeeds} from '../lib/crm/customer-intelligence.mjs';
 const NOW=Date.parse('2026-10-19T08:00:00Z');
 const client={id:'c1',tenant_id:'t1',name:'مشتری نمونه',phone:'09123456789',status:'active',tags:'دوستدار محصول'};
 const other={id:'c2',tenant_id:'t1',name:'مشتری دوم',status:'new'};
@@ -44,4 +44,28 @@ test('Filters and ranking exclude irrelevant people and sort by explainable scor
  assert.deepEqual(rankCustomers(ps,'all','دوم').map(x=>x.customer.id),['c2']);
  assert.equal(rankCustomers(ps,'quiet').length,1);
  assert.equal(rankCustomers(ps,'all')[0].customer.id,'c1');
+});
+
+
+test('real inbound messages give source-backed need cards, with latest evidence first',()=>{
+ const rows=[
+  item({id:'older',kind:'message',direction:'inbound',body:'قیمت محصول چنده؟',occurred_at:'2026-10-18T12:00:00Z'}),
+  item({id:'latest',kind:'message',direction:'inbound',body:'موجودی دارید؟ ارسال دارید؟',occurred_at:'2026-10-19T07:00:00Z'}),
+  item({id:'outbound',kind:'message',direction:'outbound',body:'قیمت ارسال',occurred_at:'2026-10-18T06:00:00Z'})
+ ];
+ const p=customerIntelligence([client],rows,[],[],[],[],NOW)[0];
+ assert.equal(p.needs.length,3);
+ assert.deepEqual(p.needs.map(n=>n.key),['stock','delivery','price']);
+ assert.equal(p.needs[0].interactionId,'latest');
+ assert.equal(p.needs[2].evidence,'قیمت محصول چنده؟');
+ assert.equal(p.next.kind,'reply');
+ assert.match(p.next.title,/موجودی/);
+});
+test('note, outbound texts and attachment-only messages are not invented needs',()=>{
+ const rows=[
+ {direction:'outbound',kind:'message',body:'قیمت دارید؟'},
+ {direction:'inbound',kind:'note',body:'خرید'},
+ {direction:'inbound',kind:'message',body:'[پیام دارای فایل یا رسانه بدون متن]'}
+ ];
+ assert.deepEqual(detectCustomerNeeds(rows),[]);
 });

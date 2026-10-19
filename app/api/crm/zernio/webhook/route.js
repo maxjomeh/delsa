@@ -1,4 +1,4 @@
-import {NextResponse} from 'next/server';
+import {NextResponse,after} from 'next/server';
 import {serverDatabase} from '../../../../../lib/crm/instagram';
 import {verifyZernioSignature,validatedZernioEvent,ZERNIO_EVENTS} from '../../../../../lib/crm/zernio.mjs';
 export const runtime='nodejs';
@@ -35,6 +35,14 @@ export async function POST(request){
   if(!owned)return NextResponse.json({received:true,ignored:true,reason:'unknown_profile'});
   const {error}=await db.from('crm_zernio_events').insert({event_id:normalized.eventId,tenant_id:owned.tenant_id,profile_id:normalized.profileId,account_id:normalized.accountId,event_type:normalized.eventType,payload});
   if(error&&error.code!=='23505')throw error;
+  // Acknowledge the signed event first. Reconcile CRM rows after the response,
+  // with the original inbox event durably stored in Supabase for retry.
+  after(async()=>{
+   try{
+    const {error:projectionError}=await serverDatabase().rpc('crm_zernio_process_batch',{p_limit:80});
+    if(projectionError)console.error('SIMA Zernio projection failed',{code:projectionError.code});
+   }catch{console.error('SIMA Zernio projection invocation failed');}
+  });
   return NextResponse.json({received:true,duplicate:error?.code==='23505'});
  }catch{return new Response('Retry later',{status:503});}
 }
