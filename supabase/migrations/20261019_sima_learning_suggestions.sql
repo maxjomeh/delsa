@@ -14,7 +14,7 @@ create table if not exists public.crm_learning_suggestions(
  created_at timestamptz not null default now(),
  updated_at timestamptz not null default now(),
  foreign key(tenant_id,customer_id) references public.crm_customers(tenant_id,id) on delete cascade,
- foreign key(tenant_id,evidence_interaction_id) references public.crm_interactions(tenant_id,id) on delete set null,
+ foreign key(tenant_id,evidence_interaction_id) references public.crm_interactions(tenant_id,id) on delete set null (evidence_interaction_id),
  unique(tenant_id,customer_id,kind,field_key,proposed_value)
 );
 create index if not exists crm_learning_suggestions_pending_idx on public.crm_learning_suggestions(tenant_id,status,created_at desc);
