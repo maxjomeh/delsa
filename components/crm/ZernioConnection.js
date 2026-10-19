@@ -19,6 +19,16 @@ export default function ZernioConnection(){
   finally{setLoading(false);}
  }
  useEffect(()=>{reload();},[]);
+ async function prepare(){
+  setBusy('prepare');setError('');
+  try{
+   const response=await fetch('/api/crm/zernio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'prepare'})});
+   const result=await response.json();
+   if(!response.ok)throw new Error(result.error||'پروفایل ایجاد نشد.');
+   await reload();
+  }catch(e){setError(e.message||'پروفایل ایجاد نشد.');}
+  finally{setBusy('');}
+ }
  async function connect(platform){
   setBusy(platform);setError('');
   try{
@@ -39,7 +49,7 @@ export default function ZernioConnection(){
   {error&&<p role="alert" className={styles.error}>{error}</p>}
   {data&&!data.enabled&&<div className={styles.connection}><strong>در انتظار پیکربندی توسط دلسا</strong><span>کلید امن جدید، دیتابیس و تنظیمات سرور هنوز باید توسط مدیر پروژه فعال شوند.</span></div>}
   {data&&!data.entitled&&<p role="status">برای اتصال حساب‌ها اشتراک فعال سیما لازم است.</p>}
-  {ready&&<><div className={styles.actions}>{platforms.map(p=><button key={p.id} type="button" disabled={!!busy} onClick={()=>connect(p.id)}>{busy===p.id?'در حال آماده‌سازی…':`اتصال ${p.name}`}</button>)}<button type="button" disabled={!!busy||loading} onClick={reload}>به‌روزرسانی وضعیت</button></div>
+  {ready&&<><div className={styles.connection}><strong>{data.profileReady?'پروفایل اختصاصی کسب‌وکار آماده است':'ابتدا پروفایل مستقل کسب‌وکارت را بساز'}</strong><span>{data.profileReady?'حساب‌های قبلی که در پروفایل Default Zernio هستند خودکار منتقل نمی‌شوند. برای جابه‌جایی آن‌ها باید حساب انتخاب و مالکیتش تأیید شود.':'این مرحله فقط پروفایل اختصاصی می‌سازد؛ هیچ حساب اجتماعی متصل یا جابه‌جا نمی‌شود.'}</span>{data.profileId&&<small dir="ltr">Zernio Profile ID: {data.profileId}</small>}</div>{!data.profileReady&&<button type="button" disabled={!!busy} onClick={prepare}>{busy==='prepare'?'در حال ساخت…':'آماده‌سازی پروفایل Zernio'}</button>}<div className={styles.actions}>{data.profileReady&&platforms.map(p=><button key={p.id} type="button" disabled={!!busy} onClick={()=>connect(p.id)}>{busy===p.id?'در حال آماده‌سازی…':`اتصال ${p.name}`}</button>)}<button type="button" disabled={!!busy||loading} onClick={reload}>به‌روزرسانی وضعیت</button></div>
    <div className={styles.records}>{data.accounts?.map(a=><article key={a.id}><div><strong dir="ltr">@{a.username||a.platform}</strong><small>{a.platform} · {a.connected?'متصل':a.needsReconnect?'نیازمند اتصال مجدد':'وضعیت اتصال نامشخص'}</small></div></article>)}{!data.accounts?.length&&<p>هنوز حساب اجتماعی به پروفایل کسب‌وکار متصل نشده است.</p>}</div>
   </>}
   <small>واتساپ بیزینس و تلگرام بعد از تکمیل مسیر اتصال ویژهٔ هر پلتفرم به این بخش اضافه می‌شوند. اطلاعات اعضای باشگاه مشتریان بین حساب‌ها به‌صورت خودکار یکی فرض نمی‌شود.</small>
