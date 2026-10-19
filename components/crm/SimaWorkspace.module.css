@@ -56,3 +56,15 @@
 @keyframes sima-status-pulse{0%,100%{box-shadow:0 0 0 3px #41ad7924}50%{box-shadow:0 0 0 6px #41ad7912}}
 @media(max-width:720px){.nav{overflow:auto;flex-wrap:nowrap;padding:0 0 14px;scroll-snap-type:x proximity}.nav button{white-space:nowrap;scroll-snap-align:start}.connection:hover,.panel:hover{transform:none}.stats article:hover{transform:translateY(-2px)}.records article:hover{transform:none}}
 @media(prefers-reduced-motion:reduce){.workspace,.header h2,.header p,.badge::before,.stats article,.stats article strong,.panel,.form,.toolbar,.records article,.empty,.error,.workspace [role="status"],.modalBackdrop,.modal{animation:none!important;will-change:auto}.badge,.connection,.connection::before,.nav button,.stats article,.stats article::before,.panel,.form,.toolbar input,.workspace input,.workspace select,.workspace textarea,.workspace button,.records article{transition:none!important}.stats article:hover,.records article:hover,.nav button:hover{transform:none}}
+
+/* CIMA page: airy overview and vivid depth without altering other Delsa products */
+.workspace{--accent:var(--orange,#ff5a1f);max-width:none;width:100%;padding:10px 0 40px}
+.header{padding:20px 3px 26px}.header h2{font-size:clamp(30px,3vw,42px);font-weight:850;line-height:1.4}.header p{font-size:15px;line-height:1.9}
+.stats{gap:20px;grid-template-columns:repeat(4,minmax(0,1fr))}.stats article{padding:28px 26px;min-height:145px;background:linear-gradient(143deg,color-mix(in srgb,var(--panel) 91%,var(--accent) 9%),var(--panel) 73%);border-color:color-mix(in srgb,var(--line) 85%,var(--accent) 15%);box-shadow:0 16px 40px #1919190b}.stats strong{font-size:clamp(31px,2.8vw,43px);font-weight:850}.stats article:hover{box-shadow:0 20px 42px color-mix(in srgb,var(--accent) 12%,transparent)}
+.nav button{font-size:13.5px;padding:13px 16px;border-radius:12px}.connection strong{font-size:14px}.panel h3{font-size:22px;font-weight:800}
+:global(html[data-theme=dark]) .workspace{--panel:#201f24;--panel2:#2b292e;--line:#3d383f;--muted:#c4b9b6;--ink:#fbf7f3;color:#fbf7f3;background:radial-gradient(ellipse at 13% 7%,#ff63260e,transparent 42%),radial-gradient(ellipse at 85% 18%,#9465490d,transparent 35%)}
+:global(html[data-theme=dark]) .stats article{background:linear-gradient(140deg,#302729,#201f25 70%);border-color:#493735;box-shadow:0 14px 40px #0006}
+:global(html:not([data-theme=dark])) .workspace{--panel:#fffefa;--panel2:#fff7f1;--line:#e8ded8;--ink:#201916;--muted:#73645e;color:#201916;background:radial-gradient(ellipse at 10% 0%,#ff6e2510,transparent 36%)}
+:global(html:not([data-theme=dark])) .stats article{background:linear-gradient(145deg,#fff3e8,#fffefa 65%);border-color:#eddfd4}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stats article{min-height:130px;padding:20px}}
+@media(max-width:720px){.stats{gap:11px}.stats article{padding:15px;min-height:110px}.stats strong{font-size:27px}.header h2{font-size:28px}.nav button{font-size:12px;padding:10px 12px}}
