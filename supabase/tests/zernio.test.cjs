@@ -51,6 +51,9 @@ test('Zernio accepts the whole supported inbox and loyalty event catalog',async(
   if(!accountless){
    delete payload.account;
    assert.equal(validatedZernioEvent(payload),null,event);
+  } else {
+   payload.account={accountId:'invalid-id'};
+   assert.equal(validatedZernioEvent(payload),null,event);
   }
  }
 });
