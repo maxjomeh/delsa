@@ -78,3 +78,6 @@
 @media(max-width:1120px){.columns{grid-template-columns:230px minmax(0,1fr)}}
 @media(max-width:730px){.columns{display:block}.topline h3{font-size:24px}.queue,.main,.insight{border-radius:17px}.queueItem:not(.queueActive):hover{transform:none}}
 @media(prefers-reduced-motion:reduce){.queue,.main,.insight,.queueItem,.miniStats>div,.scoreRing{transition:none!important;transform:none!important}}
+
+.loadHistory{display:flex;justify-content:center;align-items:center;width:100%;margin:14px 0 4px;background:color-mix(in srgb,var(--ci-accent) 9%,var(--ci-bg));color:var(--ci-accent);border:1px dashed color-mix(in srgb,var(--ci-accent) 35%,var(--ci-line));border-radius:11px;padding:12px;font-size:12px}
+.historyEnd{display:block;text-align:center;color:var(--ci-sub);font-size:10px;padding:13px}
