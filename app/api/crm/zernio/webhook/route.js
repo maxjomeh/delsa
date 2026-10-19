@@ -26,12 +26,14 @@ export async function POST(request){
  if(!ZERNIO_EVENTS.includes(payload?.event))return NextResponse.json({received:true,ignored:true});
  const normalized=validatedZernioEvent(payload);
  if(!normalized)return new Response('Invalid event',{status:400});
+ // Zernio may omit profileId for shared/unowned accounts. Never infer a tenant.
+ if(!normalized.profileId)return NextResponse.json({received:true,ignored:true,reason:'unmapped_profile'});
  try{
   const db=serverDatabase();
-  const {data:owned,error:ownedError}=await db.from('crm_zernio_profiles').select('tenant_id').eq('tenant_id',normalized.tenantId).eq('profile_id',normalized.profileId).maybeSingle();
+  const {data:owned,error:ownedError}=await db.from('crm_zernio_profiles').select('tenant_id').eq('profile_id',normalized.profileId).maybeSingle();
   if(ownedError)throw ownedError;
-  if(!owned)return NextResponse.json({received:true,ignored:true});
-  const {error}=await db.from('crm_zernio_events').insert({event_id:normalized.eventId,tenant_id:normalized.tenantId,profile_id:normalized.profileId,account_id:normalized.accountId,event_type:normalized.eventType,payload});
+  if(!owned)return NextResponse.json({received:true,ignored:true,reason:'unknown_profile'});
+  const {error}=await db.from('crm_zernio_events').insert({event_id:normalized.eventId,tenant_id:owned.tenant_id,profile_id:normalized.profileId,account_id:normalized.accountId,event_type:normalized.eventType,payload});
   if(error&&error.code!=='23505')throw error;
   return NextResponse.json({received:true,duplicate:error?.code==='23505'});
  }catch{return new Response('Retry later',{status:503});}
