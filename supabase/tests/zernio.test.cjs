@@ -34,3 +34,23 @@ test('Zernio account is included only when it belongs to the current profile',as
  assert.deepEqual(publicAccount({_id:account,profileId:profile,platform:'instagram',username:'shop',isActive:true},profile),{id:account,platform:'instagram',username:'shop',connected:true,needsReconnect:false});
  assert.equal(publicAccount({_id:account,profileId:'aaaaaaaaaaaaaaaaaaaaaaaa'},profile),null);
 });
+
+
+test('Zernio accepts the whole supported inbox and loyalty event catalog',async()=>{
+ const {ZERNIO_EVENTS,validatedZernioEvent}=await import('../../lib/crm/zernio.mjs');
+ assert.equal(ZERNIO_EVENTS.length,25);
+ assert.equal(new Set(ZERNIO_EVENTS).size,25);
+ for(const event of ZERNIO_EVENTS){
+  const accountless=/^(contact\\.|sequence\\.|workflow\\.run\\.)/.test(event);
+  const payload={id:eventId,event,profiles:[{id:profile,externalId:tenant}]};
+  if(!accountless)payload.account={accountId:account,profileId:profile};
+  const normalized=validatedZernioEvent(payload);
+  assert.equal(normalized?.eventType,event,event);
+  assert.equal(normalized?.tenantId,tenant,event);
+  assert.equal(normalized?.accountId,accountless?null:account,event);
+  if(!accountless){
+   delete payload.account;
+   assert.equal(validatedZernioEvent(payload),null,event);
+  }
+ }
+});
