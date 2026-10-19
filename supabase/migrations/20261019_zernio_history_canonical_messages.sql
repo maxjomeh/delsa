@@ -1,14 +1,10 @@
--- Replace projection to use stable message IDs and per-conversation images.
+-- Stable cross-source social message keys and trusted profile-image projection.
 begin;
--- Canonical IDs deduplicate old live webhooks and API history records.
--- Existing 35 interactions are rewritten with the original Zernio message id.
 update public.crm_interactions i
 set external_event_id='zernio-msg:'||md5(e.account_id||':'||coalesce(nullif(e.payload->'message'->>'id',''),e.event_id::text))
 from public.crm_zernio_events e
 where i.tenant_id=e.tenant_id and i.external_event_id='zernio:'||e.event_id::text
- and e.event_type in ('message.received','message.sent')
- and coalesce(e.payload->'message'->>'id','')<>'';
-
+ and e.event_type in ('message.received','message.sent') and coalesce(e.payload->'message'->>'id','')<>'';
 create or replace function public.crm_zernio_process_batch(p_limit integer default 60)
 returns jsonb language plpgsql security definer set search_path='' as $func$
 declare
@@ -59,7 +55,7 @@ begin
    v_account=coalesce(nullif(e.account_id,''),nullif(e.payload->'account'->>'accountId',''),nullif(e.payload->'account'->>'id',''));
    v_participant=nullif(pg_catalog.btrim(e.payload->'conversation'->>'participantId'),'');
    v_picture=nullif(left(pg_catalog.btrim(coalesce(e.payload->'conversation'->>'participantPicture','')),2048),'');
-   if v_picture is not null and v_picture !~ '^https://[^[:space:]]+
+   if v_picture is not null and v_picture !~ '^https://[^[:space:]]+$' then v_picture=null;end if;
    if v_account is null or v_account!~'^[a-f0-9]{24}$' or v_participant is null or length(v_participant)>200 then
     update public.crm_zernio_events set status='failed',last_error='stable_identity_missing' where event_id=e.event_id;
     v_failed:=v_failed+1;continue;
@@ -122,5 +118,4 @@ begin
  end loop;
  return pg_catalog.jsonb_build_object('processed',v_processed,'created_customers',v_created,'interactions',v_inserted,'skipped',v_skipped,'failed',v_failed);
 end $func$;
-
 commit;
