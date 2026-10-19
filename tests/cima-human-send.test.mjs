@@ -1,0 +1,41 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=p=>readFileSync(p,'utf8');
+const send=read('app/api/crm/reviews/send/route.js');
+const ui=read('components/crm/HumanReviewWorkspace.js');
+const sql=read('supabase/migrations/20261019_cima_human_send_outbox.sql');
+const finish=read('supabase/migrations/20261019_cima_human_send_finalization.sql');
+test('manual dispatch is authenticated, confirmed, and never agent initiated',()=>{
+ assert.match(send,/auth\.auth\.getUser\(\)/);
+ assert.match(send,/auth\.rpc\('has_active_crm'\)/);
+ assert.match(send,/body\?\.action!=='send'/);
+ assert.match(send,/request\.headers\.get\('origin'\)/);
+ assert.match(send,/sima_prepare_human_send/);
+ assert.match(send,/sima_claim_human_send/);
+ assert.match(send,/Idempotency|idempotencyKey:id/);
+ assert.doesNotMatch(send,/retry\s*\(|setInterval|setTimeout/);
+ assert.match(ui,/window\.confirm/);
+ assert.match(ui,/ارسال واقعی به اینستاگرام/);
+});
+test('Postgres enforces isolated one-shot sends, no contact opt-outs or stale turns',()=>{
+ assert.match(sql,/create table if not exists public\.sima_message_outbox/);
+ assert.match(sql,/unique\(tenant_id,review_id,conversation_version\)/);
+ assert.match(sql,/attempt_count integer not null default 0 check\(attempt_count between 0 and 1\)/);
+ assert.match(sql,/23 hours/);
+ assert.match(sql,/do_not_contact/);
+ assert.match(sql,/conversation_version<>p_version/);
+ assert.match(sql,/channel<>'instagram'/);
+ assert.match(sql,/zernio-msg:/);
+ assert.match(sql,/for update/);
+ assert.match(sql,/grant execute on function public\.sima_claim_human_send\(uuid\) to service_role/);
+});
+test('acknowledgment is distinguished from delivery and uncertain requests never resend',()=>{
+ assert.match(send,/delivered:false/);
+ assert.match(send,/\[400,401,403,422,429\]/);
+ assert.match(send,/status='unknown'|status='unknown'|status\s*=\s*'unknown'/);
+ assert.match(finish,/sima_outbox_unknown_reaper/);
+ assert.match(finish,/sima_finalize_human_send/);
+ assert.match(finish,/p_message_id is null/);
+ assert.doesNotMatch(finish,/zernioRequest\(/);
+});

@@ -1,6 +1,6 @@
 'use client';
 import {useCallback,useEffect,useMemo,useState} from 'react';
-import {AlertCircle,CheckCircle2,Clock3,FileText,MessagesSquare,RefreshCcw,Save,ShieldAlert,UserRound} from 'lucide-react';
+import {AlertCircle,CheckCircle2,Clock3,FileText,MessagesSquare,RefreshCcw,Save,Send,ShieldAlert,UserRound} from 'lucide-react';
 import styles from './HumanReviewWorkspace.module.css';
 
 const pretty=n=>Number(n||0).toLocaleString('fa-IR');
@@ -17,6 +17,7 @@ export default function HumanReviewWorkspace(){
  const [hasMore,setHasMore]=useState(false),[selectedId,setSelectedId]=useState('');
  const [messages,setMessages]=useState([]),[selectedVersion,setSelectedVersion]=useState(null);
  const [draft,setDraft]=useState(''),[dirty,setDirty]=useState(false);
+ const [sending,setSending]=useState(false),[lastSend,setLastSend]=useState(null);
  const [loading,setLoading]=useState(true),[historyLoading,setHistoryLoading]=useState(false),[saving,setSaving]=useState(false);
  const [error,setError]=useState(''),[notice,setNotice]=useState('');
  const load=useCallback(async()=>{
@@ -33,10 +34,15 @@ export default function HumanReviewWorkspace(){
  const visible=useMemo(()=>cases.filter(x=>[x.customer?.name,x.customer?.instagram,x.customer?.phone,x.lastMessage?.body].join(' ').toLocaleLowerCase('fa-IR').includes(query.toLocaleLowerCase('fa-IR'))),[cases,query]);
  const selected=visible.find(x=>x.id===selectedId)||visible[0]||null;
  const stale=!!selected&&selectedVersion!==null&&selected.conversation_version!==selectedVersion;
+ const withinWindow=!!selected&&Number.isFinite(Date.parse(selected.last_occurred_at||''))&&Date.now()-Date.parse(selected.last_occurred_at)>0&&Date.now()-Date.parse(selected.last_occurred_at)<23*60*60*1000;
+ const alreadyAttempted=!!lastSend&&lastSend.conversation_version===selectedVersion;
+ const canSend=!!selected&&selected.channel==='instagram'&&!selected.customer?.do_not_contact&&withinWindow&&!stale&&!alreadyAttempted&&!saving&&!sending&&selectedVersion!==null&&draft.trim().length>0&&draft.length<=4000;
  useEffect(()=>{
   if(!selected)return;
   let active=true;
-  setSelectedVersion(null);setHistoryLoading(true);setMessages([]);
+  setSelectedVersion(null);setLastSend(null);setHistoryLoading(true);setMessages([]);
+  fetch('/api/crm/reviews/send?caseId='+encodeURIComponent(selected.id),{cache:'no-store'})
+   .then(r=>r.ok?r.json():null).then(j=>{if(active&&j)setLastSend(j.sends?.[0]||null);}).catch(()=>{});
   fetch('/api/crm/reviews?'+new URLSearchParams({caseId:selected.id,customerId:selected.customer_id}),{cache:'no-store'})
    .then(async r=>{const j=await r.json();if(!r.ok)throw Error(j.error);return j;})
    .then(j=>{if(!active)return;setMessages(j.messages||[]);setSelectedVersion(j.review.conversation_version);
@@ -45,6 +51,21 @@ export default function HumanReviewWorkspace(){
    .finally(()=>{if(active)setHistoryLoading(false);});
   return()=>{active=false;};
  },[selected?.id]);
+ async function sendReply(){
+  if(!canSend||!selected)return;
+  if(!window.confirm('این پیام همین الان واقعاً از حساب اینستاگرام متصل برای مشتری ارسال می‌شود. تأیید می‌کنید؟'))return;
+  setSending(true);setError('');setNotice('');
+  try{
+   const res=await fetch('/api/crm/reviews/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'send',id:selected.id,version:selectedVersion,text:draft})});
+   const json=await res.json();
+   if(json.outboxId)setLastSend({id:json.outboxId,conversation_version:selectedVersion,status:json.status||'unknown'});
+   if(json.status==='accepted'){setDirty(false);setNotice('Zernio ارسال را پذیرفت. تحویل و خوانده‌شدن هنوز تأیید نشده است.');await load();}
+   else if(json.status==='unknown'||res.status===202){setError('نتیجهٔ ارسال نامشخص است. دوباره ارسال نکنید؛ ابتدا وضعیت گفتگو را در اینستاگرام بررسی کنید.');}
+   else if(json.status==='rejected'){setError('سرویس ارسال را رد کرد. برای جلوگیری از تکرار، ارسال این نوبت قفل شد.');}
+   else{const explanations={reply_window_closed:'از آخرین پیام مشتری بیش از ۲۳ ساعت گذشته است.',contact_opted_out:'ارتباط با این مشتری ممنوع است.',conversation_stale:'مکالمه تغییر کرده؛ تاریخچه را تازه‌سازی کنید.',duplicate_send_blocked:'برای همین نوبت قبلاً تلاش ارسال ثبت شده است.',business_already_replied:'پاسخ جدیدتری قبلاً ثبت شده است.',conversation_unverified:'شناسهٔ اصلی گفتگو قابل تأیید نیست.',instagram_sender_not_connected:'اتصال اینستاگرام نیازمند بررسی است.'};setError(explanations[json.error]||'ارسال انجام نشد. وضعیت اتصال یا مکالمه را بررسی کنید.');}
+  }catch{setError('وضعیت درخواست نامشخص است. قبل از تلاش جدید، تاریخچه و وضعیت ارسال را بررسی کنید.');}
+  finally{setSending(false);}
+ }
  async function saveDraft(){
   if(!selected||saving||stale)return;
   setSaving(true);setError('');setNotice('');
@@ -59,10 +80,10 @@ export default function HumanReviewWorkspace(){
  }
  return <section className={styles.shell} aria-label="صف نظارت انسانی سیما">
   <header className={styles.head}>
-   <div><span className={styles.eyebrow}><ShieldAlert size={15}/> CIMA HUMAN-IN-THE-LOOP</span><h3>نیازمند پاسخ شما</h3><p>پیام‌های واقعی با پاسخ نامطمئن، برای بررسی و پاسخ‌نویسی انسانی. سیما هنوز هیچ پیام خودکاری ارسال نمی‌کند.</p></div>
+   <div><span className={styles.eyebrow}><ShieldAlert size={15}/> CIMA HUMAN-IN-THE-LOOP</span><h3>نیازمند پاسخ شما</h3><p>پیام‌های واقعی با پاسخ نامطمئن، برای بررسی و پاسخ‌نویسی انسانی. سیما هیچ پاسخ خودکاری ارسال نمی‌کند؛ ارسال انسانی فقط با تأیید شما انجام می‌شود.</p></div>
    <button type="button" className={styles.refresh} onClick={()=>{setLoading(true);load();}}><RefreshCcw size={16}/> تازه‌سازی</button>
   </header>
-  <div className={styles.noticeBar}><AlertCircle size={17}/><span>این بخش در فاز Copilot و فقط برای نظارت و ذخیرهٔ پیش‌نویس فعال است. <strong>ارسال واقعی به اینستاگرام هنوز فعال نشده</strong> و پاسخ‌های قدیمی صرفاً برای بررسی صف‌بندی شده‌اند.</span></div>
+  <div className={styles.noticeBar}><AlertCircle size={17}/><span>این بخش در حالت نظارت انسانی است. <strong>ارسال واقعی اینستاگرام</strong> صرفاً پس از تأیید شما، از حساب معتبر و در بازهٔ ۲۳ساعتهٔ پاسخ فعال است. هیچ پاسخ خودکار AI ارسال نمی‌شود.</span></div>
   <div className={styles.toolbar}>
     <div className={styles.metric}><strong>{pretty(cases.length)}</strong><small>پرونده در صفحهٔ فعلی</small></div>
     <label>جست‌وجو در صفحه<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="نام، شماره، پیام…"/></label>
@@ -91,8 +112,11 @@ export default function HumanReviewWorkspace(){
       </div>
       <div className={styles.composer}><label htmlFor="cima-human-draft">پیش‌نویس پاسخ انسانی</label>
        {stale&&<p className={styles.error}><AlertCircle size={15}/> مکالمه در حین نوشتن به‌روز شده است؛ پیش از ذخیره متن را بررسی و صفحه را تازه‌سازی کن.</p>}
-       <textarea id="cima-human-draft" value={draft} onChange={e=>{setDraft(e.target.value);setDirty(true);}} maxLength={8000} rows={5} placeholder="پاسخ پیشنهادی خودت را بنویس؛ ذخیرهٔ آن به معنای ارسال نیست…"/>
-       <div className={styles.actionRow}><small>{dirty?'تغییرات هنوز ذخیره نشده‌اند.':'پیش‌نویس فقط در سیما نگهداری می‌شود.'}</small><button type="button" onClick={saveDraft} disabled={saving||stale||selectedVersion===null}><Save size={16}/>{saving?'در حال ذخیره…':'ذخیره پیش‌نویس'}</button></div>
+       <textarea id="cima-human-draft" value={draft} onChange={e=>{setDraft(e.target.value);setDirty(true);}} maxLength={4000} rows={5} placeholder="پاسخ را بنویسید. ذخیرهٔ پیش‌نویس ارسال نمی‌کند؛ ارسال واقعی دکمهٔ جدا دارد…"/>
+       {!withinWindow&&<small className={styles.sendWarning}>مهلت پاسخ عادی به این پیام تمام شده؛ برای ارسال جدید باید مشتری دوباره پیام بدهد.</small>}
+       {selected.customer?.do_not_contact&&<small className={styles.sendWarning}>این مشتری اجازهٔ تماس ندارد؛ ارسال مسدود است.</small>}
+       {lastSend&&<div className={styles.sendReceipt}>وضعیت آخرین تلاش: <strong>{({accepted:'پذیرفته‌شده توسط Zernio؛ تحویل نامشخص',unknown:'نتیجه نامشخص — ارسال مجدد ممنوع',rejected:'ردشده توسط ارائه‌دهنده',sending:'در حال ارسال',pending:'در صف'})[lastSend.status]||lastSend.status}</strong></div>}
+       <div className={styles.actionRow}><small>{dirty?'تغییرات هنوز ذخیره نشده‌اند.':'ذخیرهٔ پیش‌نویس جدا از ارسال واقعی است.'}</small><div className={styles.sendActions}><button type="button" onClick={saveDraft} disabled={saving||sending||stale||selectedVersion===null}><Save size={16}/>{saving?'در حال ذخیره…':'ذخیره پیش‌نویس'}</button><button type="button" className={styles.sendButton} onClick={sendReply} disabled={!canSend}><Send size={16}/>{sending?'در حال ارسال…':'ارسال واقعی به اینستاگرام'}</button></div></div>
       </div>
      </>}
     </section>
