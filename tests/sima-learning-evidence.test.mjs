@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {discoverFieldPatterns,extractEvidence} from '../lib/crm/learning-evidence.mjs';
+import {discoverFieldPatterns,extractEvidence,calibrateConfidence} from '../lib/crm/learning-evidence.mjs';
 test('self-disclosed Persian phone candidate has high confidence, only from inbound',()=>{
  const p=extractEvidence([{id:'m1',customer_id:'c1',kind:'message',direction:'inbound',body:'شماره تماس من ۰۹۱۲۳۴۵۶۷۸۹ هست'}]);
  assert.equal(p[0].value,'09123456789');
@@ -23,4 +23,12 @@ test('trucks are candidate evidence, not invented facts',()=>{
  assert.equal(p[0].kind,'truck_model');
  assert.match(p[0].value,/ولوو/);
  assert.ok(p[0].confidence<.9);
+});
+
+test('tenant-review feedback updates scores without treating probabilities as facts',()=>{
+ assert.equal(calibrateConfidence(.78,0,0),.78);
+ assert.ok(calibrateConfidence(.78,10,0)>.78);
+ assert.ok(calibrateConfidence(.78,0,10)<.78);
+ assert.ok(calibrateConfidence(.96,0,100)<.5);
+ assert.ok(calibrateConfidence(.8,1000,0)<1);
 });
