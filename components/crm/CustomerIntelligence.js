@@ -117,6 +117,8 @@ export default function CustomerIntelligence({db,userId,customers,interactions,o
       {!!customer.tags?.trim()&&<div className={styles.tags}>{customer.tags.split(/[,،]/).map(t=>t.trim()).filter(Boolean).slice(0,16).map(t=><span key={t}>{t}</span>)}</div>}
       {!!customer.notes?.trim()&&<div className={styles.noteBox}><StickyNote size={16}/><div><strong>یادداشت پرونده</strong><p>{customer.notes}</p></div></div>}
       {!!customFields.length&&<><div className={styles.groupTitle}><h4>اطلاعات اختصاصی</h4><small>{readable(customFields.length)} فیلد</small></div><div className={styles.dynamicFields}>{customFields.map(([k,v])=><div key={k}><small>{labels.get(k)||k}</small><strong>{Array.isArray(v)?v.join('، '):String(v)}</strong></div>)}</div></>}
+      <div className={styles.groupTitle}><h4><Sparkles size={15}/> نیازهای مطرح‌شده در پیام‌ها</h4><small>قواعد متنی قابل‌ردیابی</small></div>
+      {selected.needs?.length?<div className={styles.needGrid}>{selected.needs.map(need=><article key={need.key} className={styles.needItem}><strong>{need.label}</strong><p>«{need.evidence}»</p><small>{stamp(need.at)} · پیام دریافتی</small></article>)}</div>:<p className={styles.emptyText}>هنوز نشانهٔ قابل اتکایی از نیاز مشتری در پیام‌های ثبت‌شده پیدا نشده است.</p>}
       <div className={styles.groupTitle}><h4>فرصت‌های فروش</h4><small>{readable(selected.opportunities.length)} فرصت باز</small></div>
       {selected.opportunities.length?<div className={styles.leadItems}>{selected.opportunities.slice(0,5).map(l=><div key={l.id} className={styles.leadCard}><div className={styles.leadTop}><strong>{l.title}</strong><span>{stageNames[l.stage]||'در جریان'}</span>{l.amount!=null&&<small>{money(l.amount)}</small>}</div><div className={styles.stageTrack} role="group" aria-label="مراحل فرصت فروش">{['new','qualified','offered','won'].map((stage,i)=><span key={stage} className={['new','qualified','offered','won'].indexOf(l.stage)>=i?styles.stageDone:''}>{stageNames[stage]}</span>)}</div><button type="button" disabled={!!busyLead} onClick={()=>advanceLead(l)}>{busyLead===l.id?'در حال ثبت…':'بردن به مرحله بعد ←'}</button></div>)}</div>:<p className={styles.emptyText}>فرصت فروش فعالی برای این مشتری ثبت نشده است.</p>}
       <div className={styles.groupTitle}><h4>آخرین فعالیت‌ها</h4><button type="button" onClick={()=>setTab('activity')}>دیدن همه <ChevronLeft size={14}/></button></div>
@@ -141,7 +143,7 @@ export default function CustomerIntelligence({db,userId,customers,interactions,o
     </>}
    </aside>
   </div>
-  <div className={styles.footnote}>هوشمندی فعلی بر پایهٔ قواعد شفاف است؛ تحلیل متنی مبتنی بر مدل هوش مصنوعی پس از اتصال کانال‌ها و آماده‌شدن پردازش امن پیام‌ها اضافه می‌شود. هر بخش بر اساس حداکثر ۵۰۰ رکورد اخیرِ بارگذاری‌شدهٔ سیما محاسبه می‌شود.</div>
+  <div className={styles.footnote}>خلاصهٔ نیازها بر اساس واژه‌های موجود در پیام‌های دریافتی و بدون ارسال متن به سرویس هوش مصنوعی خارجی ساخته می‌شود؛ این دسته‌بندی ممکن است نیاز به اصلاح انسانی داشته باشد. هر بخش بر اساس حداکثر ۵۰۰ رکورد اخیرِ بارگذاری‌شدهٔ سیما محاسبه می‌شود.</div>
  </div>;
 }
 function History({items}){
