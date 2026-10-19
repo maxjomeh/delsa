@@ -51,7 +51,7 @@ test('real inbound messages give source-backed need cards, with latest evidence 
  const rows=[
   item({id:'older',kind:'message',direction:'inbound',body:'قیمت محصول چنده؟',occurred_at:'2026-10-18T12:00:00Z'}),
   item({id:'latest',kind:'message',direction:'inbound',body:'موجودی دارید؟ ارسال دارید؟',occurred_at:'2026-10-19T07:00:00Z'}),
-  item({id:'outbound',kind:'message',direction:'outbound',body:'قیمت ارسال',occurred_at:'2026-10-19T07:10:00Z'})
+  item({id:'outbound',kind:'message',direction:'outbound',body:'قیمت ارسال',occurred_at:'2026-10-18T06:00:00Z'})
  ];
  const p=customerIntelligence([client],rows,[],[],[],[],NOW)[0];
  assert.equal(p.needs.length,3);
