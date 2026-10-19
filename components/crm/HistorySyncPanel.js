@@ -51,7 +51,8 @@ export default function HistorySyncPanel({onRefresh}){
    try{
     let current=await fetcher();
     if(!current.length)current=await fetcher('start'); // First sweep begins automatically.
-    if(!cancelled.current)await runLoop(current);
+    if(!cancelled.current&&current.length&&current.every(j=>j.status==='complete'))await train();
+    else if(!cancelled.current)await runLoop(current);
    }catch(e){if(!cancelled.current)setError(e.message);}
    finally{if(!cancelled.current)setLoading(false);}
   })();
