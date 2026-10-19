@@ -56,3 +56,21 @@
 @keyframes sima-status-pulse{0%,100%{box-shadow:0 0 0 3px #41ad7924}50%{box-shadow:0 0 0 6px #41ad7912}}
 @media(max-width:720px){.nav{overflow:auto;flex-wrap:nowrap;padding:0 0 14px;scroll-snap-type:x proximity}.nav button{white-space:nowrap;scroll-snap-align:start}.connection:hover,.panel:hover{transform:none}.stats article:hover{transform:translateY(-2px)}.records article:hover{transform:none}}
 @media(prefers-reduced-motion:reduce){.workspace,.header h2,.header p,.badge::before,.stats article,.stats article strong,.panel,.form,.toolbar,.records article,.empty,.error,.workspace [role="status"],.modalBackdrop,.modal{animation:none!important;will-change:auto}.badge,.connection,.connection::before,.nav button,.stats article,.stats article::before,.panel,.form,.toolbar input,.workspace input,.workspace select,.workspace textarea,.workspace button,.records article{transition:none!important}.stats article:hover,.records article:hover,.nav button:hover{transform:none}}
+
+/* Expanded SIMA overview: energetic, theme-aware and highly legible. */
+.workspace{width:100%;max-width:none}
+.workspace .header{padding:17px 18px 23px;border-radius:20px;background:linear-gradient(115deg,color-mix(in srgb,var(--accent) 12%,var(--panel)),var(--panel) 62%,color-mix(in srgb,var(--accent) 6%,var(--panel)));border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line));margin-bottom:21px;position:relative;overflow:hidden}
+.workspace .header::after{content:"";position:absolute;width:250px;height:250px;left:-110px;top:-140px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 28%,transparent),transparent 72%);filter:blur(10px)}
+.workspace .header h2{font-size:clamp(26px,3vw,38px);line-height:1.6}
+.workspace .header p{font-size:15px;line-height:1.9}
+.workspace .nav{gap:9px;padding:10px 0 23px}
+.workspace .nav button{font-size:13px;padding:12px 16px;border-radius:13px}
+.workspace .stats{gap:18px;grid-template-columns:repeat(4,minmax(0,1fr))}
+.workspace .stats article{padding:27px;min-height:145px;background:linear-gradient(138deg,var(--panel),color-mix(in srgb,var(--accent) 7%,var(--panel)));border:1px solid color-mix(in srgb,var(--accent) 16%,var(--line));border-radius:20px}
+.workspace .stats strong{font-size:clamp(27px,2.5vw,37px)}
+.workspace .panel{border-radius:20px;background:linear-gradient(135deg,var(--panel),color-mix(in srgb,var(--accent) 3%,var(--panel)));padding:27px}
+.workspace .panel h3{font-size:20px}
+.workspace .panel p{font-size:14px}
+@media(max-width:1050px){.workspace .stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:730px){.workspace .header{padding:18px 15px}.workspace .stats article{min-height:112px;padding:17px}.workspace .nav button{font-size:12px}.workspace .header h2{font-size:25px}}
+@media(prefers-reduced-motion:reduce){.workspace .header:after{filter:none}}
