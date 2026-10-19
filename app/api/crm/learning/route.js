@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import {createClient} from '../../../../lib/supabase/server';
 import {serverDatabase} from '../../../../lib/crm/instagram';
-import {extractEvidence,discoverFieldPatterns} from '../../../../lib/crm/learning-evidence.mjs';
+import {extractEvidence,discoverFieldPatterns,calibrateConfidence} from '../../../../lib/crm/learning-evidence.mjs';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 const json=(data,status=200)=>NextResponse.json(data,{status,headers:{'Cache-Control':'no-store'}});
@@ -35,10 +35,17 @@ export async function POST(request){
    const proposals=extractEvidence(interactions);
    const proposals2=discoverFieldPatterns(interactions);
    for(const p of proposals2)proposals.push({kind:'new_field',key:p.key,value:p.label,confidence:p.confidence,quote:p.quote,interaction_id:p.interaction_id,customer_id:null,support_count:p.support_count});
+   // Supervised feedback is tenant-local, grouped by proposal kind.
+   const feedback={};
+   for(const item of already){
+    if(item.status!=='accepted'&&item.status!=='rejected')continue;
+    const z=feedback[item.kind]||(feedback[item.kind]={accepted:0,rejected:0});
+    z[item.status]++;
+   }
    let created=0;
    for(const s of proposals.slice(0,300)){
     if(already.some(x=>x.kind===s.kind&&x.customer_id===s.customer_id&&x.field_key===s.key&&x.proposed_value===s.value))continue;
-    const {error:insertError}=await db.from('crm_learning_suggestions').insert({tenant_id:id,customer_id:s.customer_id||null,kind:s.kind,field_key:s.key,proposed_value:s.value,evidence_quote:s.quote,confidence:s.confidence,support_count:s.support_count||1,evidence_interaction_id:s.interaction_id||null});
+    const {error:insertError}=await db.from('crm_learning_suggestions').insert({tenant_id:id,customer_id:s.customer_id||null,kind:s.kind,field_key:s.key,proposed_value:s.value,evidence_quote:s.quote,confidence:calibrateConfidence(s.confidence,feedback[s.kind]?.accepted||0,feedback[s.kind]?.rejected||0),support_count:s.support_count||1,evidence_interaction_id:s.interaction_id||null});
     if(!insertError)created++;
    }
    return json({created,suggestions:await list(id)});
