@@ -1,5 +1,5 @@
 'use client';
-import {useCallback,useEffect,useMemo,useState} from 'react';
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {createClient} from '../../lib/supabase/client';
 import {industries,statusNames,normalizePhone} from './industry';
 import styles from './SimaWorkspace.module.css';
@@ -21,11 +21,20 @@ const date=v=>new Date(v).toLocaleString('fa-IR',{timeZone:'Asia/Tehran'}),num=v
 const initialSettings={industry:'retail',business_name:'',followup_hours:24,max_attempts:2,automation_enabled:true};
 export default function SimaWorkspace({userId}){
 const db=useMemo(()=>createClient(),[]),[section,setSection]=useState('overview'),[data,setData]=useState({customers:[],interactions:[],leads:[],orders:[],tasks:[],reports:[]}),[settings,setSettings]=useState(initialSettings),[draftSettings,setDraftSettings]=useState(initialSettings),[search,setSearch]=useState(''),[filter,setFilter]=useState(''),[form,setForm]=useState(null),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState(''),[fields,setFields]=useState([]),[informationStates,setInformationStates]=useState([]),[informationQueue,setInformationQueue]=useState([]),[informationEditing,setInformationEditing]=useState(false);
+const [health,setHealth]=useState(null);
+useEffect(()=>{let active=true;fetch('/api/crm/health',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(x=>{if(active)setHealth(x)}).catch(()=>{});return()=>{active=false;};},[]);
 useEffect(()=>{const params=new URLSearchParams(window.location.search);if(params.get('sima_section')==='connections')setSection('connections');else if(params.has('sima_customer'))setSection('customers');},[]);
-const load=useCallback(async()=>{const keys=Object.keys(tables),results=await Promise.all(keys.map(async k=>{
+const loadSeq=useRef(0);
+const load=useCallback(async()=>{
+ const request=++loadSeq.current;
+ try{
+ const keys=Object.keys(tables),results=await Promise.all(keys.map(async k=>{
  if(k==='interactions'){
   const all=[];
-  for(let page=0;page<12;page++){
+  // On overview, reports and settings, a short activity sample is enough.
+  // Full histories are loaded only when a conversation/customer view requires them.
+  const maxPages=['inbox','customers','interactions'].includes(section)?8:1;
+  for(let page=0;page<maxPages;page++){
    const res=await db.from(tables[k]).select('*').eq('tenant_id',userId)
     .order('created_at',{ascending:false}).range(page*500,page*500+499);
    if(res.error)return res;
@@ -41,8 +50,21 @@ const load=useCallback(async()=>{const keys=Object.keys(tables),results=await Pr
   all.push(...(page.data||[]));if((page.data||[]).length<1000)break;
  }
  return {data:all,error:null};
-}));const cfg=await db.from('crm_settings').select('*').eq('tenant_id',userId).maybeSingle();if(results.some(r=>r.error)||cfg.error){setError('بارگذاری اطلاعات سیما انجام نشد. دوباره تلاش کنید.');setLoading(false);return;}setData(Object.fromEntries(keys.map((k,i)=>[k,results[i].data||[]])));if(cfg.data){setSettings(cfg.data);setDraftSettings(v=>form?v:cfg.data);}const extras=await Promise.all([db.from('crm_field_definitions').select('*').eq('tenant_id',userId).order('priority',{ascending:false}).limit(200),db.from('crm_information_states').select('*').eq('tenant_id',userId).order('updated_at',{ascending:false}).limit(5000),db.rpc('crm_information_queue',{p_limit:500})]);if(extras.some(r=>r.error)){setError('بارگذاری بخش اطلاعات جدید انجام نشد؛ اتصال را بررسی کنید.');}else{setFields(extras[0].data||[]);setInformationStates(extras[1].data||[]);setInformationQueue(extras[2].data||[]);}setLoading(false);},[db,userId,form]);
-useEffect(()=>{let alive=true;const refresh=()=>{if(alive&&document.visibilityState==='visible'&&!form&&!informationEditing&&section!=='settings')load();};refresh();const timer=setInterval(refresh,15000);window.addEventListener('focus',refresh);return()=>{alive=false;clearInterval(timer);window.removeEventListener('focus',refresh);};},[load,form,section,informationEditing]);
+}));if(request!==loadSeq.current)return;
+ const cfg=await db.from('crm_settings').select('*').eq('tenant_id',userId).maybeSingle();
+ if(request!==loadSeq.current)return;
+ const failed=keys.filter((k,i)=>!!results[i].error);
+ if(failed.length||cfg.error)setError('بعضی از بخش‌های سیما موقتاً در دسترس نیستند؛ اطلاعات سالم همچنان نمایش داده می‌شوند.');
+ else setError('');
+ setData(prev=>Object.fromEntries(keys.map((k,i)=>[k,results[i].error?prev[k]||[]:results[i].data||[]])));if(cfg.data){setSettings(cfg.data);setDraftSettings(v=>form?v:cfg.data);}const extras=await Promise.all([db.from('crm_field_definitions').select('*').eq('tenant_id',userId).order('priority',{ascending:false}).limit(200),db.from('crm_information_states').select('*').eq('tenant_id',userId).order('updated_at',{ascending:false}).limit(5000),db.rpc('crm_information_queue',{p_limit:500}) ]);
+ if(request!==loadSeq.current)return;
+ if(extras.some(r=>r.error))setError('برخی داده‌های اطلاعات مشتریان بارگذاری نشدند؛ بخش‌های سالم قابل استفاده‌اند.');
+ if(!extras[0].error)setFields(extras[0].data||[]);
+ if(!extras[1].error)setInformationStates(extras[1].data||[]);
+ if(!extras[2].error)setInformationQueue(extras[2].data||[]);setLoading(false);
+ }catch(e){if(request===loadSeq.current){setError('دریافت اطلاعات سیما با خطا مواجه شد. دوباره تلاش کنید.');setLoading(false);}}
+},[db,userId,form,section]);
+useEffect(()=>{let alive=true;const refresh=()=>{if(alive&&document.visibilityState==='visible'&&!form&&!informationEditing&&section!=='settings')load();};refresh();const timer=setInterval(refresh,90000);window.addEventListener('focus',refresh);return()=>{alive=false;clearInterval(timer);window.removeEventListener('focus',refresh);};},[load,form,section,informationEditing]);
 useEffect(()=>{if(section==='customers'&&form){document.getElementById('sima-customer-editor')?.scrollIntoView({behavior:'smooth',block:'start'});}},[section,Boolean(form)]);
 function navigate(k){setSection(k);setInformationEditing(false);if(k==='settings')setDraftSettings(settings);setForm(null);setSearch('');setFilter('');setError('');setNotice('');}
 const customer=id=>data.customers.find(c=>c.id===id)?.name||'مشتری',industry=industries[settings.industry]||industries.retail;
@@ -66,6 +88,7 @@ return <section className={styles.workspace}><header className={styles.header}><
   {secondarySections.map(k=><option key={k} value={k}>{sections[k]}</option>)}
  </select>
 </nav>{error&&<p role="alert" className={styles.error}>{error}</p>}{notice&&<p role="status">{notice}</p>}{loading?<p role="status">در حال بارگذاری سیما…</p>:<>
+{health?.status==='degraded'&&<div className={styles.connection} role="alert"><strong>اتصال سیما نیازمند بررسی است</strong><span>تنظیمات Zernio یا Webhook در این نسخهٔ منتشرشده کامل نیست. احتمالاً نسخهٔ Preview مستقیماً Promote شده است. برای اتصال پایدار، Deployment با محیط Production بسازید؛ تغییر کلید یا ارسال آزمایشی لازم نیست.</span></div>}
 {section==='overview'&&<><div className={styles.stats}>{[['پروندهٔ مشتری',data.customers.length],['فرصت باز',data.leads.filter(x=>!['won','lost'].includes(x.stage)).length],['پیگیری در انتظار',data.tasks.filter(x=>x.status==='scheduled').length],['فروش ثبت‌شده / تومان',data.orders.filter(x=>x.status==='paid').reduce((n,x)=>n+Number(x.amount),0)]].map(([k,v])=><article key={k}><span>{k}</span><strong>{num(v)}</strong></article>)}</div><div className={styles.panel}><h3>پیگیری‌های سررسیدشده</h3>{data.tasks.filter(x=>x.status==='scheduled'&&new Date(x.due_at)<=new Date()).map(x=><article key={x.id}><strong>{customer(x.customer_id)}</strong><p>{x.title} · {date(x.due_at)}</p></article>)}{!data.tasks.some(x=>x.status==='scheduled'&&new Date(x.due_at)<=new Date())&&<p>پیگیری سررسیدشده‌ای وجود ندارد.</p>}<button onClick={()=>setSection('tasks')}>مدیریت پیگیری‌ها</button></div><div className={styles.panel}><h3>اطلاعات جدید</h3><p>{num(informationQueue.length)} مشتری آمادهٔ یک سؤال تکمیلی مناسب هستند. اولویت‌ها و زمان پرسیدن را خودتان تنظیم کنید.</p><button onClick={()=>setSection('information')}>دیدن سؤال بعدی مشتریان</button></div><div className={styles.panel}><h3>شروع کار</h3><p>صنف را انتخاب کنید، مشتری را ثبت کنید و یک تعامل از نوع «پیشنهاد ارسالی» بسازید. سیما پیگیری را طبق قانون زمان‌بندی می‌کند؛ پاسخ جدید یا خرید، پیگیری قبلی را متوقف می‌کند.</p><button onClick={()=>setSection('settings')}>تنظیم صنف و قوانین</button></div></>}
 {section==='inbox'&&<SimaInbox db={db} userId={userId} customers={data.customers} interactions={data.interactions} informationQueue={informationQueue} onRefresh={load}/>}
 {section==='reviews'&&<HumanReviewWorkspace/>}

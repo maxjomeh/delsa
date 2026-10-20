@@ -9,6 +9,7 @@ import {
 import {customerIntelligence,rankCustomers} from '../../lib/crm/customer-intelligence.mjs';
 import styles from './CustomerIntelligence.module.css';
 import HistorySyncPanel from './HistorySyncPanel';
+import {socialProfile} from '../../lib/crm/social-profile.mjs';
 
 const readable=n=>Number(n||0).toLocaleString('fa-IR');
 const stamp=v=>v&&Number.isFinite(Date.parse(v))?new Date(v).toLocaleString('fa-IR',{timeZone:'Asia/Tehran',dateStyle:'medium',timeStyle:'short'}):'ثبت نشده';
@@ -21,8 +22,8 @@ const money=n=>readable(n)+' تومان';
 
 function CustomerAvatar({customer,large=false}){
  const [failed,setFailed]=useState(false);
- const url=customer?.custom_fields?.social_avatar_url;
- const valid=typeof url==='string'&&/^https:\/\/[^\\s]+$/i.test(url)&&url.length<=2048;
+ const url=socialProfile(customer).avatar;
+ const valid=!!url;
  return <span className={large?styles.largeAvatar:styles.avatar}>
   {valid&&!failed?<img src={url} alt={`تصویر پروفایل ${customer.name}`} loading="lazy" referrerPolicy="no-referrer" onError={()=>setFailed(true)}/>:initials(customer.name)}
  </span>;
