@@ -54,7 +54,7 @@ test('secure database settings are service role only and not tenant readable',()
 
 test('CIMA only invokes model after approved KB match and never dispatches it',()=>{
  const copilot=read('app/api/crm/copilot/route.js');
- assert.match(copilot,/loadGapGPT\(db\)/);
+ assert.match(copilot,/loadGapGPT\(db,\{includeDisabled:true\}\)/);
  assert.match(copilot,/gapgptChat\(/);
  assert.match(copilot,/decision\.kind==='approved_faq'/);
  assert.match(copilot,/autoSend:false/);
