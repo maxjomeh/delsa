@@ -20,6 +20,7 @@ export default function HumanReviewWorkspace(){
  const [sending,setSending]=useState(false),[lastSend,setLastSend]=useState(null);
  const [candidate,setCandidate]=useState(null),[suggestBusy,setSuggestBusy]=useState(false),[modelEnabled,setModelEnabled]=useState(false);
  const [memory,setMemory]=useState(null);
+ const [feedbackVerdict,setFeedbackVerdict]=useState(null),[feedbackBusy,setFeedbackBusy]=useState(false);
  const [loading,setLoading]=useState(true),[historyLoading,setHistoryLoading]=useState(false),[saving,setSaving]=useState(false);
  const [error,setError]=useState(''),[notice,setNotice]=useState('');
  const load=useCallback(async()=>{
@@ -42,11 +43,11 @@ export default function HumanReviewWorkspace(){
  useEffect(()=>{
   if(!selected)return;
   let active=true;
-  setSelectedVersion(null);setLastSend(null);setCandidate(null);setMemory(null);setHistoryLoading(true);setMessages([]);
+  setSelectedVersion(null);setLastSend(null);setCandidate(null);setMemory(null);setFeedbackVerdict(null);setHistoryLoading(true);setMessages([]);
   fetch('/api/crm/memory?'+new URLSearchParams({caseId:selected.id,customerId:selected.customer_id}),{cache:'no-store'})
    .then(r=>r.ok?r.json():null).then(j=>{if(active&&j)setMemory(j);}).catch(()=>{});
   fetch('/api/crm/copilot?caseId='+encodeURIComponent(selected.id),{cache:'no-store'})
-   .then(r=>r.ok?r.json():null).then(j=>{if(active&&j){setCandidate(j.candidate||null);setModelEnabled(j.modelEnabled===true);}}).catch(()=>{});
+   .then(r=>r.ok?r.json():null).then(j=>{if(active&&j){setCandidate(j.candidate||null);setModelEnabled(j.modelEnabled===true);setFeedbackVerdict(j.feedback?.verdict||null);}}).catch(()=>{});
   fetch('/api/crm/reviews/send?caseId='+encodeURIComponent(selected.id),{cache:'no-store'})
    .then(r=>r.ok?r.json():null).then(j=>{if(active&&j)setLastSend(j.sends?.[0]||null);}).catch(()=>{});
   fetch('/api/crm/reviews?'+new URLSearchParams({caseId:selected.id,customerId:selected.customer_id}),{cache:'no-store'})
@@ -57,13 +58,22 @@ export default function HumanReviewWorkspace(){
    .finally(()=>{if(active)setHistoryLoading(false);});
   return()=>{active=false;};
  },[selected?.id]);
+ async function giveFeedback(verdict){
+  if(!candidate||feedbackVerdict||feedbackBusy||stale||candidate.conversation_version!==selectedVersion)return;
+  setFeedbackBusy(true);setError('');
+  try{
+   const r=await fetch('/api/crm/copilot/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({caseId:selected.id,candidateId:candidate.id,verdict,correctedText:verdict==='incorrect'?draft:''})});
+   const j=await r.json();if(!r.ok)throw Error(j.error||'ثبت بازخورد ناموفق بود.');
+   setFeedbackVerdict(verdict);setNotice('بازخورد برای ارزیابی ثبت شد؛ هنوز باعث تغییر خودکار مدل نشده است.');
+  }catch(e){setError(e.message||'ثبت بازخورد انجام نشد.');}finally{setFeedbackBusy(false);}
+ }
  async function suggestReply(){
   if(!selected||suggestBusy||stale||selectedVersion===null)return;
   setSuggestBusy(true);setNotice('');setError('');
   try{
    const r=await fetch('/api/crm/copilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'suggest',caseId:selected.id,version:selectedVersion})});
    const j=await r.json();if(!r.ok)throw Error(j.error==='conversation_changed_refresh'?'مکالمه تغییر کرده است؛ صفحه را تازه‌سازی کن.':j.error||'تحلیل انجام نشد.');
-   setCandidate(j.candidate||null);
+   setCandidate(j.candidate||null);setFeedbackVerdict(null);
    setNotice(j.message||'تحلیل ثبت شد؛ ارسال پیام همچنان نیازمند اقدام شماست.');
   }catch(e){setError(e.message||'تحلیل انجام نشد.');}finally{setSuggestBusy(false);}
  }
@@ -147,6 +157,7 @@ export default function HumanReviewWorkspace(){
         {candidate.suggestion?<><p>{candidate.suggestion}</p><button type="button" onClick={()=>{setDraft(candidate.suggestion);setDirty(true);setNotice('پیشنهاد وارد پیش‌نویس شد؛ قبل از ارسال بررسی و ویرایش کن.');}}>استفاده در پیش‌نویس، بدون ارسال</button></>:<p>پاسخ مطمئن قابل پیشنهاد نیست؛ خودت پاسخ را بنویس و منابع را بررسی کن.</p>}
         {Array.isArray(candidate.cited_entries)&&candidate.cited_entries.length>0&&<div className={styles.citations}><BookOpen size={14}/>{candidate.cited_entries.map(e=><span key={e.id}>{e.title} · نسخهٔ {e.revision}</span>)}</div>}
         {Array.isArray(candidate.reason_codes)&&candidate.reason_codes.length>0&&<small>دلایل: {candidate.reason_codes.join(' · ')}</small>}
+        <div className={styles.feedback}>{feedbackVerdict?<small>بازخورد ثبت‌شده: {feedbackVerdict==='useful'?'مفید بود':feedbackVerdict==='incorrect'?'نیازمند اصلاح':'کمبود دانش'} </small>:<><small>این نتیجه برای یادگیری آینده چطور بود؟</small><button disabled={feedbackBusy} type="button" onClick={()=>giveFeedback('useful')}>مفید</button><button disabled={feedbackBusy} type="button" onClick={()=>giveFeedback('incorrect')}>نادرست</button><button disabled={feedbackBusy} type="button" onClick={()=>giveFeedback('missing_knowledge')}>نیازمند دانش</button></>}</div>
        </div>}
       </div>{memory&&<div className={styles.memory}><strong>حافظهٔ مستند مشتری</strong>
        <small>شمارهٔ پروفایل: {memory.customer?.phone||'ثبت‌نشده'} · اعتبارسنجی: {memory.customer?.phoneVerification==='unknown'?'تأیید نشده':'تأییدشده'}</small>
