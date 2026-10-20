@@ -18,7 +18,7 @@ export default function HumanReviewWorkspace(){
  const [hasMore,setHasMore]=useState(false),[selectedId,setSelectedId]=useState('');
  const [messages,setMessages]=useState([]),[selectedVersion,setSelectedVersion]=useState(null);
  const [draft,setDraft]=useState(''),[dirty,setDirty]=useState(false);
- const [sending,setSending]=useState(false),[lastSend,setLastSend]=useState(null);
+ const [sending,setSending]=useState(false),[lastSend,setLastSend]=useState(null),[sendEligibility,setSendEligibility]=useState(null);
  const [candidate,setCandidate]=useState(null),[suggestBusy,setSuggestBusy]=useState(false),[modelEnabled,setModelEnabled]=useState(false);
  const [memory,setMemory]=useState(null);
  const [feedbackVerdict,setFeedbackVerdict]=useState(null),[feedbackBusy,setFeedbackBusy]=useState(false);
@@ -30,7 +30,7 @@ export default function HumanReviewWorkspace(){
    const response=await fetch('/api/crm/reviews?'+params,{cache:'no-store'});
    const body=await response.json();
    if(!response.ok)throw Error(body.error||'دریافت صف ناموفق بود');
-   setCases(body.cases||[]);setHasMore(!!body.hasMore);setError('');
+   setCases(body.cases||[]);setHasMore(!!body.hasMore);
   }catch(e){setError('دریافت صف بررسی انجام نشد. '+e.message);}
   finally{setLoading(false);}
  },[state,offset]);
@@ -40,17 +40,17 @@ export default function HumanReviewWorkspace(){
  const stale=!!selected&&selectedVersion!==null&&selected.conversation_version!==selectedVersion;
  const withinWindow=!!selected&&Number.isFinite(Date.parse(selected.last_occurred_at||''))&&Date.now()-Date.parse(selected.last_occurred_at)>0&&Date.now()-Date.parse(selected.last_occurred_at)<23*60*60*1000;
  const alreadyAttempted=!!lastSend&&lastSend.conversation_version===selectedVersion&&!(lastSend.status==='pending'&&lastSend.attempt_count===0);
- const canSend=!!selected&&selected.channel==='instagram'&&!selected.customer?.do_not_contact&&withinWindow&&!stale&&!alreadyAttempted&&!saving&&!sending&&selectedVersion!==null&&draft.trim().length>0&&draft.length<=4000;
+ const canSend=sendEligibility?.canRequestSend!==false&&!!selected&&selected.channel==='instagram'&&!selected.customer?.do_not_contact&&withinWindow&&!stale&&!alreadyAttempted&&!saving&&!sending&&selectedVersion!==null&&draft.trim().length>0&&draft.length<=4000;
  useEffect(()=>{
   if(!selected)return;
   let active=true;
-  setSelectedVersion(null);setLastSend(null);setCandidate(null);setMemory(null);setFeedbackVerdict(null);setHistoryLoading(true);setMessages([]);
+  setSelectedVersion(null);setLastSend(null);setSendEligibility(null);setCandidate(null);setMemory(null);setFeedbackVerdict(null);setHistoryLoading(true);setMessages([]);
   fetch('/api/crm/memory?'+new URLSearchParams({caseId:selected.id,customerId:selected.customer_id}),{cache:'no-store'})
    .then(r=>r.ok?r.json():null).then(j=>{if(active&&j)setMemory(j);}).catch(()=>{});
   fetch('/api/crm/copilot?caseId='+encodeURIComponent(selected.id),{cache:'no-store'})
    .then(r=>r.ok?r.json():null).then(j=>{if(active&&j){setCandidate(j.candidate||null);setModelEnabled(j.modelEnabled===true);setFeedbackVerdict(j.feedback?.verdict||null);}}).catch(()=>{});
   fetch('/api/crm/reviews/send?caseId='+encodeURIComponent(selected.id),{cache:'no-store'})
-   .then(r=>r.ok?r.json():null).then(j=>{if(active&&j)setLastSend(j.sends?.[0]||null);}).catch(()=>{});
+   .then(r=>r.ok?r.json():null).then(j=>{if(active&&j){setLastSend(j.sends?.[0]||null);setSendEligibility(j.eligibility||null);}}).catch(()=>{});
   fetch('/api/crm/reviews?'+new URLSearchParams({caseId:selected.id,customerId:selected.customer_id}),{cache:'no-store'})
    .then(async r=>{const j=await r.json();if(!r.ok)throw Error(j.error);return j;})
    .then(j=>{if(!active)return;setMessages(j.messages||[]);setSelectedVersion(j.review.conversation_version);
@@ -142,6 +142,7 @@ export default function HumanReviewWorkspace(){
        <textarea id="cima-human-draft" value={draft} onChange={e=>{setDraft(e.target.value);setDirty(true);}} maxLength={4000} rows={5} placeholder="پاسخ را بنویسید. ذخیرهٔ پیش‌نویس ارسال نمی‌کند؛ ارسال واقعی دکمهٔ جدا دارد…"/>
        {!withinWindow&&<small className={styles.sendWarning}>مهلت پاسخ عادی به این پیام تمام شده؛ برای ارسال جدید باید مشتری دوباره پیام بدهد.</small>}
        {selected.customer?.do_not_contact&&<small className={styles.sendWarning}>این مشتری اجازهٔ تماس ندارد؛ ارسال مسدود است.</small>}
+       {sendEligibility?.reasons?.length>0&&<div className={styles.sendWarning} role="status">دلیل غیرفعال‌بودن ارسال: {sendEligibility.reasons.map(r=>({reply_window_closed:'مهلت پاسخ عادی اینستاگرام تمام شده',channel_not_enabled:'ارسال برای این کانال هنوز فعال نیست',conversation_not_open:'این گفتگو قبلاً رسیدگی شده یا بسته است',contact_opted_out:'مشتری اجازهٔ تماس ندارد',channel_not_configured:'تنظیمات اتصال Zernio در این محیط کامل نیست',already_attempted:'برای همین نوبت مکالمه قبلاً تلاش ارسال ثبت شده است'})[r]||r).join(' · ')}</div>}
        {lastSend?.status==='pending'&&lastSend?.attempt_count===0&&<small className={styles.sendWarning}>درخواست قبلی قبل از تماس با ارائه‌دهنده در صف مانده؛ با تأیید دوباره می‌توان همان درخواست را ادامه داد (پیام تکراری ساخته نمی‌شود).</small>}
        {lastSend&&<div className={styles.sendReceipt}>وضعیت آخرین تلاش: <strong>{({accepted:'پذیرفته‌شده توسط Zernio؛ تحویل نامشخص',unknown:'نتیجه نامشخص — ارسال مجدد ممنوع',rejected:'ردشده توسط ارائه‌دهنده',sending:'در حال ارسال',pending:'در صف'})[lastSend.status]||lastSend.status}</strong></div>}
        <div className={styles.actionRow}><small>{dirty?'تغییرات هنوز ذخیره نشده‌اند.':'ذخیرهٔ پیش‌نویس جدا از ارسال واقعی است.'}</small><div className={styles.sendActions}><button type="button" onClick={saveDraft} disabled={saving||sending||stale||selectedVersion===null}><Save size={16}/>{saving?'در حال ذخیره…':'ذخیره پیش‌نویس'}</button><button type="button" className={styles.sendButton} onClick={sendReply} disabled={!canSend}><Send size={16}/>{sending?'در حال ارسال…':'ارسال واقعی به اینستاگرام'}</button></div></div>
