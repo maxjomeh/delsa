@@ -19,6 +19,7 @@ export default function HumanReviewWorkspace(){
  const [draft,setDraft]=useState(''),[dirty,setDirty]=useState(false);
  const [sending,setSending]=useState(false),[lastSend,setLastSend]=useState(null);
  const [candidate,setCandidate]=useState(null),[suggestBusy,setSuggestBusy]=useState(false),[modelEnabled,setModelEnabled]=useState(false);
+ const [memory,setMemory]=useState(null);
  const [loading,setLoading]=useState(true),[historyLoading,setHistoryLoading]=useState(false),[saving,setSaving]=useState(false);
  const [error,setError]=useState(''),[notice,setNotice]=useState('');
  const load=useCallback(async()=>{
@@ -41,7 +42,9 @@ export default function HumanReviewWorkspace(){
  useEffect(()=>{
   if(!selected)return;
   let active=true;
-  setSelectedVersion(null);setLastSend(null);setCandidate(null);setHistoryLoading(true);setMessages([]);
+  setSelectedVersion(null);setLastSend(null);setCandidate(null);setMemory(null);setHistoryLoading(true);setMessages([]);
+  fetch('/api/crm/memory?'+new URLSearchParams({caseId:selected.id,customerId:selected.customer_id}),{cache:'no-store'})
+   .then(r=>r.ok?r.json():null).then(j=>{if(active&&j)setMemory(j);}).catch(()=>{});
   fetch('/api/crm/copilot?caseId='+encodeURIComponent(selected.id),{cache:'no-store'})
    .then(r=>r.ok?r.json():null).then(j=>{if(active&&j){setCandidate(j.candidate||null);setModelEnabled(j.modelEnabled===true);}}).catch(()=>{});
   fetch('/api/crm/reviews/send?caseId='+encodeURIComponent(selected.id),{cache:'no-store'})
@@ -145,7 +148,12 @@ export default function HumanReviewWorkspace(){
         {Array.isArray(candidate.cited_entries)&&candidate.cited_entries.length>0&&<div className={styles.citations}><BookOpen size={14}/>{candidate.cited_entries.map(e=><span key={e.id}>{e.title} · نسخهٔ {e.revision}</span>)}</div>}
         {Array.isArray(candidate.reason_codes)&&candidate.reason_codes.length>0&&<small>دلایل: {candidate.reason_codes.join(' · ')}</small>}
        </div>}
-      </div><div className={styles.risk}><AlertCircle size={18}/><div><strong>نیازمند تأیید انسان</strong><p>{reasons[selected.reason_code]||'اطلاعات لازم برای ارسال مطمئن کامل نیست.'}</p></div></div>
+      </div>{memory&&<div className={styles.memory}><strong>حافظهٔ مستند مشتری</strong>
+       <small>شمارهٔ پروفایل: {memory.customer?.phone||'ثبت‌نشده'} · اعتبارسنجی: {memory.customer?.phoneVerification==='unknown'?'تأیید نشده':'تأییدشده'}</small>
+       {(memory.verifiedFacts||[]).slice(0,12).map((fact,i)=><div key={fact.key+'-'+i}><span>{fact.label}</span><b>{typeof fact.value==='string'?fact.value:JSON.stringify(fact.value)}</b>{fact.sourceQuote&&<small>شاهد: «{fact.sourceQuote}»</small>}</div>)}
+       {!memory.verifiedFacts?.length&&<p>هنوز دادهٔ تأییدشدهٔ مستند برای این مشتری وجود ندارد.</p>}
+       <small>{memory.note}</small>
+      </div>}<div className={styles.risk}><AlertCircle size={18}/><div><strong>نیازمند تأیید انسان</strong><p>{reasons[selected.reason_code]||'اطلاعات لازم برای ارسال مطمئن کامل نیست.'}</p></div></div>
       <div className={styles.fact}><UserRound size={17}/><div><span>شناسهٔ مشتری</span><strong>{selected.customer?.instagram?'@'+selected.customer.instagram:selected.customer?.name||'نامشخص'}</strong></div></div>
       <div className={styles.fact}><Clock3 size={17}/><div><span>آخرین پیام ثبت‌شده</span><strong>{stamp(selected.last_occurred_at)}</strong></div></div>
       <div className={styles.fact}><FileText size={17}/><div><span>ارزیابی هوش مصنوعی</span><strong>هنوز کالیبره نشده</strong></div></div>
