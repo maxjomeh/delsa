@@ -152,6 +152,7 @@ export default function HumanReviewWorkspace(){
        <small>شمارهٔ پروفایل: {memory.customer?.phone||'ثبت‌نشده'} · اعتبارسنجی: {memory.customer?.phoneVerification==='unknown'?'تأیید نشده':'تأییدشده'}</small>
        {(memory.verifiedFacts||[]).slice(0,12).map((fact,i)=><div key={fact.key+'-'+i}><span>{fact.label}</span><b>{typeof fact.value==='string'?fact.value:JSON.stringify(fact.value)}</b>{fact.sourceQuote&&<small>شاهد: «{fact.sourceQuote}»</small>}</div>)}
        {!memory.verifiedFacts?.length&&<p>هنوز دادهٔ تأییدشدهٔ مستند برای این مشتری وجود ندارد.</p>}
+       {!!memory.pendingFacts?.length&&<><strong>اطلاعات پیشنهادی — هنوز تأیید نشده</strong>{memory.pendingFacts.slice(0,8).map((fact,i)=><div key={'pending-'+fact.key+'-'+i}><span>{fact.label}</span><b>{typeof fact.value==='string'?fact.value:JSON.stringify(fact.value)}</b>{fact.sourceQuote&&<small>متن شاهد: «{fact.sourceQuote}»</small>}</div>)}</>}
        <small>{memory.note}</small>
       </div>}<div className={styles.risk}><AlertCircle size={18}/><div><strong>نیازمند تأیید انسان</strong><p>{reasons[selected.reason_code]||'اطلاعات لازم برای ارسال مطمئن کامل نیست.'}</p></div></div>
       <div className={styles.fact}><UserRound size={17}/><div><span>شناسهٔ مشتری</span><strong>{selected.customer?.instagram?'@'+selected.customer.instagram:selected.customer?.name||'نامشخص'}</strong></div></div>
