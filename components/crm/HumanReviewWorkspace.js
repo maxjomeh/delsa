@@ -2,14 +2,15 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {AlertCircle,CheckCircle2,Clock3,FileText,MessagesSquare,RefreshCcw,Save,Send,ShieldAlert,UserRound,BrainCircuit,BookOpen} from 'lucide-react';
 import styles from './HumanReviewWorkspace.module.css';
+import {socialProfile} from '../../lib/crm/social-profile.mjs';
 
 const pretty=n=>Number(n||0).toLocaleString('fa-IR');
 const stamp=value=>value?new Date(value).toLocaleString('fa-IR',{timeZone:'Asia/Tehran'}):'زمان نامشخص';
 const reasons={MODEL_NOT_VALIDATED:'مدل پاسخ‌گویی هنوز روی داده‌های مستقل ارزیابی و تأیید نشده است',OWNER_REVIEW_REQUIRED:'این گفتگو طبق سیاست کسب‌وکار نیازمند بررسی صاحب کسب‌وکار است'};
 const channels={instagram:'اینستاگرام',whatsapp:'واتساپ',telegram:'تلگرام',bale:'بله',eitaa:'ایتا',rubika:'روبیکا',soroush:'سروش'};
 function Avatar({customer}){
- const url=customer?.custom_fields?.social_avatar_url;
- const valid=typeof url==='string'&&url.startsWith('https://')&&url.length<2048;
+ const url=socialProfile(customer).avatar;
+ const valid=!!url;
  return <span className={styles.avatar}>{valid?<img loading="lazy" src={url} alt="" referrerPolicy="no-referrer" onError={e=>{e.currentTarget.style.display='none';}}/>:customer?.name?.slice(0,1)||'م'}</span>;
 }
 export default function HumanReviewWorkspace(){
