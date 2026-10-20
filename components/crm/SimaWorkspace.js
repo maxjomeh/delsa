@@ -1,5 +1,5 @@
 'use client';
-import {useCallback,useEffect,useMemo,useState} from 'react';
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {createClient} from '../../lib/supabase/client';
 import {industries,statusNames,normalizePhone} from './industry';
 import styles from './SimaWorkspace.module.css';
@@ -22,10 +22,18 @@ const initialSettings={industry:'retail',business_name:'',followup_hours:24,max_
 export default function SimaWorkspace({userId}){
 const db=useMemo(()=>createClient(),[]),[section,setSection]=useState('overview'),[data,setData]=useState({customers:[],interactions:[],leads:[],orders:[],tasks:[],reports:[]}),[settings,setSettings]=useState(initialSettings),[draftSettings,setDraftSettings]=useState(initialSettings),[search,setSearch]=useState(''),[filter,setFilter]=useState(''),[form,setForm]=useState(null),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState(''),[fields,setFields]=useState([]),[informationStates,setInformationStates]=useState([]),[informationQueue,setInformationQueue]=useState([]),[informationEditing,setInformationEditing]=useState(false);
 useEffect(()=>{const params=new URLSearchParams(window.location.search);if(params.get('sima_section')==='connections')setSection('connections');else if(params.has('sima_customer'))setSection('customers');},[]);
-const load=useCallback(async()=>{const keys=Object.keys(tables),results=await Promise.all(keys.map(async k=>{
+const loadBusy=useRef(false);
+const load=useCallback(async()=>{
+ if(loadBusy.current)return;
+ loadBusy.current=true;
+ try{
+ const keys=Object.keys(tables),results=await Promise.all(keys.map(async k=>{
  if(k==='interactions'){
   const all=[];
-  for(let page=0;page<12;page++){
+  // On overview, reports and settings, a short activity sample is enough.
+  // Full histories are loaded only when a conversation/customer view requires them.
+  const maxPages=['inbox','customers','interactions'].includes(section)?8:1;
+  for(let page=0;page<maxPages;page++){
    const res=await db.from(tables[k]).select('*').eq('tenant_id',userId)
     .order('created_at',{ascending:false}).range(page*500,page*500+499);
    if(res.error)return res;
@@ -41,8 +49,10 @@ const load=useCallback(async()=>{const keys=Object.keys(tables),results=await Pr
   all.push(...(page.data||[]));if((page.data||[]).length<1000)break;
  }
  return {data:all,error:null};
-}));const cfg=await db.from('crm_settings').select('*').eq('tenant_id',userId).maybeSingle();if(results.some(r=>r.error)||cfg.error){setError('بارگذاری اطلاعات سیما انجام نشد. دوباره تلاش کنید.');setLoading(false);return;}setData(Object.fromEntries(keys.map((k,i)=>[k,results[i].data||[]])));if(cfg.data){setSettings(cfg.data);setDraftSettings(v=>form?v:cfg.data);}const extras=await Promise.all([db.from('crm_field_definitions').select('*').eq('tenant_id',userId).order('priority',{ascending:false}).limit(200),db.from('crm_information_states').select('*').eq('tenant_id',userId).order('updated_at',{ascending:false}).limit(5000),db.rpc('crm_information_queue',{p_limit:500})]);if(extras.some(r=>r.error)){setError('بارگذاری بخش اطلاعات جدید انجام نشد؛ اتصال را بررسی کنید.');}else{setFields(extras[0].data||[]);setInformationStates(extras[1].data||[]);setInformationQueue(extras[2].data||[]);}setLoading(false);},[db,userId,form]);
-useEffect(()=>{let alive=true;const refresh=()=>{if(alive&&document.visibilityState==='visible'&&!form&&!informationEditing&&section!=='settings')load();};refresh();const timer=setInterval(refresh,15000);window.addEventListener('focus',refresh);return()=>{alive=false;clearInterval(timer);window.removeEventListener('focus',refresh);};},[load,form,section,informationEditing]);
+}));const cfg=await db.from('crm_settings').select('*').eq('tenant_id',userId).maybeSingle();if(results.some(r=>r.error)||cfg.error){setError('بارگذاری اطلاعات سیما انجام نشد. دوباره تلاش کنید.');setLoading(false);return;}setData(Object.fromEntries(keys.map((k,i)=>[k,results[i].data||[]])));if(cfg.data){setSettings(cfg.data);setDraftSettings(v=>form?v:cfg.data);}const extras=await Promise.all([db.from('crm_field_definitions').select('*').eq('tenant_id',userId).order('priority',{ascending:false}).limit(200),db.from('crm_information_states').select('*').eq('tenant_id',userId).order('updated_at',{ascending:false}).limit(5000),db.rpc('crm_information_queue',{p_limit:500})]);if(extras.some(r=>r.error)){setError('بارگذاری بخش اطلاعات جدید انجام نشد؛ اتصال را بررسی کنید.');}else{setFields(extras[0].data||[]);setInformationStates(extras[1].data||[]);setInformationQueue(extras[2].data||[]);}setLoading(false);
+ }catch(e){setError('دریافت اطلاعات سیما با خطا مواجه شد. دوباره تلاش کنید.');setLoading(false);}finally{loadBusy.current=false;}
+},[db,userId,form,section]);
+useEffect(()=>{let alive=true;const refresh=()=>{if(alive&&document.visibilityState==='visible'&&!form&&!informationEditing&&section!=='settings')load();};refresh();const timer=setInterval(refresh,90000);window.addEventListener('focus',refresh);return()=>{alive=false;clearInterval(timer);window.removeEventListener('focus',refresh);};},[load,form,section,informationEditing]);
 useEffect(()=>{if(section==='customers'&&form){document.getElementById('sima-customer-editor')?.scrollIntoView({behavior:'smooth',block:'start'});}},[section,Boolean(form)]);
 function navigate(k){setSection(k);setInformationEditing(false);if(k==='settings')setDraftSettings(settings);setForm(null);setSearch('');setFilter('');setError('');setNotice('');}
 const customer=id=>data.customers.find(c=>c.id===id)?.name||'مشتری',industry=industries[settings.industry]||industries.retail;
