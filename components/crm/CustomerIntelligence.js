@@ -123,7 +123,12 @@ export default function CustomerIntelligence({db,userId,customers,interactions,o
      <div className={styles.tabs} role="tablist" aria-label="بخش پرونده">{tabs.map(([k,v])=><button role="tab" aria-selected={tab===k} type="button" className={tab===k?styles.tabActive:''} key={k} onClick={()=>setTab(k)}>{v}</button>)}</div>
      {tab==='summary'?<div className={styles.content}>
       <div className={styles.groupTitle}><h4>راه‌های ارتباط و اطلاعات</h4><small>فقط اطلاعات ثبت‌شده</small></div>
-      <div className={styles.contactGrid}><div><Phone size={16}/><span><small>شماره تماس</small><strong dir="ltr">{customer.phone||'ثبت نشده'}</strong></span></div><div><Instagram size={16}/><span><small>اینستاگرام</small><strong dir="ltr">{(customer.instagram||customer.custom_fields?.social_username)?'@'+(customer.instagram||customer.custom_fields?.social_username):'ثبت نشده'}</strong></span></div><div><MapPin size={16}/><span><small>شهر</small><strong>{customer.city||'ثبت نشده'}</strong></span></div><div><Clock3 size={16}/><span><small>آخرین تعامل ثبت‌شده</small><strong>{stamp(selected.lastContact)}</strong></span></div></div>
+      <div className={styles.contactGrid}><div><Phone size={16}/><span><small>شماره تماس</small><strong dir="ltr">{customer.phone||'ثبت نشده'}</strong></span></div><div><Instagram size={16}/><span><small>اینستاگرام</small>{(() => {
+ const handle=customer.instagram||customer.custom_fields?.social_username||'';
+ const valid=/^[A-Za-z0-9._]{1,30}$/.test(handle);
+ return valid?<a href={'https://www.instagram.com/'+encodeURIComponent(handle)+'/'} target="_blank" rel="noopener noreferrer" dir="ltr">@{handle} ↗</a>
+  :<strong dir="ltr">{handle?'@'+handle:'شناسهٔ معتبر موجود نیست'}</strong>;
+})()}</span></div><div><MapPin size={16}/><span><small>شهر</small><strong>{customer.city||'ثبت نشده'}</strong></span></div><div><Clock3 size={16}/><span><small>آخرین تعامل ثبت‌شده</small><strong>{stamp(selected.lastContact)}</strong></span></div></div>
       {!!customer.tags?.trim()&&<div className={styles.tags}>{customer.tags.split(/[,،]/).map(t=>t.trim()).filter(Boolean).slice(0,16).map(t=><span key={t}>{t}</span>)}</div>}
       {!!customer.notes?.trim()&&<div className={styles.noteBox}><StickyNote size={16}/><div><strong>یادداشت پرونده</strong><p>{customer.notes}</p></div></div>}
       {!!customFields.length&&<><div className={styles.groupTitle}><h4>اطلاعات اختصاصی</h4><small>{readable(customFields.length)} فیلد</small></div><div className={styles.dynamicFields}>{customFields.map(([k,v])=><div key={k}><small>{labels.get(k)||k}</small><strong>{Array.isArray(v)?v.join('، '):String(v)}</strong></div>)}</div></>}
