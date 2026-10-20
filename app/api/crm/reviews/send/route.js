@@ -19,14 +19,32 @@ export async function GET(request){
  const caseId=new URL(request.url).searchParams.get('caseId');
  if(!uuid(caseId))return json({error:'invalid_case_id'},400);
  const db=serverDatabase();
- const {data:caseRow,error:caseError}=await db.from('sima_human_review_cases').select('id')
+ const {data:caseRow,error:caseError}=await db.from('sima_human_review_cases')
+  .select('id,customer_id,channel,state,last_occurred_at,conversation_version')
   .eq('tenant_id',ctx.id).eq('id',caseId).maybeSingle();
  if(caseError)return json({error:'outbox_unavailable'},503);
  if(!caseRow)return json({error:'review_not_found'},404);
  const {data,error}=await db.from('sima_message_outbox')
   .select('id,conversation_version,status,attempt_count,provider_message_id,provider_error_code,requested_at,sent_at')
   .eq('tenant_id',ctx.id).eq('review_id',caseId).order('requested_at',{ascending:false}).limit(5);
- return error?json({error:'outbox_unavailable'},503):json({sends:data||[]});
+ if(error)return json({error:'outbox_unavailable'},503);
+ const {data:customer,error:customerError}=await db.from('crm_customers').select('do_not_contact')
+  .eq('tenant_id',ctx.id).eq('id',caseRow.customer_id).maybeSingle();
+ if(customerError)return json({error:'outbox_unavailable'},503);
+ const reasons=[];
+ const occurred=Date.parse(caseRow.last_occurred_at||'');
+ const age=Date.now()-occurred;
+ if(!Number.isFinite(occurred)||age<0||age>=23*3600000)reasons.push('reply_window_closed');
+ if(caseRow.channel!=='instagram')reasons.push('channel_not_enabled');
+ if(!['awaiting_human','drafting'].includes(caseRow.state))reasons.push('conversation_not_open');
+ if(customer?.do_not_contact)reasons.push('contact_opted_out');
+ if(process.env.ZERNIO_CONNECT_ENABLED!=='true'||!process.env.ZERNIO_API_KEY)reasons.push('channel_not_configured');
+ if((data||[]).some(row=>row.conversation_version===caseRow.conversation_version &&
+    !(row.status==='pending'&&row.attempt_count===0)))reasons.push('already_attempted');
+ return json({sends:data||[],eligibility:{
+   canRequestSend:reasons.length===0,reasons,conversationVersion:caseRow.conversation_version,
+   latestInboundAt:caseRow.last_occurred_at
+ }});
 }
 const safePrepareCode=error=>{
  const m=String(error?.message||'');
