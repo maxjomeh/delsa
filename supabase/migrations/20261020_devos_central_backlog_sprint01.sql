@@ -86,7 +86,7 @@ CREATE OR REPLACE FUNCTION public.devos_attach_audit() RETURNS trigger LANGUAGE 
 BEGIN
  INSERT INTO public.devos_task_events(task_id,action,actor_id,new_snapshot)
  VALUES(NEW.task_id, CASE WHEN TG_TABLE_NAME='devos_evidence' THEN 'evidence_added' ELSE 'dependency_added' END,
- CASE WHEN TG_TABLE_NAME='devos_evidence' THEN NEW.added_by ELSE NULL END,to_jsonb(NEW));
+ CASE WHEN TG_TABLE_NAME='devos_evidence' THEN NULLIF(to_jsonb(NEW)->>'added_by','')::uuid ELSE NULL END,to_jsonb(NEW));
  RETURN NEW;
 END $$;
 DROP TRIGGER IF EXISTS devos_ev_audit ON public.devos_evidence;
