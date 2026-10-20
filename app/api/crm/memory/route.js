@@ -23,7 +23,7 @@ export async function GET(request){
   db.from('crm_customers').select('id,name,city,instagram,phone,custom_fields,updated_at,do_not_contact')
    .eq('tenant_id',user.id).eq('id',customerId).maybeSingle(),
   db.from('crm_information_states').select('field_id,source,source_quote,source_interaction_id,proposed_value,updated_at,status')
-   .eq('tenant_id',user.id).eq('customer_id',customerId).eq('status','confirmed').limit(60),
+   .eq('tenant_id',user.id).eq('customer_id',customerId).in('status',['confirmed','review']).limit(100),
   db.from('crm_zernio_contacts').select('platform,username,avatar_url').eq('tenant_id',user.id).eq('customer_id',customerId).limit(8)
  ]);
  if(cErr||sErr||iErr||!customer)return json({error:'memory_unavailable'},503);
@@ -36,16 +36,17 @@ export async function GET(request){
   fields=data||[];
  }
  const byId=new Map(fields.map(x=>[x.id,x]));
- const verified=(states||[]).filter(x=>byId.has(x.field_id)).map(x=>({
+ const mapped=(states||[]).filter(x=>byId.has(x.field_id)).map(x=>({
   label:byId.get(x.field_id).label,key:byId.get(x.field_id).key,
   value:x.proposed_value,sourceQuote:x.source_quote||null,sourceInteractionId:x.source_interaction_id,
-  updatedAt:x.updated_at,provenance:x.source||'verified_state',status:'confirmed'
+  updatedAt:x.updated_at,provenance:x.source||'review_state',status:x.status
  }));
  // CRM phone and city may have been populated by earlier heuristics, so never
  // claim they were owner-verified unless they carry an explicit verified fact.
  return json({customer:{name:customer.name,phone:customer.phone||'',city:customer.city||'',
    phoneVerification:'unknown',doNotContact:customer.do_not_contact,
    social:(identities||[]).map(x=>({platform:x.platform,username:x.username||null,avatarUrl:x.avatar_url||null}))},
-  verifiedFacts:verified,verifiedFactsCount:verified.length,
+  verifiedFacts:mapped.filter(x=>x.status==='confirmed'),verifiedFactsCount:mapped.filter(x=>x.status==='confirmed').length,
+  pendingFacts:mapped.filter(x=>x.status==='review'),
   note:'مقادیر معمول پروفایل بدون شاهد تأییدشده، حقیقت قطعی تلقی نمی‌شوند.'});
 }
