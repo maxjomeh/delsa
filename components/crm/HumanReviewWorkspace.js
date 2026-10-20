@@ -1,6 +1,6 @@
 'use client';
 import {useCallback,useEffect,useMemo,useState} from 'react';
-import {AlertCircle,CheckCircle2,Clock3,FileText,MessagesSquare,RefreshCcw,Save,Send,ShieldAlert,UserRound} from 'lucide-react';
+import {AlertCircle,CheckCircle2,Clock3,FileText,MessagesSquare,RefreshCcw,Save,Send,ShieldAlert,UserRound,BrainCircuit,BookOpen} from 'lucide-react';
 import styles from './HumanReviewWorkspace.module.css';
 
 const pretty=n=>Number(n||0).toLocaleString('fa-IR');
@@ -18,6 +18,9 @@ export default function HumanReviewWorkspace(){
  const [messages,setMessages]=useState([]),[selectedVersion,setSelectedVersion]=useState(null);
  const [draft,setDraft]=useState(''),[dirty,setDirty]=useState(false);
  const [sending,setSending]=useState(false),[lastSend,setLastSend]=useState(null);
+ const [candidate,setCandidate]=useState(null),[suggestBusy,setSuggestBusy]=useState(false),[modelEnabled,setModelEnabled]=useState(false);
+ const [memory,setMemory]=useState(null);
+ const [feedbackVerdict,setFeedbackVerdict]=useState(null),[feedbackBusy,setFeedbackBusy]=useState(false);
  const [loading,setLoading]=useState(true),[historyLoading,setHistoryLoading]=useState(false),[saving,setSaving]=useState(false);
  const [error,setError]=useState(''),[notice,setNotice]=useState('');
  const load=useCallback(async()=>{
@@ -40,7 +43,11 @@ export default function HumanReviewWorkspace(){
  useEffect(()=>{
   if(!selected)return;
   let active=true;
-  setSelectedVersion(null);setLastSend(null);setHistoryLoading(true);setMessages([]);
+  setSelectedVersion(null);setLastSend(null);setCandidate(null);setMemory(null);setFeedbackVerdict(null);setHistoryLoading(true);setMessages([]);
+  fetch('/api/crm/memory?'+new URLSearchParams({caseId:selected.id,customerId:selected.customer_id}),{cache:'no-store'})
+   .then(r=>r.ok?r.json():null).then(j=>{if(active&&j)setMemory(j);}).catch(()=>{});
+  fetch('/api/crm/copilot?caseId='+encodeURIComponent(selected.id),{cache:'no-store'})
+   .then(r=>r.ok?r.json():null).then(j=>{if(active&&j){setCandidate(j.candidate||null);setModelEnabled(j.modelEnabled===true);setFeedbackVerdict(j.feedback?.verdict||null);}}).catch(()=>{});
   fetch('/api/crm/reviews/send?caseId='+encodeURIComponent(selected.id),{cache:'no-store'})
    .then(r=>r.ok?r.json():null).then(j=>{if(active&&j)setLastSend(j.sends?.[0]||null);}).catch(()=>{});
   fetch('/api/crm/reviews?'+new URLSearchParams({caseId:selected.id,customerId:selected.customer_id}),{cache:'no-store'})
@@ -51,6 +58,25 @@ export default function HumanReviewWorkspace(){
    .finally(()=>{if(active)setHistoryLoading(false);});
   return()=>{active=false;};
  },[selected?.id]);
+ async function giveFeedback(verdict){
+  if(!candidate||feedbackVerdict||feedbackBusy||stale||candidate.conversation_version!==selectedVersion)return;
+  setFeedbackBusy(true);setError('');
+  try{
+   const r=await fetch('/api/crm/copilot/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({caseId:selected.id,candidateId:candidate.id,verdict,correctedText:verdict==='incorrect'?draft:''})});
+   const j=await r.json();if(!r.ok)throw Error(j.error||'ثبت بازخورد ناموفق بود.');
+   setFeedbackVerdict(verdict);setNotice('بازخورد برای ارزیابی ثبت شد؛ هنوز باعث تغییر خودکار مدل نشده است.');
+  }catch(e){setError(e.message||'ثبت بازخورد انجام نشد.');}finally{setFeedbackBusy(false);}
+ }
+ async function suggestReply(){
+  if(!selected||suggestBusy||stale||selectedVersion===null)return;
+  setSuggestBusy(true);setNotice('');setError('');
+  try{
+   const r=await fetch('/api/crm/copilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'suggest',caseId:selected.id,version:selectedVersion})});
+   const j=await r.json();if(!r.ok)throw Error(j.error==='conversation_changed_refresh'?'مکالمه تغییر کرده است؛ صفحه را تازه‌سازی کن.':j.error||'تحلیل انجام نشد.');
+   setCandidate(j.candidate||null);setFeedbackVerdict(null);
+   setNotice(j.message||'تحلیل ثبت شد؛ ارسال پیام همچنان نیازمند اقدام شماست.');
+  }catch(e){setError(e.message||'تحلیل انجام نشد.');}finally{setSuggestBusy(false);}
+ }
  async function sendReply(){
   if(!canSend||!selected)return;
   if(!window.confirm('این پیام همین الان واقعاً از حساب اینستاگرام متصل برای مشتری ارسال می‌شود. تأیید می‌کنید؟'))return;
@@ -122,7 +148,24 @@ export default function HumanReviewWorkspace(){
     </section>
     <aside className={styles.insights} aria-label="دلایل ارجاع و شواهد">
      <div className={styles.panelHeading}><ShieldAlert size={18}/><strong>دلیل ارجاع</strong></div>
-     {selected?<><div className={styles.risk}><AlertCircle size={18}/><div><strong>نیازمند تأیید انسان</strong><p>{reasons[selected.reason_code]||'اطلاعات لازم برای ارسال مطمئن کامل نیست.'}</p></div></div>
+     {selected?<><div className={styles.copilot}>
+       <div className={styles.copilotTop}><BrainCircuit size={18}/><strong>پیشنهاد پاسخ مستند سیما</strong></div>
+       <p>مدل زبانی: {modelEnabled?'آماده برای پیش‌نویسِ تحت نظارت':'فعلاً متصل نیست'} · امتیاز اطمینان: هنوز کالیبره نشده</p>
+       <button type="button" onClick={suggestReply} disabled={suggestBusy||stale||selectedVersion===null}>{suggestBusy?'در حال بررسی…':'بررسی ریسک و تولید پیشنهاد'}</button>
+       {candidate&&candidate.conversation_version===selectedVersion&&<div className={styles.candidate}>
+        <small>ریسک: {candidate.risk_level==='high'?'بالا':candidate.risk_level==='medium'?'متوسط':'کم'} · {candidate.kind==='llm_grounded'?'پیشنهاد مدل — نیازمند راستی‌آزمایی':candidate.kind==='approved_faq'?'متن از منبع تأییدشده':candidate.kind==='blocked'?'ممنوعیت پاسخ قطعی':'کمبود دانش معتبر'}</small>
+        {candidate.suggestion?<><p>{candidate.suggestion}</p><button type="button" onClick={()=>{setDraft(candidate.suggestion);setDirty(true);setNotice('پیشنهاد وارد پیش‌نویس شد؛ قبل از ارسال بررسی و ویرایش کن.');}}>استفاده در پیش‌نویس، بدون ارسال</button></>:<p>پاسخ مطمئن قابل پیشنهاد نیست؛ خودت پاسخ را بنویس و منابع را بررسی کن.</p>}
+        {Array.isArray(candidate.cited_entries)&&candidate.cited_entries.length>0&&<div className={styles.citations}><BookOpen size={14}/>{candidate.cited_entries.map(e=><span key={e.id}>{e.title} · نسخهٔ {e.revision}</span>)}</div>}
+        {Array.isArray(candidate.reason_codes)&&candidate.reason_codes.length>0&&<small>دلایل: {candidate.reason_codes.join(' · ')}</small>}
+        <div className={styles.feedback}>{feedbackVerdict?<small>بازخورد ثبت‌شده: {feedbackVerdict==='useful'?'مفید بود':feedbackVerdict==='incorrect'?'نیازمند اصلاح':'کمبود دانش'} </small>:<><small>این نتیجه برای یادگیری آینده چطور بود؟</small><button disabled={feedbackBusy} type="button" onClick={()=>giveFeedback('useful')}>مفید</button><button disabled={feedbackBusy} type="button" onClick={()=>giveFeedback('incorrect')}>نادرست</button><button disabled={feedbackBusy} type="button" onClick={()=>giveFeedback('missing_knowledge')}>نیازمند دانش</button></>}</div>
+       </div>}
+      </div>{memory&&<div className={styles.memory}><strong>حافظهٔ مستند مشتری</strong>
+       <small>شمارهٔ پروفایل: {memory.customer?.phone||'ثبت‌نشده'} · اعتبارسنجی: {memory.customer?.phoneVerification==='unknown'?'تأیید نشده':'تأییدشده'}</small>
+       {(memory.verifiedFacts||[]).slice(0,12).map((fact,i)=><div key={fact.key+'-'+i}><span>{fact.label}</span><b>{typeof fact.value==='string'?fact.value:JSON.stringify(fact.value)}</b>{fact.sourceQuote&&<small>شاهد: «{fact.sourceQuote}»</small>}</div>)}
+       {!memory.verifiedFacts?.length&&<p>هنوز دادهٔ تأییدشدهٔ مستند برای این مشتری وجود ندارد.</p>}
+       {!!memory.pendingFacts?.length&&<><strong>اطلاعات پیشنهادی — هنوز تأیید نشده</strong>{memory.pendingFacts.slice(0,8).map((fact,i)=><div key={'pending-'+fact.key+'-'+i}><span>{fact.label}</span><b>{typeof fact.value==='string'?fact.value:JSON.stringify(fact.value)}</b>{fact.sourceQuote&&<small>متن شاهد: «{fact.sourceQuote}»</small>}</div>)}</>}
+       <small>{memory.note}</small>
+      </div>}<div className={styles.risk}><AlertCircle size={18}/><div><strong>نیازمند تأیید انسان</strong><p>{reasons[selected.reason_code]||'اطلاعات لازم برای ارسال مطمئن کامل نیست.'}</p></div></div>
       <div className={styles.fact}><UserRound size={17}/><div><span>شناسهٔ مشتری</span><strong>{selected.customer?.instagram?'@'+selected.customer.instagram:selected.customer?.name||'نامشخص'}</strong></div></div>
       <div className={styles.fact}><Clock3 size={17}/><div><span>آخرین پیام ثبت‌شده</span><strong>{stamp(selected.last_occurred_at)}</strong></div></div>
       <div className={styles.fact}><FileText size={17}/><div><span>ارزیابی هوش مصنوعی</span><strong>هنوز کالیبره نشده</strong></div></div>
