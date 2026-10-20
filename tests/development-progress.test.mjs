@@ -24,13 +24,22 @@ test('unrelated commit or passing deployment never automatically raises a featur
  for(const evidence of [
   {productionSha:BASELINE_SHA,ciPassed:true,changedFiles:[],treeFiles:[],completeComparison:true},
   {productionSha:sha,ciPassed:true,changedFiles:[],treeFiles:[],completeComparison:true},
-  {productionSha:sha,ciPassed:false,changedFiles:['app/api/crm/reviews/send/route.js'],treeFiles:['app/api/crm/reviews/send/route.js','tests/cima-human-send.test.mjs'],completeComparison:true},
-  {productionSha:sha,ciPassed:true,changedFiles:['app/api/crm/reviews/send/route.js'],treeFiles:['app/api/crm/reviews/send/route.js'],completeComparison:true}
  ]){
   const v=applyVerifiedRelease(PHASES,evidence);
   assert.equal(v.promotions,0);
   assert.equal(productSummary(v.phases).score,baseline);
  }
+});
+test('a production source change without CI earns code evidence only, not operational confidence',()=>{
+ const sha='f'.repeat(40),p='app/api/crm/reviews/send/route.js';
+ const r=applyVerifiedRelease(PHASES,{productionSha:sha,ciPassed:false,changedFiles:[p],treeFiles:[p],completeComparison:true});
+ const original=PHASES[2].features.find(f=>f.label.includes('ارسال واقعی'));
+ const updated=r.phases[2].features.find(f=>f.id===original.id);
+ assert.equal(updated.implementation,original.implementation+2);
+ assert.equal(updated.readiness,original.readiness);
+ assert.equal(updated.autoVerified,false);
+ assert.equal(updated.autoDeployed,true);
+ assert.equal(r.promotions,0);
 });
 test('a new verified source change on active production grants only bounded technical credit',()=>{
  const sha='e'.repeat(40),p='app/api/crm/reviews/send/route.js',t='tests/cima-human-send.test.mjs';
