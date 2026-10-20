@@ -57,7 +57,11 @@ export async function GET(request){
   .select('id,conversation_version,kind,suggestion,cited_entries,risk_level,reason_codes,confidence,confidence_status,model_name,created_at')
   .eq('tenant_id',ctx.id).eq('review_id',caseId).order('created_at',{ascending:false}).limit(1);
  if(error)return respond({error:'suggestions_unavailable'},503);
- return respond({candidate:data?.[0]||null,latestConversationVersion:review.conversation_version,
+ const candidate=data?.[0]||null;
+ let feedback=null;
+ if(candidate){const {data:stored}=await db.from('sima_copilot_feedback').select('id,verdict,created_at')
+  .eq('tenant_id',ctx.id).eq('candidate_id',candidate.id).eq('reviewer_id',ctx.id).maybeSingle();feedback=stored||null;}
+ return respond({candidate,feedback,latestConversationVersion:review.conversation_version,
   modelEnabled:!!process.env.OPENAI_API_KEY&&process.env.CIMA_AI_DRAFTS_ENABLED==='true'});
 }
 export async function POST(request){
