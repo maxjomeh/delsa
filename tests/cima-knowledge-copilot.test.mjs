@@ -42,3 +42,22 @@ test('endpoints gate access and NEVER dispatch AI suggestions',()=>{
  assert.match(sql,/row level security/);assert.match(sql,/check\(confidence is null\)/);
  assert.match(sql,/sima_knowledge_revisions/);
 });
+
+test('source-backed customer memory keeps pending claims separate from verified facts',()=>{
+ const memory=readFileSync('app/api/crm/memory/route.js','utf8');
+ assert.match(memory,/has_active_crm/);
+ assert.match(memory,/\.eq\('tenant_id',user\.id\)/);
+ assert.match(memory,/status==='confirmed'/);
+ assert.match(memory,/status==='review'/);
+ assert.match(memory,/phoneVerification:'unknown'/);
+});
+test('private feedback captures supervised labels without training or dispatch',()=>{
+ const feedback=readFileSync('app/api/crm/copilot/feedback/route.js','utf8');
+ const feedbackSql=readFileSync('supabase/migrations/20261020_cima_copilot_feedback.sql','utf8');
+ assert.match(feedback,/has_active_crm/);
+ assert.match(feedback,/\.eq\('tenant_id',user\.id\)/);
+ assert.match(feedback,/modelUpdated:false/);
+ assert.match(feedbackSql,/unique\(tenant_id,candidate_id,reviewer_id\)/);
+ assert.match(feedbackSql,/row level security/);
+ assert.doesNotMatch(feedback,/zernioRequest\(|sima_claim_human_send/);
+});
