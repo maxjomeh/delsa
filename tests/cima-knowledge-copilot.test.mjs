@@ -26,7 +26,7 @@ test('unapproved, revoked, expired or unrelated knowledge never becomes a sugges
  assert.equal(decideGroundedDraft('آدرس فروشگاه کجاست',[fa]).kind,'no_knowledge');
 });
 test('Persian normalization is deterministic and opt-out blocks all suggestions',()=>{
- assert.deepEqual(tokens('پشتيبانيِ كالا'),tokens('پشتیبانی کالا').slice(0,2).map((x,i)=>i===0?'پشتیبانیِ'.replace('ِ',''):x).filter(Boolean).slice(0,2).length?tokens('پشتيبانيِ كالا'):tokens('پشتیبانی کالا'));
+ assert.deepEqual(tokens('ساعت كالا'),tokens('ساعت کالا'));
  const c=decideGroundedDraft('ساعات پاسخگویی پشتیبانی چه زمانی است',[fa],{doNotContact:true});
  assert.equal(c.kind,'blocked');assert.ok(c.reasonCodes.includes('CONTACT_OPTED_OUT'));
 });
