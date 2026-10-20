@@ -5,12 +5,15 @@ import {industries,statusNames,normalizePhone} from './industry';
 import styles from './SimaWorkspace.module.css';
 import InformationWorkspace,{ProfileField} from './InformationWorkspace';
 import {profileValue} from './information';
+import {uniqueDisplayMessages} from '../../lib/crm/dedupe-display.mjs';
 import ZernioConnection from './ZernioConnection';
 import SimaInbox from './SimaInbox';
 import HumanReviewWorkspace from './HumanReviewWorkspace';
 import KnowledgeWorkspace from './KnowledgeWorkspace';
 import CustomerIntelligence from './CustomerIntelligence';
 const sections={overview:'نمای کلی',inbox:'صندوق مکالمات',reviews:'نیازمند پاسخ شما',knowledge:'دانش کسب‌وکار',customers:'مشتریان',interactions:'گفت‌وگو و تعاملات',leads:'فرصت‌های فروش',orders:'سفارش‌ها',tasks:'پیگیری‌ها',information:'اطلاعات جدید',connections:'اتصال‌ها',settings:'صنف و قوانین',reports:'تاریخچه و گزارش'};
+const primarySections=['overview','reviews','inbox','customers','information','knowledge','connections'];
+const secondarySections=['interactions','leads','orders','tasks','reports','settings'];
 const tables={customers:'crm_customers',interactions:'crm_interactions',leads:'crm_leads',orders:'crm_orders',tasks:'crm_tasks',reports:'crm_events'};
 const channels=['manual','instagram','whatsapp','telegram','bale','eitaa','rubika','soroush','website','phone'];
 const channelNames={manual:'ثبت دستی',instagram:'اینستاگرام',whatsapp:'واتساپ',telegram:'تلگرام',bale:'بله',eitaa:'ایتا',rubika:'روبیکا',soroush:'سروش',website:'وب‌سایت',phone:'تماس'};
@@ -20,6 +23,16 @@ export default function SimaWorkspace({userId}){
 const db=useMemo(()=>createClient(),[]),[section,setSection]=useState('overview'),[data,setData]=useState({customers:[],interactions:[],leads:[],orders:[],tasks:[],reports:[]}),[settings,setSettings]=useState(initialSettings),[draftSettings,setDraftSettings]=useState(initialSettings),[search,setSearch]=useState(''),[filter,setFilter]=useState(''),[form,setForm]=useState(null),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState(''),[fields,setFields]=useState([]),[informationStates,setInformationStates]=useState([]),[informationQueue,setInformationQueue]=useState([]),[informationEditing,setInformationEditing]=useState(false);
 useEffect(()=>{const params=new URLSearchParams(window.location.search);if(params.get('sima_section')==='connections')setSection('connections');else if(params.has('sima_customer'))setSection('customers');},[]);
 const load=useCallback(async()=>{const keys=Object.keys(tables),results=await Promise.all(keys.map(async k=>{
+ if(k==='interactions'){
+  const all=[];
+  for(let page=0;page<12;page++){
+   const res=await db.from(tables[k]).select('*').eq('tenant_id',userId)
+    .order('created_at',{ascending:false}).range(page*500,page*500+499);
+   if(res.error)return res;
+   all.push(...(res.data||[]));if((res.data||[]).length<500)break;
+  }
+  return {data:uniqueDisplayMessages(all),error:null};
+ }
  if(k!=='customers')return db.from(tables[k]).select(k==='reports'?'id,entity,entity_id,kind,created_at':'*').eq('tenant_id',userId).order('created_at',{ascending:false}).limit(500);
  const all=[];
  for(let p=0;p<20;p++){
@@ -31,6 +44,7 @@ const load=useCallback(async()=>{const keys=Object.keys(tables),results=await Pr
 }));const cfg=await db.from('crm_settings').select('*').eq('tenant_id',userId).maybeSingle();if(results.some(r=>r.error)||cfg.error){setError('بارگذاری اطلاعات سیما انجام نشد. دوباره تلاش کنید.');setLoading(false);return;}setData(Object.fromEntries(keys.map((k,i)=>[k,results[i].data||[]])));if(cfg.data){setSettings(cfg.data);setDraftSettings(v=>form?v:cfg.data);}const extras=await Promise.all([db.from('crm_field_definitions').select('*').eq('tenant_id',userId).order('priority',{ascending:false}).limit(200),db.from('crm_information_states').select('*').eq('tenant_id',userId).order('updated_at',{ascending:false}).limit(5000),db.rpc('crm_information_queue',{p_limit:500})]);if(extras.some(r=>r.error)){setError('بارگذاری بخش اطلاعات جدید انجام نشد؛ اتصال را بررسی کنید.');}else{setFields(extras[0].data||[]);setInformationStates(extras[1].data||[]);setInformationQueue(extras[2].data||[]);}setLoading(false);},[db,userId,form]);
 useEffect(()=>{let alive=true;const refresh=()=>{if(alive&&document.visibilityState==='visible'&&!form&&!informationEditing&&section!=='settings')load();};refresh();const timer=setInterval(refresh,15000);window.addEventListener('focus',refresh);return()=>{alive=false;clearInterval(timer);window.removeEventListener('focus',refresh);};},[load,form,section,informationEditing]);
 useEffect(()=>{if(section==='customers'&&form){document.getElementById('sima-customer-editor')?.scrollIntoView({behavior:'smooth',block:'start'});}},[section,Boolean(form)]);
+function navigate(k){setSection(k);setInformationEditing(false);if(k==='settings')setDraftSettings(settings);setForm(null);setSearch('');setFilter('');setError('');setNotice('');}
 const customer=id=>data.customers.find(c=>c.id===id)?.name||'مشتری',industry=industries[settings.industry]||industries.retail;
 function open(record=null){setError('');setNotice('');setForm(record||{customer_id:data.customers[0]?.id||'',status:section==='customers'?'new':section==='orders'?'pending':'scheduled',stage:'new',channel:'manual',direction:'inbound',kind:'message',custom_fields:{},items:[]});}
 async function save(e){e.preventDefault();setBusy(true);setError('');try{let value;
@@ -45,7 +59,13 @@ setForm(null);setNotice('ذخیره شد.');await load();}catch(e){setError(e.me
 const rows=(data[section]||[]).filter(r=>(!filter||r.customer_id===filter||r.id===filter)&&[r.name,r.title,r.body,r.reference,r.phone,r.instagram,r.tags,r.notes,customer(r.customer_id)].join(' ').toLowerCase().includes(search.toLowerCase()));
 const input=(key,label,type='text',required=false)=> <label>{label}<input type={type} required={required} value={form?.[key]??''} maxLength={type==='text'?200:undefined} min={type==='number'?0:undefined} onChange={e=>setForm({...form,[key]:e.target.value})}/></label>;
 const select=(key,label,options)=><label>{label}<select value={form?.[key]||''} onChange={e=>setForm({...form,[key]:e.target.value})}>{Object.entries(options).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>;
-return <section className={styles.workspace}><header className={styles.header}><div><span>DELSA · SIMA CRM</span><h2>سیما؛ همراه ارتباط با مشتری</h2><p>{settings.business_name||'فضای کاری شما'} · {industry.name}</p></div><span className={styles.badge}>داده‌های واقعی کسب‌وکار</span></header><div className={styles.connection}><strong>ثبت و برنامه‌ریزی فعال</strong><span>اتصال خودکار پیام‌رسان‌ها و ارسال پیگیری هنوز پیکربندی نشده است. ثبت تعامل در این نسخه دستی است؛ ساخت و لغو پیگیری‌ها طبق قوانین انجام می‌شود.</span></div><nav className={styles.nav}>{Object.entries(sections).map(([k,v])=><button key={k} className={section===k?styles.active:''} onClick={()=>{setSection(k);setInformationEditing(false);if(k==='settings')setDraftSettings(settings);setForm(null);setSearch('');setFilter('');setError('');setNotice('');}}>{v}</button>)}</nav>{error&&<p role="alert" className={styles.error}>{error}</p>}{notice&&<p role="status">{notice}</p>}{loading?<p role="status">در حال بارگذاری سیما…</p>:<>
+return <section className={styles.workspace}><header className={styles.header}><div><span>DELSA · SIMA CRM</span><h2>سیما؛ همراه ارتباط با مشتری</h2><p>{settings.business_name||'فضای کاری شما'} · {industry.name}</p></div><span className={styles.badge}>داده‌های واقعی کسب‌وکار</span></header><div className={styles.connection}><strong>اتصال پیام‌رسان‌ها و پرونده‌های هوشمند</strong><span>پیام‌های متصل به Zernio در سیما دریافت می‌شوند؛ ارسال از «نیازمند پاسخ شما» فقط با تأیید انسان انجام می‌شود. پیشنهادهای استخراج اطلاعات نیز پیش از ثبت قطعی به بررسی نیاز دارند.</span></div><nav className={styles.nav} aria-label="بخش‌های سیما">
+ {primarySections.map(k=><button key={k} className={section===k?styles.active:''} onClick={()=>navigate(k)}>{sections[k]}</button>)}
+ <select aria-label="سایر بخش‌های سیما" value={secondarySections.includes(section)?section:''} onChange={e=>e.target.value&&navigate(e.target.value)}>
+  <option value="">سایر ابزارها و گزارش‌ها</option>
+  {secondarySections.map(k=><option key={k} value={k}>{sections[k]}</option>)}
+ </select>
+</nav>{error&&<p role="alert" className={styles.error}>{error}</p>}{notice&&<p role="status">{notice}</p>}{loading?<p role="status">در حال بارگذاری سیما…</p>:<>
 {section==='overview'&&<><div className={styles.stats}>{[['پروندهٔ مشتری',data.customers.length],['فرصت باز',data.leads.filter(x=>!['won','lost'].includes(x.stage)).length],['پیگیری در انتظار',data.tasks.filter(x=>x.status==='scheduled').length],['فروش ثبت‌شده / تومان',data.orders.filter(x=>x.status==='paid').reduce((n,x)=>n+Number(x.amount),0)]].map(([k,v])=><article key={k}><span>{k}</span><strong>{num(v)}</strong></article>)}</div><div className={styles.panel}><h3>پیگیری‌های سررسیدشده</h3>{data.tasks.filter(x=>x.status==='scheduled'&&new Date(x.due_at)<=new Date()).map(x=><article key={x.id}><strong>{customer(x.customer_id)}</strong><p>{x.title} · {date(x.due_at)}</p></article>)}{!data.tasks.some(x=>x.status==='scheduled'&&new Date(x.due_at)<=new Date())&&<p>پیگیری سررسیدشده‌ای وجود ندارد.</p>}<button onClick={()=>setSection('tasks')}>مدیریت پیگیری‌ها</button></div><div className={styles.panel}><h3>اطلاعات جدید</h3><p>{num(informationQueue.length)} مشتری آمادهٔ یک سؤال تکمیلی مناسب هستند. اولویت‌ها و زمان پرسیدن را خودتان تنظیم کنید.</p><button onClick={()=>setSection('information')}>دیدن سؤال بعدی مشتریان</button></div><div className={styles.panel}><h3>شروع کار</h3><p>صنف را انتخاب کنید، مشتری را ثبت کنید و یک تعامل از نوع «پیشنهاد ارسالی» بسازید. سیما پیگیری را طبق قانون زمان‌بندی می‌کند؛ پاسخ جدید یا خرید، پیگیری قبلی را متوقف می‌کند.</p><button onClick={()=>setSection('settings')}>تنظیم صنف و قوانین</button></div></>}
 {section==='inbox'&&<SimaInbox db={db} userId={userId} customers={data.customers} interactions={data.interactions} informationQueue={informationQueue} onRefresh={load}/>}
 {section==='reviews'&&<HumanReviewWorkspace/>}

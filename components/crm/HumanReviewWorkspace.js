@@ -38,7 +38,7 @@ export default function HumanReviewWorkspace(){
  const selected=visible.find(x=>x.id===selectedId)||visible[0]||null;
  const stale=!!selected&&selectedVersion!==null&&selected.conversation_version!==selectedVersion;
  const withinWindow=!!selected&&Number.isFinite(Date.parse(selected.last_occurred_at||''))&&Date.now()-Date.parse(selected.last_occurred_at)>0&&Date.now()-Date.parse(selected.last_occurred_at)<23*60*60*1000;
- const alreadyAttempted=!!lastSend&&lastSend.conversation_version===selectedVersion;
+ const alreadyAttempted=!!lastSend&&lastSend.conversation_version===selectedVersion&&!(lastSend.status==='pending'&&lastSend.attempt_count===0);
  const canSend=!!selected&&selected.channel==='instagram'&&!selected.customer?.do_not_contact&&withinWindow&&!stale&&!alreadyAttempted&&!saving&&!sending&&selectedVersion!==null&&draft.trim().length>0&&draft.length<=4000;
  useEffect(()=>{
   if(!selected)return;
@@ -84,11 +84,11 @@ export default function HumanReviewWorkspace(){
   try{
    const res=await fetch('/api/crm/reviews/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'send',id:selected.id,version:selectedVersion,text:draft})});
    const json=await res.json();
-   if(json.outboxId)setLastSend({id:json.outboxId,conversation_version:selectedVersion,status:json.status||'unknown'});
+   if(json.outboxId)setLastSend({id:json.outboxId,conversation_version:selectedVersion,status:json.status||'unknown',attempt_count:json.status==='pending'?0:1});
    if(json.status==='accepted'){setDirty(false);setNotice('Zernio ارسال را پذیرفت. تحویل و خوانده‌شدن هنوز تأیید نشده است.');await load();}
    else if(json.status==='unknown'||res.status===202){setError('نتیجهٔ ارسال نامشخص است. دوباره ارسال نکنید؛ ابتدا وضعیت گفتگو را در اینستاگرام بررسی کنید.');}
    else if(json.status==='rejected'){setError('سرویس ارسال را رد کرد. برای جلوگیری از تکرار، ارسال این نوبت قفل شد.');}
-   else{const explanations={reply_window_closed:'از آخرین پیام مشتری بیش از ۲۳ ساعت گذشته است.',contact_opted_out:'ارتباط با این مشتری ممنوع است.',conversation_stale:'مکالمه تغییر کرده؛ تاریخچه را تازه‌سازی کنید.',duplicate_send_blocked:'برای همین نوبت قبلاً تلاش ارسال ثبت شده است.',business_already_replied:'پاسخ جدیدتری قبلاً ثبت شده است.',conversation_unverified:'شناسهٔ اصلی گفتگو قابل تأیید نیست.',instagram_sender_not_connected:'اتصال اینستاگرام نیازمند بررسی است.'};setError(explanations[json.error]||'ارسال انجام نشد. وضعیت اتصال یا مکالمه را بررسی کنید.');}
+   else{const explanations={send_blocked:'درخواست در صف باقی ماند؛ دوباره فقط با کلیک مدیر قابل ادامه است. اگر مشکل تکرار شد، وضعیت اتصال سرویس را بررسی کنید.',reply_window_closed:'از آخرین پیام مشتری بیش از ۲۳ ساعت گذشته است.',contact_opted_out:'ارتباط با این مشتری ممنوع است.',conversation_stale:'مکالمه تغییر کرده؛ تاریخچه را تازه‌سازی کنید.',duplicate_send_blocked:'برای همین نوبت قبلاً تلاش ارسال ثبت شده است.',business_already_replied:'پاسخ جدیدتری قبلاً ثبت شده است.',conversation_unverified:'شناسهٔ اصلی گفتگو قابل تأیید نیست.',instagram_sender_not_connected:'اتصال اینستاگرام نیازمند بررسی است.'};setError(explanations[json.error]||'ارسال انجام نشد. وضعیت اتصال یا مکالمه را بررسی کنید.');}
   }catch{setError('وضعیت درخواست نامشخص است. قبل از تلاش جدید، تاریخچه و وضعیت ارسال را بررسی کنید.');}
   finally{setSending(false);}
  }
@@ -141,6 +141,7 @@ export default function HumanReviewWorkspace(){
        <textarea id="cima-human-draft" value={draft} onChange={e=>{setDraft(e.target.value);setDirty(true);}} maxLength={4000} rows={5} placeholder="پاسخ را بنویسید. ذخیرهٔ پیش‌نویس ارسال نمی‌کند؛ ارسال واقعی دکمهٔ جدا دارد…"/>
        {!withinWindow&&<small className={styles.sendWarning}>مهلت پاسخ عادی به این پیام تمام شده؛ برای ارسال جدید باید مشتری دوباره پیام بدهد.</small>}
        {selected.customer?.do_not_contact&&<small className={styles.sendWarning}>این مشتری اجازهٔ تماس ندارد؛ ارسال مسدود است.</small>}
+       {lastSend?.status==='pending'&&lastSend?.attempt_count===0&&<small className={styles.sendWarning}>درخواست قبلی قبل از تماس با ارائه‌دهنده در صف مانده؛ با تأیید دوباره می‌توان همان درخواست را ادامه داد (پیام تکراری ساخته نمی‌شود).</small>}
        {lastSend&&<div className={styles.sendReceipt}>وضعیت آخرین تلاش: <strong>{({accepted:'پذیرفته‌شده توسط Zernio؛ تحویل نامشخص',unknown:'نتیجه نامشخص — ارسال مجدد ممنوع',rejected:'ردشده توسط ارائه‌دهنده',sending:'در حال ارسال',pending:'در صف'})[lastSend.status]||lastSend.status}</strong></div>}
        <div className={styles.actionRow}><small>{dirty?'تغییرات هنوز ذخیره نشده‌اند.':'ذخیرهٔ پیش‌نویس جدا از ارسال واقعی است.'}</small><div className={styles.sendActions}><button type="button" onClick={saveDraft} disabled={saving||sending||stale||selectedVersion===null}><Save size={16}/>{saving?'در حال ذخیره…':'ذخیره پیش‌نویس'}</button><button type="button" className={styles.sendButton} onClick={sendReply} disabled={!canSend}><Send size={16}/>{sending?'در حال ارسال…':'ارسال واقعی به اینستاگرام'}</button></div></div>
       </div>
