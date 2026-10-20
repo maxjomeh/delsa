@@ -93,7 +93,7 @@ async function portfolio(db,refresh=false){
    reviewedAt:override.reviewed_at,reviewNote:override.notes}:f;
  })}));
  const baseline=productSummary(audited);
- const auto=applyVerifiedRelease(audited,evidence);
+ const auto=applyVerifiedRelease(audited,{productionSha:sha,ciPassed:evidence.ciPassed,changedFiles:evidence.changedPaths,treeFiles:evidence.treePaths,completeComparison:evidence.comparisonComplete});
  const cimaPhases=auto.phases.map(phase=>({...phase,...phaseSummary(phase),features:phase.features.map(f=>({...f,score:+(0.45*f.implementation+0.55*f.readiness).toFixed(1)}))}));
  const services=[...(productsResponse.data||[])];
  if(!services.some(x=>x.service_code==='crm'))services.unshift({id:'cima-core',name:'سیما — CIMA Intelligence',service_code:'crm',is_published:false});
@@ -160,8 +160,8 @@ export async function POST(request){
    !Number.isFinite(body.phaseWeight)||body.phaseWeight<=0||body.phaseWeight>100||
    !Number.isFinite(body.weight)||body.weight<=0||body.weight>100||
    !pathList(body.sourcePaths)||!pathList(body.testPaths))return json({error:'invalid_roadmap_feature'},400);
-  const known=await db.from('store_products').select('id,service_code').eq('service_code',body.productCode).limit(1);
-  if(known.error||!known.data?.length)return json({error:'product_not_found'},404);
+  const known=await db.from('store_products').select('id,service_code').limit(100);
+  if(known.error||!(known.data||[]).some(row=>(row.service_code||'store_'+String(row.id).replaceAll('-','').slice(0,12))===body.productCode))return json({error:'product_not_found'},404);
   const row={product_code:body.productCode,phase_key:body.phaseKey,phase_title:body.phaseTitle.trim(),
    feature_key:body.featureKey,label:body.label.trim(),phase_weight:body.phaseWeight,weight:body.weight,
    source_paths:body.sourcePaths,test_paths:body.testPaths,updated_by:ctx.userId};
