@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server';
 import {createClient} from '../../../../lib/supabase/server';
 import {serverDatabase} from '../../../../lib/crm/instagram';
+import {uniqueDisplayMessages} from '../../../../lib/crm/dedupe-display.mjs';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 
@@ -32,7 +33,7 @@ export async function GET(request){
    .eq('tenant_id',owner.id).eq('customer_id',customerId).eq('channel',review.channel)
    .order('occurred_at',{ascending:false}).limit(100);
   if(error)return json({error:'history_unavailable'},503);
-  return json({review,messages:(messages||[]).reverse().map(({external_event_id,...m})=>m)});
+  return json({review,messages:uniqueDisplayMessages((messages||[]).reverse()).map(({external_event_id,...m})=>m)});
  }
  const state=url.searchParams.get('state')||'all';
  if(!['all','awaiting_human','drafting','resolved'].includes(state))return json({error:'invalid_state'},400);
