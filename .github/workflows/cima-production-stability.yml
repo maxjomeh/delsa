@@ -1,0 +1,28 @@
+name: SIMA Production Stability Audit
+on:
+  push:
+    branches: [fix/cima-production-stability-audit-20261020]
+  pull_request:
+    paths:
+      - 'app/api/crm/health/**'
+      - 'app/api/crm/reviews/send/**'
+      - 'components/crm/**'
+      - 'lib/crm/**'
+      - 'tests/cima-production-stability.test.mjs'
+      - '.github/workflows/cima-production-stability.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Test all SIMA and integration regression suites
+        run: node --test tests/*.test.mjs
+      - name: Build production app
+        run: npm run build
