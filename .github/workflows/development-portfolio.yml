@@ -3,11 +3,18 @@ on:
   push:
     branches:
       - feat/admin-product-development-progress-20261020
+      - feat/devos-*
+      - fix/devos-*
   pull_request:
     paths:
       - 'lib/development/**'
       - 'app/api/admin/development/**'
       - 'components/DevelopmentDashboard*'
+      - 'components/DevOSBacklog*'
+      - 'app/api/admin/devos/**'
+      - 'lib/devos/**'
+      - 'tests/devos-*.test.mjs'
+      - 'supabase/migrations/*devos*'
       - 'components/AdminDashboardClient.js'
       - 'tests/development-progress.test.mjs'
       - '.github/workflows/development-portfolio.yml'
