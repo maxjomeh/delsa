@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {Activity,AlertTriangle,ArrowUpLeft,BookOpen,CheckCircle2,ChevronDown,ChevronUp,Clock3,GitBranch,Layers3,Plus,RefreshCw,Save,ShieldCheck,TestTube2,X} from 'lucide-react';
 import './DevelopmentDashboard.css';
+import DevOSBacklog from './DevOSBacklog';
 const fa=n=>Number(n||0).toLocaleString('fa-IR',{maximumFractionDigits:1});
 const short=x=>x?x.slice(0,8):'نامشخص';
 const color=value=>value>=80?'high':value>=50?'middle':'low';
@@ -86,6 +87,7 @@ export default function DevelopmentDashboard(){
   {error&&<div className="dev-banner is-error" role="alert"><AlertTriangle size={17}/>{error}</div>}
   {notice&&<div className="dev-banner is-success" role="status"><CheckCircle2 size={17}/>{notice}</div>}
   {!data?<div className="dev-loading">{busy?'در حال دریافت داده‌های توسعه…':'گزارش توسعه در دسترس نیست.'}</div>:<>
+   <DevOSBacklog/>
    <div className="dev-release"><div className="dev-release-title"><GitBranch size={18}/><strong>وضعیت انتشار فعال</strong></div>
     <div className="dev-release-cells">
      <span><small>SHA نسخهٔ Production</small><b dir="ltr">{short(data.evidence.productionSha)}</b></span>
