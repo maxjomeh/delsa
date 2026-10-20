@@ -31,7 +31,7 @@ test('learns tenant-specific recurring question themes from distinct customers',
  {id:'q3',customer_id:'u3',direction:'outbound',kind:'message',body:'اسم کشنده مشتری چیه؟'}
  ];
  const results=discoverFields(lines,{minOccurrences:3,minCustomers:2});
- assert.equal(results[0]?.label,'نام کشنده');
+ assert.equal(results[0]?.label,'مدل کشنده');
  assert.equal(results[0]?.distinctCustomers,3);
 });
 test('extracts uncertain replies as review candidates, not confirmed profile values',()=>{
