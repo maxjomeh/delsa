@@ -24,10 +24,9 @@ const db=useMemo(()=>createClient(),[]),[section,setSection]=useState('overview'
 const [health,setHealth]=useState(null);
 useEffect(()=>{let active=true;fetch('/api/crm/health',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(x=>{if(active)setHealth(x)}).catch(()=>{});return()=>{active=false;};},[]);
 useEffect(()=>{const params=new URLSearchParams(window.location.search);if(params.get('sima_section')==='connections')setSection('connections');else if(params.has('sima_customer'))setSection('customers');},[]);
-const loadBusy=useRef(false);
+const loadSeq=useRef(0);
 const load=useCallback(async()=>{
- if(loadBusy.current)return;
- loadBusy.current=true;
+ const request=++loadSeq.current;
  try{
  const keys=Object.keys(tables),results=await Promise.all(keys.map(async k=>{
  if(k==='interactions'){
@@ -51,14 +50,19 @@ const load=useCallback(async()=>{
   all.push(...(page.data||[]));if((page.data||[]).length<1000)break;
  }
  return {data:all,error:null};
-}));const cfg=await db.from('crm_settings').select('*').eq('tenant_id',userId).maybeSingle();const failed=keys.filter((k,i)=>!!results[i].error);
+}));if(request!==loadSeq.current)return;
+ const cfg=await db.from('crm_settings').select('*').eq('tenant_id',userId).maybeSingle();
+ if(request!==loadSeq.current)return;
+ const failed=keys.filter((k,i)=>!!results[i].error);
  if(failed.length||cfg.error)setError('بعضی از بخش‌های سیما موقتاً در دسترس نیستند؛ اطلاعات سالم همچنان نمایش داده می‌شوند.');
  else setError('');
- setData(prev=>Object.fromEntries(keys.map((k,i)=>[k,results[i].error?prev[k]||[]:results[i].data||[]])));if(cfg.data){setSettings(cfg.data);setDraftSettings(v=>form?v:cfg.data);}const extras=await Promise.all([db.from('crm_field_definitions').select('*').eq('tenant_id',userId).order('priority',{ascending:false}).limit(200),db.from('crm_information_states').select('*').eq('tenant_id',userId).order('updated_at',{ascending:false}).limit(5000),db.rpc('crm_information_queue',{p_limit:500})]);if(extras.some(r=>r.error))setError('برخی داده‌های اطلاعات مشتریان بارگذاری نشدند؛ بخش‌های سالم قابل استفاده‌اند.');
+ setData(prev=>Object.fromEntries(keys.map((k,i)=>[k,results[i].error?prev[k]||[]:results[i].data||[]])));if(cfg.data){setSettings(cfg.data);setDraftSettings(v=>form?v:cfg.data);}const extras=await Promise.all([db.from('crm_field_definitions').select('*').eq('tenant_id',userId).order('priority',{ascending:false}).limit(200),db.from('crm_information_states').select('*').eq('tenant_id',userId).order('updated_at',{ascending:false}).limit(5000),db.rpc('crm_information_queue',{p_limit:500}) ]);
+ if(request!==loadSeq.current)return;
+ if(extras.some(r=>r.error))setError('برخی داده‌های اطلاعات مشتریان بارگذاری نشدند؛ بخش‌های سالم قابل استفاده‌اند.');
  if(!extras[0].error)setFields(extras[0].data||[]);
  if(!extras[1].error)setInformationStates(extras[1].data||[]);
  if(!extras[2].error)setInformationQueue(extras[2].data||[]);setLoading(false);
- }catch(e){setError('دریافت اطلاعات سیما با خطا مواجه شد. دوباره تلاش کنید.');setLoading(false);}finally{loadBusy.current=false;}
+ }catch(e){if(request===loadSeq.current){setError('دریافت اطلاعات سیما با خطا مواجه شد. دوباره تلاش کنید.');setLoading(false);}}
 },[db,userId,form,section]);
 useEffect(()=>{let alive=true;const refresh=()=>{if(alive&&document.visibilityState==='visible'&&!form&&!informationEditing&&section!=='settings')load();};refresh();const timer=setInterval(refresh,90000);window.addEventListener('focus',refresh);return()=>{alive=false;clearInterval(timer);window.removeEventListener('focus',refresh);};},[load,form,section,informationEditing]);
 useEffect(()=>{if(section==='customers'&&form){document.getElementById('sima-customer-editor')?.scrollIntoView({behavior:'smooth',block:'start'});}},[section,Boolean(form)]);
