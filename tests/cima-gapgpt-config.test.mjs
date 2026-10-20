@@ -70,3 +70,13 @@ test('admin UI exposes rotate, test and enable, never displays full saved key',(
  assert.match(admin,/ai:<CimaModelAdmin\/>/);
  assert.match(admin,/مدل و کلیدهای API سیما/);
 });
+
+test('paid-model quota defaults to 20 per tenant and blocks unbounded retries',()=>{
+ const sql=read('supabase/migrations/20261020_cima_gapgpt_usage_limit.sql');
+ const copilot=read('app/api/crm/copilot/route.js');
+ assert.match(sql,/request_count<20/);
+ assert.match(sql,/on conflict\(tenant_id,usage_day\) do update/);
+ assert.match(sql,/grant execute on function public\.sima_claim_model_quota\(uuid\) to service_role/);
+ assert.match(copilot,/sima_claim_model_quota/);
+ assert.match(copilot,/prior\?\.kind==='llm_grounded'/);
+});
