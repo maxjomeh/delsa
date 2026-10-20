@@ -80,3 +80,10 @@ test('paid-model quota defaults to 20 per tenant and blocks unbounded retries',(
  assert.match(copilot,/sima_claim_model_quota/);
  assert.match(copilot,/prior\?\.kind==='llm_grounded'/);
 });
+
+test('explicit admin disable takes priority over legacy OpenAI environment fallback',()=>{
+ const copilot=read('app/api/crm/copilot/route.js');
+ assert.match(copilot,/includeDisabled:true/);
+ assert.match(copilot,/gapgptSettings&&!gapgptSettings.enabled\)return null/);
+ assert.match(copilot,/modelEnabled:configuredGapGPT\?configuredGapGPT.enabled/);
+});
