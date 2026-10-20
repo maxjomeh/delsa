@@ -65,7 +65,7 @@ test('admin UI exposes rotate, test and enable, never displays full saved key',(
  const ui=read('components/CimaModelAdmin.js');
  const admin=read('components/AdminDashboardClient.js');
  assert.match(ui,/name==='save'/);assert.match(ui,/name==='test'/);
- assert.match(ui,/name==='enable'/);assert.match(ui,/name==='disable'/);
+ assert.match(ui,/action\('enable'\)/);assert.match(ui,/name==='disable'/);
  assert.match(ui,/setApiKey\(''\)/);
  assert.match(admin,/ai:<CimaModelAdmin\/>/);
  assert.match(admin,/مدل و کلیدهای API سیما/);
