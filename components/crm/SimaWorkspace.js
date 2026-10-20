@@ -5,6 +5,7 @@ import {industries,statusNames,normalizePhone} from './industry';
 import styles from './SimaWorkspace.module.css';
 import InformationWorkspace,{ProfileField} from './InformationWorkspace';
 import {profileValue} from './information';
+import {uniqueDisplayMessages} from '../../lib/crm/dedupe-display.mjs';
 import ZernioConnection from './ZernioConnection';
 import SimaInbox from './SimaInbox';
 import HumanReviewWorkspace from './HumanReviewWorkspace';
@@ -20,6 +21,16 @@ export default function SimaWorkspace({userId}){
 const db=useMemo(()=>createClient(),[]),[section,setSection]=useState('overview'),[data,setData]=useState({customers:[],interactions:[],leads:[],orders:[],tasks:[],reports:[]}),[settings,setSettings]=useState(initialSettings),[draftSettings,setDraftSettings]=useState(initialSettings),[search,setSearch]=useState(''),[filter,setFilter]=useState(''),[form,setForm]=useState(null),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState(''),[fields,setFields]=useState([]),[informationStates,setInformationStates]=useState([]),[informationQueue,setInformationQueue]=useState([]),[informationEditing,setInformationEditing]=useState(false);
 useEffect(()=>{const params=new URLSearchParams(window.location.search);if(params.get('sima_section')==='connections')setSection('connections');else if(params.has('sima_customer'))setSection('customers');},[]);
 const load=useCallback(async()=>{const keys=Object.keys(tables),results=await Promise.all(keys.map(async k=>{
+ if(k==='interactions'){
+  const all=[];
+  for(let page=0;page<12;page++){
+   const res=await db.from(tables[k]).select('*').eq('tenant_id',userId)
+    .order('created_at',{ascending:false}).range(page*500,page*500+499);
+   if(res.error)return res;
+   all.push(...(res.data||[]));if((res.data||[]).length<500)break;
+  }
+  return {data:uniqueDisplayMessages(all),error:null};
+ }
  if(k!=='customers')return db.from(tables[k]).select(k==='reports'?'id,entity,entity_id,kind,created_at':'*').eq('tenant_id',userId).order('created_at',{ascending:false}).limit(500);
  const all=[];
  for(let p=0;p<20;p++){
