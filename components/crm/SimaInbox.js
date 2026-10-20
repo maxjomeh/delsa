@@ -2,6 +2,7 @@
 import {useEffect, useMemo, useState} from 'react';
 import {buildConversations, inboxTotals} from '../../lib/crm/inbox.mjs';
 import styles from './SimaInbox.module.css';
+import {socialProfile} from '../../lib/crm/social-profile.mjs';
 
 const channels = {
   manual: 'ثبت دستی', instagram: 'اینستاگرام', whatsapp: 'واتساپ',
@@ -95,7 +96,7 @@ export default function SimaInbox({db, userId, customers, interactions, informat
         <div><strong>{pretty(totals.loggedMessages)}</strong><small>تعامل ثبت‌شده</small></div>
       </div>
     </div>
-    <p className={styles.disclaimer}>وضعیت «نیازمند پاسخ» از آخرین تعامل ثبت‌شده محاسبه می‌شود؛ رسید خواندن، ارسال واقعی یا تمام مکالمات اینستاگرام را نشان نمی‌دهد. این نما حداکثر ۵۰۰ تعامل و ۵۰۰ پرونده اخیر بارگذاری‌شده را پوشش می‌دهد.</p>
+    <p className={styles.disclaimer}>وضعیت «نیازمند پاسخ» از آخرین تعامل ثبت‌شده محاسبه می‌شود؛ رسید خواندن، ارسال واقعی یا تمام مکالمات اینستاگرام را نشان نمی‌دهد. تاریخچهٔ نمایشی ممکن است محدود به بازهٔ بارگذاری‌شده باشد؛ برای بررسی پیام‌های قدیمی‌تر از بخش تاریخچه و پروفایل مشتری استفاده کنید.</p>
     <div className={styles.filters}>
       <input aria-label="جست‌وجو در مکالمات" placeholder="نام، اینستاگرام، شماره یا متن مکالمه…" value={search} onChange={e => setSearch(e.target.value)} />
       <select aria-label="وضعیت پاسخ" value={status} onChange={e => setStatus(e.target.value)}>
@@ -111,7 +112,7 @@ export default function SimaInbox({db, userId, customers, interactions, informat
     <div className={styles.layout}>
       <div className={styles.threads} aria-label="گفت‌وگوهای مشتریان">
         {rows.map(row => <button key={row.id} type="button" className={styles.thread + (selected?.id === row.id ? ' ' + styles.selected : '')} onClick={() => choose(row)} aria-current={selected?.id === row.id ? 'true' : undefined}>
-          <span className={styles.avatar}>{(row.customer.name || 'م').slice(0, 1)}</span>
+          <span className={styles.avatar}>{socialProfile(row.customer).avatar?<img src={socialProfile(row.customer).avatar} alt="" loading="lazy" referrerPolicy="no-referrer" style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:'inherit'}}/>:(row.customer.name||'م').slice(0,1)}</span>
           <span className={styles.threadBody}>
             <span className={styles.threadTop}><strong>{row.customer.name}</strong><small>{stamp(row.last.occurred_at)}</small></span>
             <span className={styles.preview}>{row.last.body}</span>
@@ -157,7 +158,7 @@ export default function SimaInbox({db, userId, customers, interactions, informat
             <button disabled={busy || !body.trim() || (outgoing && !confirmed)} type="submit">{busy ? 'در حال ثبت…' : 'ثبت در پرونده'}</button>
             {error && <p role="alert" className={styles.error}>{error}</p>}
             {notice && <p role="status" className={styles.notice}>{notice}</p>}
-            <small>ارسال خودکار پیام هنوز فعال نیست. ثبت پیشنهاد ارسالی می‌تواند طبق تنظیمات مشتری، پیگیری جدید بسازد.</small>
+            <small>این فرم فقط تعاملِ انجام‌شده را ثبت می‌کند. برای ارسال واقعی انسانی از بخش «نیازمند پاسخ شما» استفاده کنید؛ ارسال خودکار AI غیرفعال است.</small>
           </form>
         </>}
       </div>
