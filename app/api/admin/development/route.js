@@ -86,6 +86,16 @@ async function portfolio(db,refresh=false){
   if(error)throw Error('snapshot_write_failed');
   evidence.checkedAt=new Date().toISOString();
  }
+ const metricsTables=[
+  ['crm_customers','مشتریان'],['crm_interactions','تعامل‌ها'],
+  ['sima_human_review_cases','پرونده‌های بررسی'],['sima_knowledge_entries','منابع دانش'],
+  ['sima_response_candidates','پیشنهادهای Copilot'],['sima_copilot_feedback','بازخوردهای AI'],
+  ['crm_information_states','اطلاعات پیشنهادی']
+ ];
+ const live=await Promise.all(metricsTables.map(async([table,label])=>{
+  const count=await db.from(table).select('id',{head:true,count:'exact'});
+  return {table,label,count:count.error?null:count.count};
+ }));
  const reviews=new Map((reviewsResponse.data||[]).map(x=>[x.feature_id,x]));
  const audited=PHASES.map(phase=>({...phase,features:phase.features.map(f=>{
   const override=reviews.get(f.id);
@@ -110,12 +120,13 @@ async function portfolio(db,refresh=false){
     const sourcePresent=r.source_paths.length>0&&r.source_paths.every(x=>evidence.treePaths.includes(x));
     const touched=r.source_paths.some(x=>evidence.changedPaths.includes(x));
     const testPresent=r.test_paths.some(x=>evidence.treePaths.includes(x));
-    const verified=!!sha&&sha!==BASELINE_SHA&&evidence.comparisonComplete&&evidence.ciPassed&&sourcePresent&&touched&&testPresent;
-    const impl=verified?Math.min(95,r.implementation+5):r.implementation;
+    const autoDeployed=!!sha&&sha!==BASELINE_SHA&&evidence.comparisonComplete&&sourcePresent&&touched;
+    const verified=autoDeployed&&evidence.ciPassed&&testPresent;
+    const impl=autoDeployed?Math.min(95,r.implementation+(verified?5:2)):r.implementation;
     const ready=verified?Math.min(80,r.readiness+3):r.readiness;
     return {id:r.id,label:r.label,weight:100*Number(r.weight)/total,implementation:impl,readiness:ready,
      score:+(0.45*impl+0.55*ready).toFixed(1),sourcePaths:r.source_paths,testPaths:r.test_paths,
-     autoVerified:verified,notes:r.notes};
+     autoDeployed,autoVerified:verified,notes:r.notes};
    });
    const phaseWeight=Number(items[0].phase_weight);
    return {number:key,key,name:title,weight:phaseWeight,features,...phaseSummary({features})};
@@ -125,7 +136,7 @@ async function portfolio(db,refresh=false){
  });
  return {products,evidence:{productionSha:evidence.productionSha,ciState:evidence.ciState,
   comparisonComplete:evidence.comparisonComplete,status:evidence.status,checkedAt:evidence.checkedAt||null,
-  changedCount:evidence.changedPaths.length},baselineSha:BASELINE_SHA,method:'45% implementation + 55% operational readiness; CI evidence gives only bounded credit'};
+  changedCount:evidence.changedPaths.length},telemetry:live,baselineSha:BASELINE_SHA,method:'45% implementation + 55% operational readiness; CI evidence gives only bounded credit'};
 }
 export async function GET(){
  const ctx=await admin();if(!ctx.userId)return json({error:'admin_access_required'},ctx.status);
