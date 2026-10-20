@@ -100,6 +100,10 @@ export default function DevelopmentDashboard(){
       'GitHub یا CI تمام شواهد لازم را ارائه نکرده است؛ درصدهای عملیاتی بدون تأیید افزایش نمی‌یابند.'}</p>
     {data.evidence.productionSha&&<a href={'https://github.com/maxjomeh/delsa/commit/'+data.evidence.productionSha} target="_blank" rel="noreferrer">مشاهدهٔ Commit فعال <ArrowUpLeft size={13}/></a>}
    </div>
+   {Array.isArray(data.telemetry)&&<div className="dev-telemetry" aria-label="شاخص‌های عملیاتی زنده">
+    <div className="dev-telemetry-head"><Activity size={16}/><strong>شواهد عملیاتی Supabase</strong><small>شمارش واقعی؛ افزایش تعداد رکورد به معنی صحت قابلیت نیست</small></div>
+    <div className="dev-telemetry-grid">{data.telemetry.map(item=><div key={item.table}><small>{item.label}</small><strong>{item.count===null?'—':fa(item.count)}</strong></div>)}</div>
+   </div>}
    <div className="dev-products" role="tablist" aria-label="انتخاب محصول">{products.map(p=><button type="button" role="tab" aria-selected={p.code===active?.code} key={p.code}
     onClick={()=>{setSelected(p.code);setExpanded(p.phases[0]?.key||'p0');setEditing(null);setSearch('');setAddOpen(false);}}
     className={'dev-product '+(p.code===active?.code?'is-selected':'')}>
@@ -142,7 +146,7 @@ export default function DevelopmentDashboard(){
     {expanded===String(phase.key||'p'+phase.number)&&<div className="dev-phase-body">
      <div className="dev-legend"><span>زیرقابلیت / وزن</span><span>ساخت</span><span>عملیات</span><span>نهایی</span><span>مدرک و بررسی</span></div>
      {phase.visible.map(f=><div className="dev-feature" key={f.id}>
-      <div className="dev-feature-name"><strong>{f.label}</strong><small>وزن {fa(f.weight)}٪ {f.autoVerified&&<em>· تغییر تأییدشده در نسخهٔ فعال</em>}</small></div>
+      <div className="dev-feature-name"><strong>{f.label}</strong><small>وزن {fa(f.weight)}٪ {f.autoVerified?<em>· تست مرتبط و انتشار تأیید شد</em>:f.autoDeployed?<em>· کد در Production تغییر کرده؛ تست نشده</em>:null}</small></div>
       <span className="dev-data-cell">{fa(f.implementation)}٪</span><span className="dev-data-cell">{fa(f.readiness)}٪</span>
       <div className="dev-data-cell final"><b>{fa(f.score)}٪</b><Meter value={f.score}/></div>
       <div className="dev-feature-proof"><div>{f.sourcePaths?.slice(0,2).map(path=><a key={path} href={'https://github.com/maxjomeh/delsa/blob/'+(data.evidence.productionSha||data.baselineSha)+'/'+path} target="_blank" rel="noreferrer" title={path}>کد <ArrowUpLeft size={11}/></a>)}
