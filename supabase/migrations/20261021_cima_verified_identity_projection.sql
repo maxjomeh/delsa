@@ -33,29 +33,14 @@ BEGIN
   updated_at=now()
  WHERE c.id=NEW.customer_id AND c.tenant_id=NEW.tenant_id
   AND (
-    (v_username<>'' AND (
-      c.name IN ('','مخاطب شبکه اجتماعی')
-      OR c.name ~ '^مخاطب (اینستاگرام|واتساپ|تلگرام|شبکهٔ اجتماعی) · [^[:space:]]{6}
- RETURN NEW;
-END $$;
-REVOKE ALL ON FUNCTION public.sima_sync_social_identity() FROM PUBLIC,anon,authenticated;
-
--- Only replace mechanically generated fallback labels using an existing,
--- account-scoped social contact username. Do not alter any human-entered name.
-UPDATE public.crm_customers c SET name=pg_catalog.ltrim(pg_catalog.btrim(z.username),'@'),updated_at=now()
-FROM public.crm_zernio_contacts z
-WHERE c.id=z.customer_id AND c.tenant_id=z.tenant_id
- AND z.platform='instagram'
- AND pg_catalog.ltrim(pg_catalog.btrim(z.username),'@') ~ '^[A-Za-z0-9._]{1,30}$'
- AND c.name ~ '^مخاطب (اینستاگرام|واتساپ|تلگرام|شبکهٔ اجتماعی) · [^[:space:]]{6}$'
- AND c.name IS DISTINCT FROM pg_catalog.ltrim(pg_catalog.btrim(z.username),'@');
-COMMIT;
-
-      OR (NEW.platform='instagram' AND COALESCE(c.instagram,'')='')
-      OR COALESCE(c.custom_fields->>'social_username','')=''
-    ))
-    OR (v_avatar<>'' AND COALESCE(c.custom_fields->>'social_avatar_url','')='')
-    OR COALESCE(c.custom_fields->>'social_platform','')=''
+   (v_username<>'' AND (
+     c.name IN ('','مخاطب شبکه اجتماعی')
+     OR c.name ~ '^مخاطب (اینستاگرام|واتساپ|تلگرام|شبکهٔ اجتماعی) · [^[:space:]]{6}$'
+     OR (NEW.platform='instagram' AND COALESCE(c.instagram,'')='')
+     OR COALESCE(c.custom_fields->>'social_username','')=''
+   ))
+   OR (v_avatar<>'' AND COALESCE(c.custom_fields->>'social_avatar_url','')='')
+   OR COALESCE(c.custom_fields->>'social_platform','')=''
   );
  RETURN NEW;
 END $$;
