@@ -6,7 +6,7 @@ import {STATUSES,PRIORITIES,TYPES,WORKSTREAMS,EVIDENCE_KINDS,SCOPES} from '../li
 import './DevOSUnifiedTree.css';
 const fa=x=>Number(x||0).toLocaleString('fa-IR');
 const label=(list,id)=>list.find(x=>x[0]===id)?.[1]||id;
-const taskCodes=t=>(t.product_codes||[]).join(',');
+const taskCodes=t=>[...(t?.product_codes||[])].sort().join(',');
 const isTask=n=>n?.kind==='task';
 async function api(body,params={}){
  const u=new URL('/api/admin/devos',window.location.origin);
@@ -16,9 +16,9 @@ async function api(body,params={}){
  if(!res.ok)throw Error(val.error||'ارتباط با DevOS برقرار نشد');
  return val;
 }
-function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints}){
+function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints,forceOpen}){
  const hasChildren=node.children.length>0;
- const isOpen=open.has(node.key);
+ const isOpen=forceOpen||open.has(node.key);
  const t=node.data.task,phase=node.data.phase,feature=node.data.feature,product=node.data.product;
  const pct=feature?.score??phase?.score??product?.totals?.score;
  const sprint=sprints.find(x=>x.id===t?.sprint_id);
@@ -41,7 +41,7 @@ function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints}){
    </button>
   </div>
   {hasChildren&&isOpen&&<div className="devu-children">
-   {node.children.map(child=><TreeBranch key={child.key} node={child} depth={depth+1} open={open} onToggle={onToggle} selected={selected} onSelect={onSelect} sprints={sprints}/>)}
+   {node.children.map(child=><TreeBranch key={child.key} node={child} depth={depth+1} open={open} onToggle={onToggle} selected={selected} onSelect={onSelect} sprints={sprints} forceOpen={forceOpen}/>)}
   </div>}
  </div>;
 }
@@ -111,9 +111,6 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
   const saved=await act(x,'تسک در ساختار واحد ذخیره شد');
   if(saved?.task){setCreate(false);setSelected('task:'+saved.task.id)}
  };
- const updateTask=async t=>{
-  const patch=typeof t==='object'&&t.patch;
- };
  const changeTask=async(patch,message='تغییر در تاریخچه DevOS ثبت شد')=>{if(!task)return;return act({action:'update_task',id:task.id,revision:task.revision,patch},message)};
  const addEvidence=async e=>{e.preventDefault();if(!task)return;const r=await act({action:'add_evidence',id:task.id,...evForm},'شاهد به تسک افزوده شد');if(r){setEvForm(initialEvidence);setShowEvidence(false)}};
  const matchParents=tasks.filter(t=>t.id!==task?.id&&t.scope===task?.scope&&taskCodes(t)===taskCodes(task)&&t.id!==task?.parent_task_id);
@@ -147,7 +144,7 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
    <div className="devu-tree-panel">
     <div className="devu-panel-head"><strong>ساختار توسعه</strong><small>{loading?'در حال همگام‌سازی…':total>tasks.length?'نمایش '+fa(tasks.length)+' از '+fa(total)+' تسک':'کل مسیر توسعه'}</small></div>
     <div className="devu-tree">
-     <TreeBranch node={tree} depth={0} open={open} onToggle={toggle} selected={selected} onSelect={choose} sprints={sprints}/>
+     <TreeBranch node={tree} depth={0} open={open} onToggle={toggle} selected={selected} onSelect={choose} sprints={sprints} forceOpen={Boolean(query.trim()||status||sprint)}/>
     </div>
     {total>tasks.length&&<p className="devu-hint">برای جلوگیری از بارگذاری سنگین، تنها ۵۰۰ تسک نخست نمایش داده می‌شوند. {fa(total-tasks.length)} تسک باقی مانده‌اند.</p>}
    </div>
