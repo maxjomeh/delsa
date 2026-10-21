@@ -31,3 +31,7 @@
 .devu-tools .devu-filter select{width:100%;min-width:0}
 }
 @media(prefers-reduced-motion:reduce){.devu-donut-fill{transition:none}}
+
+.devu-prod-proof{border:1px solid color-mix(in srgb,#2ea883 50%,var(--line));color:#25aa80;background:color-mix(in srgb,#2ea883 10%,var(--panel));border-radius:8px;padding:2px 7px;font-weight:750;font-size:10px;direction:ltr;white-space:nowrap}
+.devu-release-notice{display:flex;align-items:center;gap:7px;flex-wrap:wrap;border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:8px 11px;font-size:11px;color:var(--muted);line-height:1.85;margin:8px 0}
+.devu-release-notice svg{color:#24a07c;flex:none}
