@@ -11,6 +11,7 @@ on:
       - 'app/api/admin/development/**'
       - 'components/DevelopmentDashboard*'
       - 'components/DevOSBacklog*'
+      - 'components/DevOSUnifiedTree*'
       - 'app/api/admin/devos/**'
       - 'lib/devos/**'
       - 'tests/devos-*.test.mjs'

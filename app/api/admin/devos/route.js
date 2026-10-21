@@ -24,7 +24,7 @@ export async function GET(request){
   const db=serverDatabase();
   const sp=await db.from('devos_sprints').select('id,code,title,objective,scope,product_codes,state,acceptance_criteria,created_at').order('created_at',{ascending:false}).limit(100);
   if(sp.error)throw sp.error;
-  let list=db.from('devos_tasks').select('id,task_key,title,description,scope,product_codes,workstream,task_type,priority,status,phase_ref,acceptance_criteria,blocker_reason,notes,revision,sprint_id,created_at,updated_at,closed_at',{count:'exact'}).order('updated_at',{ascending:false}).range(offset,offset+99);
+  let list=db.from('devos_tasks').select('id,task_key,title,description,scope,product_codes,workstream,task_type,priority,status,phase_ref,feature_ref,parent_task_id,acceptance_criteria,blocker_reason,notes,revision,sprint_id,created_at,updated_at,closed_at',{count:'exact'}).order('updated_at',{ascending:false}).range(offset,offset+99);
   if(product==='platform')list=list.eq('scope','platform');else if(product)list=list.contains('product_codes',[product]);
   if(status)list=list.eq('status',status);
   if(sprintCode){
@@ -61,12 +61,20 @@ export async function POST(request){
    return json({saved:true,sprint:s.data},201);
   }
   if(x.action==='create_task'){
-   if(!validTaskInput(x))return json({error:'invalid_task'},400);
+   if(!validTaskInput(x)||x.parentId!=null&&!isUuid(x.parentId)||x.featureRef!=null&&!/^[a-zA-Z0-9_-]{2,100}$/.test(x.featureRef))return json({error:'invalid_task'},400);
    if(['released','verified'].includes(x.status))return json({error:'release_needs_evidence'},400);
+   let parent=null;
+   if(x.parentId){
+    const p=await db.from('devos_tasks').select('id,scope,product_codes,feature_ref,phase_ref,sprint_id').eq('id',x.parentId).maybeSingle();
+    if(p.error||!p.data)return json({error:'parent_not_found'},404);
+    parent=p.data;
+    if(parent.scope!==x.scope||JSON.stringify([...parent.product_codes].sort())!==JSON.stringify([...x.productCodes].sort()))return json({error:'parent_scope_mismatch'},409);
+   }
    const d=await db.from('devos_tasks').insert({
     title:x.title.trim(),description:x.description||'',scope:x.scope,product_codes:x.productCodes,
     workstream:x.workstream,task_type:x.taskType,priority:x.priority,status:x.status,
-    phase_ref:x.phaseRef||null,acceptance_criteria:x.acceptanceCriteria,sprint_id:x.sprintId||null,
+    phase_ref:x.phaseRef||null,feature_ref:parent?(parent.feature_ref||parent.phase_ref||null):(x.featureRef||null),parent_task_id:parent?.id||null,
+    acceptance_criteria:x.acceptanceCriteria,sprint_id:x.sprintId||parent?.sprint_id||null,
     created_by:actor,updated_by:actor
    }).select('id,task_key').single();
    if(d.error)return json({error:'create_task_failed'},503);
@@ -88,6 +96,19 @@ export async function POST(request){
    const d=await db.rpc('devos_patch_task',{p_task_id:x.id,p_expected_revision:x.revision,p_patch:p,p_actor:actor});
    if(d.error)return json({error:d.error.message?.slice(0,150)||'patch_failed'},d.error.message?.includes('revision_conflict')?409:422);
    return json({saved:true,task:d.data});
+  }
+  if(x.action==='move_task'){
+   if(!isUuid(x.id)||!Number.isInteger(x.revision)||x.revision<1||x.parentId!=null&&!isUuid(x.parentId))return json({error:'invalid_move'},400);
+   const r=await db.rpc('devos_move_task',{p_task_id:x.id,p_new_parent_id:x.parentId||null,p_expected_revision:x.revision,p_actor:actor});
+   if(r.error)return json({error:r.error.message?.slice(0,160)||'move_failed'},r.error.message?.includes('revision_conflict')?409:422);
+   return json({saved:true,task:r.data});
+  }
+  if(x.action==='assign_feature'){
+   if(!isUuid(x.id)||!Number.isInteger(x.revision)||x.revision<1||
+      x.featureRef!=null&&!/^[a-zA-Z0-9_-]{2,100}$/.test(x.featureRef))return json({error:'invalid_feature_ref'},400);
+   const r=await db.rpc('devos_assign_feature',{p_task_id:x.id,p_feature_ref:x.featureRef||null,p_expected_revision:x.revision,p_actor:actor});
+   if(r.error)return json({error:r.error.message?.slice(0,160)||'link_failed'},r.error.message?.includes('revision_conflict')?409:422);
+   return json({saved:true,task:r.data});
   }
   if(x.action==='add_dependency'){
    if(!isUuid(x.id)||!isUuid(x.dependsOnId))return json({error:'invalid_dependency'},400);
