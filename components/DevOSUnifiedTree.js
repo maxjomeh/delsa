@@ -97,7 +97,7 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
   const t=node?.data?.task,p=node?.data?.product,kind=node?.kind;
   const scope=t?.scope||node?.data?.scope||(p?'product':'platform');
   const codes=t?.product_codes||(scope==='product'?[p.code]:[]);
-  setForm({...initialCreate,scope,productCodes:codes.join(','),featureRef:kind==='feature'?node.data.feature.id:(t?.feature_ref||t?.phase_ref||''),parentId:t?.id||null,
+  setForm({...initialCreate,scope,productCodes:codes.join(','),featureRef:kind==='feature'?node.data.feature.id:kind==='phase'?String(node.data.phase.key||'p'+node.data.phase.number):(t?.feature_ref||t?.phase_ref||''),parentId:t?.id||null,
    sprintId:t?.sprint_id||''});
   setCreate(true);
  };
@@ -171,8 +171,11 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
       <label>وضعیت<select disabled={saving} value={task.status} onChange={e=>{const v=e.target.value;if(v==='blocked'){const reason=window.prompt('علت مسدودی را وارد کن');if(reason?.trim().length>=5)changeTask({status:v,blocker_reason:reason});return}changeTask({status:v})}}>{STATUSES.map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
       <label>اولویت<select disabled={saving} value={task.priority} onChange={e=>changeTask({priority:e.target.value})}>{PRIORITIES.map(k=><option key={k}>{k}</option>)}</select></label>
       <label>اسپرینت<select disabled={saving} value={task.sprint_id||''} onChange={e=>changeTask({sprint_id:e.target.value||null})}><option value="">بدون اسپرینت</option>{sprints.map(s=><option key={s.id} value={s.id}>{s.code} · {s.title}</option>)}</select></label>
-      {task.scope==='product'&&!task.parent_task_id&&<label>اتصال به قابلیت<select disabled={saving} value={task.feature_ref||task.phase_ref||''} onChange={e=>act({action:'assign_feature',id:task.id,revision:task.revision,featureRef:e.target.value||null},'تسک به قابلیت متصل شد')}><option value="">بدون قابلیت</option>
-       {products.filter(p=>p.code===task.product_codes?.[0]).flatMap(p=>p.phases.flatMap(ph=>ph.features.map(f=><option key={f.id} value={f.id}>{ph.name} / {f.label}</option>)))}</select></label>}
+      {task.scope==='product'&&!task.parent_task_id&&<label>اتصال به فاز / قابلیت<select disabled={saving} value={task.feature_ref||task.phase_ref||''} onChange={e=>act({action:'assign_feature',id:task.id,revision:task.revision,featureRef:e.target.value||null},'تسک به قابلیت متصل شد')}><option value="">بدون قابلیت</option>
+       {products.filter(p=>p.code===task.product_codes?.[0]).flatMap(p=>p.phases.flatMap(ph=>[
+        <option key={'phase-'+String(ph.key||'p'+ph.number)} value={String(ph.key||'p'+ph.number)}>فاز: {ph.name}</option>,
+        ...ph.features.map(f=><option key={f.id} value={f.id}>{ph.name} / {f.label}</option>)
+       ]))}</select></label>}
       <label>زیرتسکِ<select value={moveParent||task.parent_task_id||''} onChange={e=>setMoveParent(e.target.value)}><option value="">سطح اصلی حوزه / قابلیت</option>{matchParents.map(p=><option key={p.id} value={p.id}>{p.task_key} — {p.title}</option>)}</select></label>
       <button type="button" disabled={saving} onClick={()=>act({action:'move_task',id:task.id,revision:task.revision,parentId:moveParent||null},'جایگاه تسک در درخت تغییر کرد')}>تغییر جایگاه</button>
       <h4>معیارهای پذیرش</h4><ul>{(task.acceptance_criteria||[]).map((s,i)=><li key={i}>{s}</li>)}</ul>
