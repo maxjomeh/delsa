@@ -1,7 +1,7 @@
 name: CIMA Identity, Delivery, Field Quality
 on:
   push:
-    branches: [fix/cima-identity-delivery-fields-20261020]
+    branches: [fix/cima-identity-delivery-fields-20261020, 'fix/cima-identity-*']
   pull_request:
     paths:
       - 'components/crm/**'
@@ -10,6 +10,9 @@ on:
       - 'app/api/crm/reviews/**'
       - 'supabase/migrations/20261020_cima_*'
       - 'tests/cima-identity-delivery-fields.test.mjs'
+      - 'lib/crm/inbox.mjs'
+      - 'supabase/migrations/20261021_cima_verified_identity_projection.sql'
+      - 'tests/cima-identity-dedup-sprint01.test.mjs'
 permissions:
   contents: read
 jobs:
@@ -21,7 +24,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-audit --no-fund
-      - run: node --test tests/cima-identity-delivery-fields.test.mjs
+      - run: node --test tests/cima-identity-delivery-fields.test.mjs tests/cima-identity-dedup-sprint01.test.mjs tests/cima-inbox.test.mjs
       - run: node --test tests/cima-human-send.test.mjs
       - run: node --test tests/cima-human-review-foundation.test.mjs
       - run: npm run build
