@@ -3,6 +3,7 @@ import {useCallback,useEffect,useMemo,useState} from 'react';
 import {AlertCircle,CheckCircle2,Clock3,FileText,MessagesSquare,RefreshCcw,Save,Send,ShieldAlert,UserRound,BrainCircuit,BookOpen} from 'lucide-react';
 import styles from './HumanReviewWorkspace.module.css';
 import {socialProfile} from '../../lib/crm/social-profile.mjs';
+import {outboxStatusText} from '../../lib/crm/cima-outbox-status.mjs';
 
 const pretty=n=>Number(n||0).toLocaleString('fa-IR');
 const stamp=value=>value?new Date(value).toLocaleString('fa-IR',{timeZone:'Asia/Tehran'}):'زمان نامشخص';
@@ -143,8 +144,8 @@ export default function HumanReviewWorkspace(){
        {!withinWindow&&<small className={styles.sendWarning}>مهلت پاسخ عادی به این پیام تمام شده؛ برای ارسال جدید باید مشتری دوباره پیام بدهد.</small>}
        {selected.customer?.do_not_contact&&<small className={styles.sendWarning}>این مشتری اجازهٔ تماس ندارد؛ ارسال مسدود است.</small>}
        {sendEligibility?.reasons?.length>0&&<div className={styles.sendWarning} role="status">دلیل غیرفعال‌بودن ارسال: {sendEligibility.reasons.map(r=>({reply_window_closed:'مهلت پاسخ عادی اینستاگرام تمام شده',channel_not_enabled:'ارسال برای این کانال هنوز فعال نیست',conversation_not_open:'این گفتگو قبلاً رسیدگی شده یا بسته است',contact_opted_out:'مشتری اجازهٔ تماس ندارد',channel_not_configured:'تنظیمات اتصال Zernio در این محیط کامل نیست',already_attempted:'برای همین نوبت مکالمه قبلاً تلاش ارسال ثبت شده است'})[r]||r).join(' · ')}</div>}
-       {lastSend?.status==='pending'&&lastSend?.attempt_count===0&&<small className={styles.sendWarning}>درخواست قبلی قبل از تماس با ارائه‌دهنده در صف مانده؛ با تأیید دوباره می‌توان همان درخواست را ادامه داد (پیام تکراری ساخته نمی‌شود).</small>}
-       {lastSend&&<div className={styles.sendReceipt}>وضعیت آخرین تلاش: <strong>{({accepted:'پذیرفته‌شده توسط Zernio؛ تحویل نامشخص',unknown:'نتیجه نامشخص — ارسال مجدد ممنوع',rejected:'ردشده توسط ارائه‌دهنده',sending:'در حال ارسال',pending:'در صف'})[lastSend.status]||lastSend.status}</strong></div>}
+       {lastSend?.status==='pending'&&lastSend?.attempt_count===0&&<small className={styles.sendWarning}>{withinWindow?'درخواست قبلی بدون تلاش ارسال در صف مانده است؛ ادامهٔ آن فقط پس از کنترل دوبارهٔ شرایط و تأیید شما مجاز است.':'درخواست قبلی ارسال نشده و مهلت پاسخ به آن تمام شده است؛ ارسال دوباره مجاز نیست.'}</small>}
+       {lastSend&&<div className={styles.sendReceipt}>وضعیت درخواست: <strong>{outboxStatusText(lastSend)}</strong></div>}
        <div className={styles.actionRow}><small>{dirty?'تغییرات هنوز ذخیره نشده‌اند.':'ذخیرهٔ پیش‌نویس جدا از ارسال واقعی است.'}</small><div className={styles.sendActions}><button type="button" onClick={saveDraft} disabled={saving||sending||stale||selectedVersion===null}><Save size={16}/>{saving?'در حال ذخیره…':'ذخیره پیش‌نویس'}</button><button type="button" className={styles.sendButton} onClick={sendReply} disabled={!canSend}><Send size={16}/>{sending?'در حال ارسال…':'ارسال واقعی به اینستاگرام'}</button></div></div>
       </div>
      </>}
