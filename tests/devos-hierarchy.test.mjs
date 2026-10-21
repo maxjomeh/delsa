@@ -52,3 +52,11 @@ test('score on roadmap comes from existing audit data, not task completion',()=>
  assert.equal(feat.data.feature.score,45);
  assert.equal(feat.children[0].data.task.status,'ready');
 });
+
+test('task created at phase level stays under that phase, not the product root',()=>{
+ const phaseTask={id:'phase-task',task_key:'DEV-000099',title:'ممیزی عمومی فاز',scope:'product',product_codes:['cima'],feature_ref:'p0',priority:'P1',status:'ready'};
+ const tree=buildDevelopmentHierarchy(products,[phaseTask]);
+ const phase=findTreeNode(tree,'cima:phase:p0'),product=findTreeNode(tree,'product:cima');
+ assert.ok(phase.children.some(n=>n.kind==='task'&&n.data.task.id==='phase-task'));
+ assert.ok(!product.children.some(n=>n.kind==='task'&&n.data.task.id==='phase-task'));
+});
