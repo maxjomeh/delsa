@@ -24,7 +24,7 @@ export async function GET(request){
   const db=serverDatabase();
   const sp=await db.from('devos_sprints').select('id,code,title,objective,scope,product_codes,state,acceptance_criteria,created_at').order('created_at',{ascending:false}).limit(100);
   if(sp.error)throw sp.error;
-  let list=db.from('devos_tasks').select('id,task_key,title,description,scope,product_codes,workstream,task_type,priority,status,phase_ref,feature_ref,parent_task_id,acceptance_criteria,blocker_reason,notes,revision,sprint_id,created_at,updated_at,closed_at',{count:'exact'}).order('updated_at',{ascending:false}).range(offset,offset+99);
+  let list=db.from('devos_tasks').select('id,task_key,title,description,scope,product_codes,workstream,task_type,priority,status,phase_ref,feature_ref,parent_task_id,progress_percent,acceptance_criteria,blocker_reason,notes,revision,sprint_id,created_at,updated_at,closed_at',{count:'exact'}).order('updated_at',{ascending:false}).range(offset,offset+99);
   if(product==='platform')list=list.eq('scope','platform');else if(product)list=list.contains('product_codes',[product]);
   if(status)list=list.eq('status',status);
   if(sprintCode){
@@ -96,6 +96,13 @@ export async function POST(request){
    const d=await db.rpc('devos_patch_task',{p_task_id:x.id,p_expected_revision:x.revision,p_patch:p,p_actor:actor});
    if(d.error)return json({error:d.error.message?.slice(0,150)||'patch_failed'},d.error.message?.includes('revision_conflict')?409:422);
    return json({saved:true,task:d.data});
+  }
+  if(x.action==='set_progress'){
+   if(!isUuid(x.id)||!Number.isInteger(x.revision)||x.revision<1||
+     x.progress!==null&&(!Number.isInteger(x.progress)||x.progress<0||x.progress>100))return json({error:'invalid_progress'},400);
+   const r=await db.rpc('devos_set_task_progress',{p_task_id:x.id,p_expected_revision:x.revision,p_progress:x.progress,p_actor:actor});
+   if(r.error)return json({error:r.error.message?.slice(0,140)||'progress_failed'},r.error.message?.includes('revision_conflict')?409:422);
+   return json({saved:true,task:r.data});
   }
   if(x.action==='move_task'){
    if(!isUuid(x.id)||!Number.isInteger(x.revision)||x.revision<1||x.parentId!=null&&!isUuid(x.parentId))return json({error:'invalid_move'},400);

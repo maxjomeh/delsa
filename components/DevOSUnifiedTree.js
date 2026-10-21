@@ -4,6 +4,7 @@ import {ChevronDown,ChevronLeft,FolderTree,GitPullRequest,Plus,RefreshCw,Save,Li
 import {buildDevelopmentHierarchy,filterDevelopmentHierarchy,hierarchyCounts,findTreeNode} from '../lib/devos/hierarchy.mjs';
 import {STATUSES,PRIORITIES,TYPES,WORKSTREAMS,EVIDENCE_KINDS,SCOPES} from '../lib/devos/contracts.mjs';
 import './DevOSUnifiedTree.css';
+import {progressByTask,executionSummary,auditMetrics} from '../lib/devos/progress.mjs';
 const fa=x=>Number(x||0).toLocaleString('fa-IR');
 const label=(list,id)=>list.find(x=>x[0]===id)?.[1]||id;
 const taskCodes=t=>[...(t?.product_codes||[])].sort().join(',');
@@ -16,11 +17,28 @@ async function api(body,params={}){
  if(!res.ok)throw Error(val.error||'ارتباط با DevOS برقرار نشد');
  return val;
 }
-function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints,forceOpen}){
+function Donut({value,size=38,detail=''}) {
+ const known=typeof value==='number'&&Number.isFinite(value);
+ const n=known?Math.max(0,Math.min(100,Math.round(value))):0;
+ const length=2*Math.PI*17;
+ return <span className={'devu-donut'+(size>50?' devu-donut-large':'')}
+  role="progressbar" aria-label={detail||'پیشرفت'} aria-valuemin={0} aria-valuemax={100}
+  aria-valuenow={known?n:undefined} aria-valuetext={known?fa(n)+' درصد':'هنوز ارزیابی نشده'}
+  title={(detail?detail+' · ':'')+(known?fa(n)+'٪':'درصد ثبت نشده')}
+  style={{'--devu-donut-size':size+'px'}}>
+  <svg viewBox="0 0 44 44" aria-hidden="true">
+   <circle className="devu-donut-track" cx="22" cy="22" r="17" fill="none" strokeWidth="5"/>
+   <circle className="devu-donut-fill" cx="22" cy="22" r="17" fill="none" strokeWidth="5"
+    strokeDasharray={length} strokeDashoffset={length*(1-n/100)} strokeLinecap="round"/>
+  </svg><b>{known?fa(n)+'٪':'—'}</b>
+ </span>;
+}
+function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints,forceOpen,taskProgress}){
  const hasChildren=node.children.length>0;
  const isOpen=forceOpen||open.has(node.key);
  const t=node.data.task,phase=node.data.phase,feature=node.data.feature,product=node.data.product;
  const pct=feature?.score??phase?.score??product?.totals?.score;
+ const documented=t?taskProgress.get(t.id)?.value:pct;
  const sprint=sprints.find(x=>x.id===t?.sprint_id);
  const childTasks=node.children.filter(x=>x.kind==='task').length;
  const cls='devu-node devu-'+node.kind+(selected===node.key?' selected':'');
@@ -36,12 +54,12 @@ function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints,forceOpe
     {t&&<span className={'devu-priority '+t.priority}>{t.priority}</span>}
     {t&&<span className="devu-status">{label(STATUSES,t.status)}</span>}
     {sprint&&<span className="devu-sprintcode">{sprint.code}</span>}
-    {pct!==null&&pct!==undefined&&<span className="devu-score">{fa(pct)}٪ <i title="امتیاز ممیزی ساخت و آمادگی، مستقل از تعداد تسک‌ها" style={{width:Math.min(100,Math.max(0,Number(pct)))+'%'}}/></span>}
+    {(t||pct!==null&&pct!==undefined)&&<Donut value={documented} size={38} detail={t?'پیشرفت مستند تسک':'امتیاز ممیزی'}/>}
     {childTasks>0&&<small className="devu-count">{fa(childTasks)} تسک مستقیم</small>}
    </button>
   </div>
   {hasChildren&&isOpen&&<div className="devu-children">
-   {node.children.map(child=><TreeBranch key={child.key} node={child} depth={depth+1} open={open} onToggle={onToggle} selected={selected} onSelect={onSelect} sprints={sprints} forceOpen={forceOpen}/>)}
+   {node.children.map(child=><TreeBranch key={child.key} node={child} depth={depth+1} open={open} onToggle={onToggle} selected={selected} onSelect={onSelect} sprints={sprints} forceOpen={forceOpen} taskProgress={taskProgress}/>)}
   </div>}
  </div>;
 }
@@ -53,7 +71,7 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[query,setQuery]=useState(''),[status,setStatus]=useState(''),[sprint,setSprint]=useState('');
  const [selected,setSelected]=useState('product:cima'),[open,setOpen]=useState(()=>new Set(['root:delsa','product:cima','cima:phase:p0']));
  const [create,setCreate]=useState(false),[form,setForm]=useState(initialCreate),[newSprint,setNewSprint]=useState(false),[sprintForm,setSprintForm]=useState({code:'',title:'',objective:''});
- const [evForm,setEvForm]=useState(initialEvidence),[showEvidence,setShowEvidence]=useState(false),[note,setNote]=useState(''),[moveParent,setMoveParent]=useState('');
+ const [evForm,setEvForm]=useState(initialEvidence),[showEvidence,setShowEvidence]=useState(false),[note,setNote]=useState(''),[moveParent,setMoveParent]=useState(''),[progressDraft,setProgressDraft]=useState('');
  const fetchAll=useCallback(async()=>{
   setLoading(true);setError('');
   try{
@@ -78,11 +96,26 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
  },[]);
  useEffect(()=>{fetchAll();const timer=setInterval(()=>{if(document.visibilityState==='visible')fetchAll()},300000);return()=>clearInterval(timer)},[fetchAll]);
  const fullTree=useMemo(()=>buildDevelopmentHierarchy(products,tasks),[products,tasks]);
+ const taskProgress=useMemo(()=>progressByTask(tasks),[tasks]);
  const sid=sprints.find(x=>x.code===sprint)?.id||'';
  const tree=useMemo(()=>filterDevelopmentHierarchy(fullTree,{search:query,status,sprintId:sid}),[fullTree,query,status,sid]);
  const counts=useMemo(()=>hierarchyCounts(fullTree),[fullTree]);
  const current=findTreeNode(fullTree,selected);
  const task=current?.data?.task;
+ const childTasks=task?tasks.filter(t=>t.parent_task_id===task.id):[];
+ useEffect(()=>{setProgressDraft(task?.progress_percent==null?'':String(task.progress_percent))},[task?.id,task?.progress_percent]);
+ const topMetrics=useMemo(()=>{
+  const scopeProduct=current?.data?.product||(task?.scope==='product'?products.find(p=>p.code===task.product_codes?.[0]):null);
+  const audited=scopeProduct?[scopeProduct]:products;
+  const a=auditMetrics(audited);
+  const e=executionSummary(tasks,scopeProduct?.code||null);
+  return [
+   {label:'پیشرفت کلی ممیزی',value:a.score,detail:scopeProduct?.name||'میانگین محصولات ممیزی‌شده'},
+   {label:'میزان پیاده‌سازی',value:a.implementation,detail:'ارزیابی ساخت قابلیت‌ها'},
+   {label:'آمادگی عملیاتی',value:a.readiness,detail:'بر پایهٔ شواهد معتبر'},
+   {label:'اجرای تسک‌ها',value:e.value,detail:fa(e.assessed)+' از '+fa(e.total)+' تسک انتهایی ارزیابی‌شده'}
+  ];
+ },[current,task,products,tasks]);
  const toggle=useCallback(key=>setOpen(prev=>{const n=new Set(prev);if(n.has(key))n.delete(key);else n.add(key);return n}),[]);
  const choose=nodeKey=>{setSelected(nodeKey);setCreate(false);setShowEvidence(false);setNote('');setHistory([]);setMoveParent('');const t=findTreeNode(fullTree,nodeKey)?.data?.task;
   if(t)api(null,{history:t.id}).then(d=>setHistory(d.events||[])).catch(()=>{});
@@ -124,14 +157,16 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
   </header>
   {error&&<p role="alert" className="devu-alert devu-error"><AlertTriangle size={15}/>{error}</p>}
   {notice&&<p role="status" className="devu-alert"><CheckCircle2 size={15}/>{notice}</p>}
-  <div className="devu-metrics">
-   <span><b>{fa(products.length)}</b><small>محصول</small></span><span><b>{fa(counts.phases)}</b><small>فاز</small></span>
-   <span><b>{fa(counts.features)}</b><small>قابلیت ممیزی‌شده</small></span><span><b>{fa(total)}</b><small>تسک و زیرتسک</small></span>
+  <div className="devu-metrics" aria-label="شاخص‌های درصدی توسعه">
+   {topMetrics.map(k=><div key={k.label} className="devu-metric">
+    <Donut value={k.value} size={72} detail={k.label}/>
+    <div><strong>{k.label}</strong><small>{k.detail}</small></div>
+   </div>)}
   </div>
   <div className="devu-tools">
    <label className="devu-search"><Search size={14}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="جست‌وجو در تمام سطوح..." aria-label="جست‌وجوی جامع"/></label>
-   <label>اسپرینت <select value={sprint} onChange={e=>setSprint(e.target.value)}><option value="">همهٔ اسپرینت‌ها</option>{sprints.map(x=><option key={x.id} value={x.code}>{x.code} · {x.title}</option>)}</select></label>
-   <label>وضعیت تسک <select value={status} onChange={e=>setStatus(e.target.value)}><option value="">تمام وضعیت‌ها</option>{STATUSES.map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
+   <label className="devu-filter"><select aria-label="فیلتر اسپرینت" value={sprint} onChange={e=>setSprint(e.target.value)}><option value="">همهٔ اسپرینت‌ها</option>{sprints.map(x=><option key={x.id} value={x.code}>{x.code} · {x.title}</option>)}</select></label>
+   <label className="devu-filter"><select aria-label="فیلتر وضعیت تسک" value={status} onChange={e=>setStatus(e.target.value)}><option value="">تمام وضعیت‌ها</option>{STATUSES.map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
    <button type="button" onClick={()=>setNewSprint(v=>!v)}><Plus size={13}/> اسپرینت جدید</button>
   </div>
   {newSprint&&<form className="devu-mini-form" onSubmit={async e=>{e.preventDefault();const r=await act({action:'create_sprint',code:sprintForm.code,title:sprintForm.title,objective:sprintForm.objective,scope:'platform',productCodes:[],acceptanceCriteria:[]},'اسپرینت ثبت شد؛ تسک‌ها می‌توانند به آن متصل شوند');if(r)setNewSprint(false)}}>
@@ -144,7 +179,7 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
    <div className="devu-tree-panel">
     <div className="devu-panel-head"><strong>ساختار توسعه</strong><small>{loading?'در حال همگام‌سازی…':total>tasks.length?'نمایش '+fa(tasks.length)+' از '+fa(total)+' تسک':'کل مسیر توسعه'}</small></div>
     <div className="devu-tree">
-     <TreeBranch node={tree} depth={0} open={open} onToggle={toggle} selected={selected} onSelect={choose} sprints={sprints} forceOpen={Boolean(query.trim()||status||sprint)}/>
+     <TreeBranch node={tree} depth={0} open={open} onToggle={toggle} selected={selected} onSelect={choose} sprints={sprints} forceOpen={Boolean(query.trim()||status||sprint)} taskProgress={taskProgress}/>
     </div>
     {total>tasks.length&&<p className="devu-hint">برای جلوگیری از بارگذاری سنگین، تنها ۵۰۰ تسک نخست نمایش داده می‌شوند. {fa(total-tasks.length)} تسک باقی مانده‌اند.</p>}
    </div>
@@ -170,6 +205,15 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
       <p>{task.description||'توضیح ثبت نشده است.'}</p>
       <label>وضعیت<select disabled={saving} value={task.status} onChange={e=>{const v=e.target.value;if(v==='blocked'){const reason=window.prompt('علت مسدودی را وارد کن');if(reason?.trim().length>=5)changeTask({status:v,blocker_reason:reason});return}changeTask({status:v})}}>{STATUSES.map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
       <label>اولویت<select disabled={saving} value={task.priority} onChange={e=>changeTask({priority:e.target.value})}>{PRIORITIES.map(k=><option key={k}>{k}</option>)}</select></label>
+      <div className="devu-task-progress">
+       <div className="devu-task-progress-heading"><strong>پیشرفت اجرایی مستند</strong><Donut value={taskProgress.get(task.id)?.value} size={45} detail="پیشرفت اجرایی"/></div>
+       {childTasks.length?<p>درصد این تسک از {fa(childTasks.length)} زیرتسک آن محاسبه می‌شود. زیرتسک‌ها را باز کن و درصدشان را ثبت کن.</p>:
+       <div className="devu-progress-edit"><input aria-label="درصد پیشرفت این تسک از ۰ تا ۱۰۰" type="number" min="0" max="100" step="1" placeholder="درصد: ۰ تا ۱۰۰" value={progressDraft} onChange={e=>setProgressDraft(e.target.value)} disabled={saving}/>
+        <button type="button" disabled={saving||progressDraft!==''&&(!Number.isInteger(Number(progressDraft))||Number(progressDraft)<0||Number(progressDraft)>100)}
+         onClick={()=>act({action:'set_progress',id:task.id,revision:task.revision,progress:progressDraft===''?null:Number(progressDraft)},'درصد پیشرفت مستند ذخیره شد')}>ثبت درصد</button>
+       </div>}
+       <small>تغییر این درصد، امتیاز آمادگی عملیاتی یا وضعیت انتشار را تغییر نمی‌دهد.</small>
+      </div>
       <label>اسپرینت<select disabled={saving} value={task.sprint_id||''} onChange={e=>changeTask({sprint_id:e.target.value||null})}><option value="">بدون اسپرینت</option>{sprints.map(s=><option key={s.id} value={s.id}>{s.code} · {s.title}</option>)}</select></label>
       {task.scope==='product'&&!task.parent_task_id&&<label>اتصال به فاز / قابلیت<select disabled={saving} value={task.feature_ref||task.phase_ref||''} onChange={e=>act({action:'assign_feature',id:task.id,revision:task.revision,featureRef:e.target.value||null},'تسک به قابلیت متصل شد')}><option value="">بدون قابلیت</option>
        {products.filter(p=>p.code===task.product_codes?.[0]).flatMap(p=>p.phases.flatMap(ph=>[
