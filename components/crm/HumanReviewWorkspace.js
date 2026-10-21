@@ -11,8 +11,9 @@ const reasons={MODEL_NOT_VALIDATED:'مدل پاسخ‌گویی هنوز روی �
 const channels={instagram:'اینستاگرام',whatsapp:'واتساپ',telegram:'تلگرام',bale:'بله',eitaa:'ایتا',rubika:'روبیکا',soroush:'سروش'};
 function Avatar({customer}){
  const url=socialProfile(customer).avatar;
- const valid=!!url;
- return <span className={styles.avatar}>{valid?<img loading="lazy" src={url} alt="" referrerPolicy="no-referrer" onError={e=>{e.currentTarget.style.display='none';}}/>:customer?.name?.slice(0,1)||'م'}</span>;
+ const [failed,setFailed]=useState(false);
+ useEffect(()=>setFailed(false),[url]);
+ return <span className={styles.avatar}>{url&&!failed?<img loading="lazy" src={url} alt="" referrerPolicy="no-referrer" onError={()=>setFailed(true)}/>:customer?.name?.slice(0,1)||'م'}</span>;
 }
 export default function HumanReviewWorkspace(){
  const [cases,setCases]=useState([]),[state,setState]=useState('all'),[query,setQuery]=useState(''),[offset,setOffset]=useState(0);
