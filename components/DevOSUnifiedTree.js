@@ -5,6 +5,7 @@ import {buildDevelopmentHierarchy,filterDevelopmentHierarchy,hierarchyCounts,fin
 import {STATUSES,PRIORITIES,TYPES,WORKSTREAMS,EVIDENCE_KINDS,SCOPES} from '../lib/devos/contracts.mjs';
 import './DevOSUnifiedTree.css';
 import {progressByTask,executionSummary,auditMetrics} from '../lib/devos/progress.mjs';
+import {productionEvidenceForTasks} from '../lib/devos/release-evidence.mjs';
 const fa=x=>Number(x||0).toLocaleString('fa-IR');
 const label=(list,id)=>list.find(x=>x[0]===id)?.[1]||id;
 const taskCodes=t=>[...(t?.product_codes||[])].sort().join(',');
@@ -33,7 +34,7 @@ function Donut({value,size=38,detail=''}) {
   </svg><b>{known?fa(n)+'٪':'—'}</b>
  </span>;
 }
-function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints,forceOpen,taskProgress}){
+function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints,forceOpen,taskProgress,productionEvidence}){
  const hasChildren=node.children.length>0;
  const isOpen=forceOpen||open.has(node.key);
  const t=node.data.task,phase=node.data.phase,feature=node.data.feature,product=node.data.product;
@@ -53,19 +54,20 @@ function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints,forceOpe
     {t&&<small className="devu-id" dir="ltr">{t.task_key}</small>}
     {t&&<span className={'devu-priority '+t.priority}>{t.priority}</span>}
     {t&&<span className="devu-status">{label(STATUSES,t.status)}</span>}
+     {t&&productionEvidence.has(t.id)&&<span className="devu-prod-proof" title="شاهد انتشار دقیقاً برای نسخهٔ Production فعال ثبت شده">Production ✓</span>}
     {sprint&&<span className="devu-sprintcode">{sprint.code}</span>}
     {(t||pct!==null&&pct!==undefined)&&<Donut value={documented} size={38} detail={t?'پیشرفت مستند تسک':'امتیاز ممیزی'}/>}
     {childTasks>0&&<small className="devu-count">{fa(childTasks)} تسک مستقیم</small>}
    </button>
   </div>
   {hasChildren&&isOpen&&<div className="devu-children">
-   {node.children.map(child=><TreeBranch key={child.key} node={child} depth={depth+1} open={open} onToggle={onToggle} selected={selected} onSelect={onSelect} sprints={sprints} forceOpen={forceOpen} taskProgress={taskProgress}/>)}
+   {node.children.map(child=><TreeBranch key={child.key} node={child} depth={depth+1} open={open} onToggle={onToggle} selected={selected} onSelect={onSelect} sprints={sprints} forceOpen={forceOpen} taskProgress={taskProgress} productionEvidence={productionEvidence}/>)}
   </div>}
  </div>;
 }
 const initialCreate={title:'',description:'',priority:'P2',taskType:'improvement',workstream:'engineering',acceptance:'',status:'idea',sprintId:'',scope:'platform',productCodes:'',featureRef:'',parentId:null};
 const initialEvidence={kind:'manual_test',verdict:'unknown',url:'',commitSha:'',deploymentId:'',notes:''};
-export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeature}){
+export default function DevOSUnifiedTree({products=[],productionSha='',onReviewFeature,onAddFeature}){
  const [tasks,setTasks]=useState([]),[sprints,setSprints]=useState([]),[proof,setProof]=useState([]),[dependencies,setDependencies]=useState([]),[history,setHistory]=useState([]);
  const [total,setTotal]=useState(0),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false);
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[query,setQuery]=useState(''),[status,setStatus]=useState(''),[sprint,setSprint]=useState('');
@@ -97,6 +99,7 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
  useEffect(()=>{fetchAll();const timer=setInterval(()=>{if(document.visibilityState==='visible')fetchAll()},300000);return()=>clearInterval(timer)},[fetchAll]);
  const fullTree=useMemo(()=>buildDevelopmentHierarchy(products,tasks),[products,tasks]);
  const taskProgress=useMemo(()=>progressByTask(tasks),[tasks]);
+ const productionEvidence=useMemo(()=>productionEvidenceForTasks(tasks,proof,productionSha),[tasks,proof,productionSha]);
  const sid=sprints.find(x=>x.code===sprint)?.id||'';
  const tree=useMemo(()=>filterDevelopmentHierarchy(fullTree,{search:query,status,sprintId:sid}),[fullTree,query,status,sid]);
  const counts=useMemo(()=>hierarchyCounts(fullTree),[fullTree]);
@@ -157,6 +160,7 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
   </header>
   {error&&<p role="alert" className="devu-alert devu-error"><AlertTriangle size={15}/>{error}</p>}
   {notice&&<p role="status" className="devu-alert"><CheckCircle2 size={15}/>{notice}</p>}
+  {productionSha&&<p className="devu-release-notice"><ShieldCheck size={15}/> نسخهٔ فعال Production <b dir="ltr">{productionSha.slice(0,8)}</b> · {fa(productionEvidence.size)} تسک دارای شاهد انتشار دقیقاً در این نسخه · امتیاز آمادگی عملیاتی مستقل از انتشار است</p>}
   <div className="devu-metrics" aria-label="شاخص‌های درصدی توسعه">
    {topMetrics.map(k=><div key={k.label} className="devu-metric">
     <Donut value={k.value} size={72} detail={k.label}/>
@@ -179,7 +183,7 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
    <div className="devu-tree-panel">
     <div className="devu-panel-head"><strong>ساختار توسعه</strong><small>{loading?'در حال همگام‌سازی…':total>tasks.length?'نمایش '+fa(tasks.length)+' از '+fa(total)+' تسک':'کل مسیر توسعه'}</small></div>
     <div className="devu-tree">
-     <TreeBranch node={tree} depth={0} open={open} onToggle={toggle} selected={selected} onSelect={choose} sprints={sprints} forceOpen={Boolean(query.trim()||status||sprint)} taskProgress={taskProgress}/>
+     <TreeBranch node={tree} depth={0} open={open} onToggle={toggle} selected={selected} onSelect={choose} sprints={sprints} forceOpen={Boolean(query.trim()||status||sprint)} taskProgress={taskProgress} productionEvidence={productionEvidence}/>
     </div>
     {total>tasks.length&&<p className="devu-hint">برای جلوگیری از بارگذاری سنگین، تنها ۵۰۰ تسک نخست نمایش داده می‌شوند. {fa(total-tasks.length)} تسک باقی مانده‌اند.</p>}
    </div>
@@ -203,6 +207,7 @@ export default function DevOSUnifiedTree({products=[],onReviewFeature,onAddFeatu
      {task&&<>
       <p className="devu-task-meta"><b dir="ltr">{task.task_key}</b> · {label(TYPES,task.task_type)} · {task.priority}</p>
       <p>{task.description||'توضیح ثبت نشده است.'}</p>
+      {productionEvidence.has(task.id)&&<p className="devu-release-notice"><ShieldCheck size={14}/> انتشار این تسک برای Commit فعالِ Production با شواهد مستقل ثبت شده است. این علامت، جایگزین آزمون عملکرد واقعی نیست.</p>}
       <label>وضعیت<select disabled={saving} value={task.status} onChange={e=>{const v=e.target.value;if(v==='blocked'){const reason=window.prompt('علت مسدودی را وارد کن');if(reason?.trim().length>=5)changeTask({status:v,blocker_reason:reason});return}changeTask({status:v})}}>{STATUSES.map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
       <label>اولویت<select disabled={saving} value={task.priority} onChange={e=>changeTask({priority:e.target.value})}>{PRIORITIES.map(k=><option key={k}>{k}</option>)}</select></label>
       <div className="devu-task-progress">
