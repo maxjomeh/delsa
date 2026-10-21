@@ -1,13 +1,16 @@
 name: CIMA Human Send Outbox
 on:
   push:
-    branches: [feat/cima-zernio-human-outbox-20261019]
+    branches: [feat/cima-zernio-human-outbox-20261019, 'fix/cima-*']
   pull_request:
     paths:
       - 'app/api/crm/reviews/send/**'
       - 'components/crm/HumanReviewWorkspace*'
       - 'supabase/migrations/20261019_cima_human_send*'
       - 'tests/cima-human-send.test.mjs'
+      - 'lib/crm/cima-outbox-status.mjs'
+      - 'supabase/migrations/20261021_cima_pending_outbox_reconciliation.sql'
+      - 'tests/cima-pending-outbox-reconciliation.test.mjs'
 permissions:
   contents: read
 jobs:
@@ -19,6 +22,6 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-audit --no-fund
-      - run: node --test tests/cima-human-send.test.mjs
+      - run: node --test tests/cima-human-send.test.mjs tests/cima-pending-outbox-reconciliation.test.mjs
       - run: node --test tests/cima-human-review-foundation.test.mjs
       - run: npm run build
