@@ -5,5 +5,5 @@ import './globals.css';
 import ThemeToggle from '../components/ThemeToggle';
 import VisitorChat from '../components/VisitorChat';
 import ScrollReveal from '../components/ScrollReveal';
-export const metadata = { title: 'دلسا | پایش و به‌روزرسانی هوشمند قیمت', description: 'با APU دلسا قیمت محصولات را پایش کن، اختلاف‌ها را ببین و با اطمینان درباره‌ی تغییر قیمت تصمیم بگیر.', icons: { icon: '/delsa-mark.svg' } };
+export const metadata = { title: 'دلسا | پاسخ‌گویی هوشمند و CRM مکالمه‌محور CIMA', description: 'دلسا پیام مشتری را می‌فهمد و مسیر فروش را از پاسخ‌گویی و تشکیل سبد خرید تا پرداخت و پیگیری سفارش مدیریت می‌کند. آشنایی با CRM مکالمه‌محور CIMA.', icons: { icon: '/delsa-mark.svg' } };
 export default function RootLayout({children}) { return <html lang="fa" dir="rtl" data-theme="dark" suppressHydrationWarning><body>{children}<ThemeToggle/><VisitorChat/><ScrollReveal/></body></html>; }
