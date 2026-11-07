@@ -77,10 +77,19 @@ export async function POST(request){
   if(user.id===id)return fail('حساب خودتان را نمی‌توانید حذف کنید.');
   const key=process.env.SUPABASE_SERVICE_ROLE_KEY,url=process.env.NEXT_PUBLIC_SUPABASE_URL;
   if(!key||!url)return fail('کلید سرویس برای حذف کامل حساب تنظیم نشده است.',503);
-  const {data:target}=await db.from('profiles').select('id').eq('id',id).maybeSingle();if(!target)return fail('مشتری پیدا نشد.',404);
-  const service=createService(url,key,{auth:{persistSession:false}});
+  if(b.confirm!=='DELETE_CUSTOMER')return fail('تأیید حذف مشتری لازم است.',400);
+  const service=createService(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
+  const {data:target,error:targetError}=await service.from('profiles').select('id,role,full_name').eq('id',id).maybeSingle();
+  if(targetError||!target)return fail('مشتری پیدا نشد.',404);
+  if(target.role==='admin')return fail('حساب ادمین را نمی‌توان از فهرست مشتریان حذف کرد.',403);
+  // Avoid cascading or orphaning business CRM histories; these require an explicit migration plan.
+  for(const table of ['crm_customers','crm_events','crm_interactions','crm_zernio_contacts','sima_human_review_cases']){
+   const {count,error:countError}=await service.from(table).select('id',{count:'exact',head:true}).eq('tenant_id',id);
+   if(countError)return fail('بررسی وابستگی‌های CRM انجام نشد؛ هیچ حسابی حذف نشد.',503);
+   if(count>0)return fail('این حساب دارای داده‌های CRM است. ابتدا باید انتقال یا نگهداری امن داده‌های آن انجام شود.',409);
+  }
   const {error}=await service.auth.admin.deleteUser(id);
-  return error?fail('حذف مشتری انجام نشد.'):ok({ok:true});
+  return error?fail('حذف حساب به‌دلیل وابستگی داده‌ها انجام نشد. اطلاعات حساب حفظ شده است.',409):ok({ok:true});
  }
  return fail('عملیات نامعتبر است.');
 }
