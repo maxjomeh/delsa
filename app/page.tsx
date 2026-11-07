@@ -1,3 +1,4 @@
+import './homepage-cima.css';
 import Link from 'next/link';
 import ChatLaunch from '../components/ChatLaunch';
 import { ArrowLeft, ArrowUpLeft, Check, ChevronDown, CircleHelp, Layers3, MessageCircle, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
@@ -24,8 +25,16 @@ export default function Home() { return <>
   <Link className="mobile-store-link" href="/store">فروشگاه</Link><Link className="button small" href="/login">ورود به پنل <ArrowUpLeft size={17}/></Link>
 </header>
 <main>
-<section className="cinematic-hero apu-hero cima-hero">
-  <div className="apu-hero-art cima-hero-art" aria-label="پیش‌نمایش نمونهٔ صندوق ورودی و پروندهٔ مشتری CIMA">
+<section className="delsa-cima-hero" aria-labelledby="delsa-hero-title" dir="rtl">
+ <div className="delsa-cima-hero-layout wrap">
+  <div className="delsa-cima-copy">
+   <div className="delsa-cima-kicker"><span className="delsa-cima-live-dot"/> DELSA / CIMA · CRM هوشمند</div>
+   <h1 id="delsa-hero-title">از اولین پیام<br/><span>تا فروش موفق.</span></h1>
+   <p className="delsa-cima-lead">مکالمه‌های مشتری را به فروش تبدیل کن؛ از پاسخ‌گویی و انتخاب محصول تا ثبت سفارش و پیگیری، در یک پنل یکپارچه.</p>
+   <div className="delsa-cima-actions"><Link href="/signup" className="delsa-cima-primary">شروع با CIMA <ArrowUpLeft size={18}/></Link><ChatLaunch/></div>
+   <div className="delsa-cima-highlights"><span><MessageCircle size={16}/> مدیریت پیام‌ها</span><span><Layers3 size={16}/> سبد خرید و سفارش</span><span><ShieldCheck size={16}/> نظارت انسانی</span></div>
+  </div>
+  <div className="delsa-cima-visual" aria-label="نمونه نمایشی داشبورد گفت‌وگوهای CIMA">
     <div className="cima-board">
       <div className="cima-board-top"><span className="cima-live"><i/> محیط نمونه</span><b>صندوق ورودی CIMA</b><span className="cima-board-mark">DELSA</span></div>
       <div className="cima-board-body">
@@ -46,15 +55,8 @@ export default function Home() { return <>
       </div>
     </div>
   </div>
-  <div className="cinematic-inner wrap">
-    <div className="cinematic-label"><span className="cinematic-pulse"/> CIMA · CRM مکالمه‌محور دلسا</div>
-    <h1 className="apu-headline">از اولین پیام،<br/><em>تا فروش و پیگیری.</em></h1>
-    <div className="cinematic-intro"><div><span className="cinematic-overline">CIMA؛ CRM مکالمه‌محور دلسا.</span><p>دلسا پیام مشتری را می‌فهمد، به پرسش‌های محصول پاسخ می‌دهد و انتخاب او را تا سبد خرید، پرداخت و پیگیری سفارش جلو می‌برد. تیم شما همهٔ این مسیر را از پنل مدیریت می‌کند.</p></div>
-      <div className="hero-actions"><Link className="button primary" href="/signup">شروع با CIMA <ArrowUpLeft size={19}/></Link><ChatLaunch/></div>
-    </div>
-    <div className="hero-proof"><span><MessageCircle size={16}/> پاسخ‌گویی در پیام‌رسان‌ها</span><span><Layers3 size={16}/> سبد خرید و سفارش</span><span><ShieldCheck size={16}/> پنل نظارت و رسیدگی انسانی</span></div>
-  </div>
-  <a className="hero-scroll" href="#cima" aria-label="دیدن قابلیت‌های CIMA"><ChevronDown size={20}/></a>
+ </div>
+ <a className="delsa-cima-next" href="#cima" aria-label="مشاهده قابلیت‌های CIMA"><ChevronDown size={20}/></a>
 </section>
 
 <section id="cima" className="wrap cima-intro">
