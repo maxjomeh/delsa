@@ -54,7 +54,7 @@ export async function AdminDashboard({initialTab='overview'}={}) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
   if (profile?.role !== 'admin') redirect('/login');
   const [{ data: users }, { data: products }, { data: subscriptions }] = await Promise.all([
-    supabase.from('profiles').select('id,phone,email,full_name,role,created_at').order('created_at', { ascending: false }).limit(500),
+    supabase.from('profiles').select('id,phone,email,full_name,role,created_at').is('archived_at',null).order('created_at', { ascending: false }).limit(500),
     supabase.from('store_products').select('id,name,description,price,image_url,is_published,created_at').order('created_at', { ascending: false }).limit(100),
     supabase.from('customer_subscriptions').select('id,customer_id,product_id,plan,expires_at').limit(5000),
   ]);
