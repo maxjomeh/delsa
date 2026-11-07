@@ -75,21 +75,24 @@ export async function POST(request){
  }
  if(b.action==='delete-customer'){
   if(user.id===id)return fail('حساب خودتان را نمی‌توانید حذف کنید.');
+  if(b.confirm!=='DELETE_CUSTOMER')return fail('تأیید حذف حساب لازم است.',400);
   const key=process.env.SUPABASE_SERVICE_ROLE_KEY,url=process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if(!key||!url)return fail('کلید سرویس برای حذف کامل حساب تنظیم نشده است.',503);
-  if(b.confirm!=='DELETE_CUSTOMER')return fail('تأیید حذف مشتری لازم است.',400);
+  if(!key||!url)return fail('تنظیمات سرویس مدیریت کاربران روی سرور کامل نیست.',503);
   const service=createService(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
-  const {data:target,error:targetError}=await service.from('profiles').select('id,role,full_name').eq('id',id).maybeSingle();
-  if(targetError||!target)return fail('مشتری پیدا نشد.',404);
+  const {data:target,error:targetError}=await service.from('profiles').select('id,role,full_name,archived_at').eq('id',id).maybeSingle();
+  if(targetError||!target)return fail('حساب پیدا نشد.',404);
   if(target.role==='admin'||id==='e63e575f-6215-435a-8bbe-fdc3a199c54d')return fail('حذف حساب مدیر یا حساب محافظت‌شده مجاز نیست.',403);
-  // Avoid cascading or orphaning business CRM histories; these require an explicit migration plan.
-  for(const table of ['crm_customers','crm_events','crm_interactions','crm_zernio_contacts','sima_human_review_cases']){
-   const {count,error:countError}=await service.from(table).select('*',{count:'exact',head:true}).eq('tenant_id',id);
-   if(countError)return fail('بررسی وابستگی‌های CRM انجام نشد؛ هیچ حسابی حذف نشد.',503);
-   if(count>0)return fail('این حساب دارای داده‌های CRM است. ابتدا باید انتقال یا نگهداری امن داده‌های آن انجام شود.',409);
+  if(target.archived_at)return ok({ok:true,mode:'archived'});
+  // Soft-delete auth identity to avoid FK violations with connected CRM, builder and storage data.
+  // Archive marker is visible to app queries; do not destroy business records in other tables.
+  const {data:marked,error:markError}=await service.from('profiles').update({archived_at:new Date().toISOString()}).eq('id',id).is('archived_at',null).select('id');
+  if(markError||marked?.length!==1)return fail('ثبت وضعیت حذف حساب انجام نشد؛ مجدداً تلاش کنید.',409);
+  const {error:deleteError}=await service.auth.admin.deleteUser(id,true);
+  if(deleteError){
+   const {error:restoreError}=await service.from('profiles').update({archived_at:null}).eq('id',id);
+   return fail(restoreError?'غیرفعال‌سازی حساب ناموفق بود؛ وضعیت حساب را بررسی کنید.':'غیرفعال‌سازی حساب انجام نشد. حساب دست‌نخورده باقی ماند.',409);
   }
-  const {error}=await service.auth.admin.deleteUser(id);
-  return error?fail('حذف حساب به‌دلیل وابستگی داده‌ها انجام نشد. اطلاعات حساب حفظ شده است.',409):ok({ok:true});
+  return ok({ok:true,mode:'archived'});
  }
  return fail('عملیات نامعتبر است.');
 }
