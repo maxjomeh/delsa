@@ -29,3 +29,40 @@
 @media(max-width:380px){.delsa-cima-copy h1{font-size:clamp(32px,9vw,35px)}.delsa-cima-copy h1 span{white-space:normal}.delsa-cima-visual{min-height:338px}.delsa-cima-visual .cima-board-body{grid-template-columns:1fr}.delsa-cima-visual .cima-conversations{display:none}.delsa-cima-visual .cima-thread{padding:11px}.delsa-cima-visual .cima-message,.delsa-cima-visual .cima-draft p{font-size:10px}.delsa-cima-actions>*{flex:1;min-width:0}.delsa-cima-primary,.delsa-cima-actions .button{padding-inline:8px;gap:6px}.delsa-cima-highlights span{font-size:9px}}
 @media(max-width:340px){.site-header.floating-header{width:calc(100% - 16px);padding-inline:10px}.site-header.floating-header .button.small{padding:8px;font-size:11px}.delsa-cima-copy h1{font-size:30px}.delsa-cima-visual{min-height:350px}}
 @media(prefers-reduced-motion:reduce){.delsa-cima-primary{transition:none}.delsa-cima-hero *{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+
+/* Protect the rest of the CIMA landing page at narrow viewport widths. */
+@media(max-width:820px){
+ .cima-intro,.cima-channels,.cima-apu-story,.cima-steps{min-width:0}
+ .cima-section-heading h2,.cima-channels h2{font-size:clamp(25px,5.2vw,37px);overflow-wrap:break-word}
+ .cima-section-heading .eyebrow{font-size:clamp(9px,1.8vw,12px);line-height:1.7;overflow-wrap:anywhere}
+ .cima-feature-grid,.steps-grid{grid-template-columns:1fr 1fr}
+ .cima-feature{min-width:0}
+ .cima-channels{grid-template-columns:1fr}
+ .cima-apu-story{grid-template-columns:1fr;gap:26px}
+ .cima-apu-story>.apu-demo{min-width:0;overflow-x:auto}
+ .closing-actions{flex-wrap:wrap}
+}
+@media(max-width:600px){
+ .cima-feature-grid,.steps-grid{grid-template-columns:1fr}
+ .cima-intro,.cima-channels,.cima-apu-story,.cima-steps{padding-block:clamp(44px,9vw,64px)}
+ .cima-feature{padding:20px}
+ .cima-section-heading h2,.cima-channels h2{font-size:clamp(25px,7vw,32px)}
+ .cima-section-heading p,.cima-channels p{font-size:13px;line-height:2}
+ .cima-channel-list span{padding:8px 11px;font-size:10px}
+ .cima-apu-story .story-copy h2{font-size:clamp(27px,7vw,34px)}
+ .cima-apu-story .apu-demo{padding:12px;border-radius:13px}
+ .cima-apu-story .demo-line{min-width:0;gap:5px}
+ .cima-apu-story .demo-product{font-size:10px}
+ .closing-actions{width:100%}
+ .closing-actions>*{flex:1 1 140px;min-width:0}
+ .faq summary{overflow-wrap:anywhere}
+ .site-header.floating-header{max-width:calc(100% - 20px);min-width:0}
+ .site-header.floating-header .brand-word{font-size:15px}
+ .site-header.floating-header .brand-mark{width:29px;height:29px}
+}
+@media(max-width:360px){
+ .cima-apu-story .demo-product{font-size:9px}
+ .cima-apu-story .demo-product b{font-size:9px}
+ .closing-actions .button{font-size:12px;padding-inline:8px}
+ .site-header.floating-header .mobile-store-link{display:none}
+}
