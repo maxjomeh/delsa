@@ -19,7 +19,7 @@ export default function AdminSupport(){
  for(const m of visitorMessages.data){const t=map.get('visitor:'+m.chat_id);if(t&&!m.hidden_by?.includes(user.id))t.messages.push(m)}
  const all=[...map.values()].map(t=>({...t,messages:t.messages.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)||a.id.localeCompare(b.id))})).sort((a,b)=>new Date(b.messages.at(-1)?.created_at||0)-new Date(a.messages.at(-1)?.created_at||0)||a.title.localeCompare(b.title,'fa'));setThreads(all);setSelected(current=>current&&all.some(t=>t.key===current)?current:all[0]?.key||null);setError('');}catch{setError('دریافت گفت‌وگوها انجام نشد.')}finally{loading.current=false}},[db]);
  useEffect(()=>{load();const timer=setInterval(()=>{if(document.visibilityState==='visible')load()},5000);return()=>clearInterval(timer)},[load]);
- const active=threads.find(t=>t.key===selected),filtered=threads.filter(t=>{const q=normalize(query);return !q||normalize(t.title+' '+t.phone).includes(q)||t.messages.some(m=>normalize(m.body).includes(q))});
+ const active=threads.find(t=>t.key===selected),filtered=threads.filter(t=>{const q=normalize(query);return q?normalize(t.title+' '+t.phone).includes(q)||t.messages.some(m=>normalize(m.body).includes(q)):t.messages.length>0});
  async function removeThreads(items){
   if(!items.length||deleting)return;
   const kind=items[0].type;
@@ -31,7 +31,7 @@ export default function AdminSupport(){
    const response=await fetch('/api/admin/support-chats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,ids:items.map(t=>t.id),confirm:'DELETE_CHATS'})});
    const result=await response.json();
    if(!response.ok)throw Error(result.error||'حذف انجام نشد.');
-   setChecked([]);setFeedback('حذف '+items.length.toLocaleString('fa-IR')+' گفت‌وگو با موفقیت انجام شد.');await load();
+   setChecked([]);setSelected(null);setFeedback('حذف '+items.length.toLocaleString('fa-IR')+' گفت‌وگو با موفقیت انجام شد.');await load();
   }catch(e){setError(e.message||'حذف گفت‌وگو انجام نشد.')}finally{setDeleting(false)}
  }
  async function reply(e){e.preventDefault();const value=body.trim();if(!value||!active||busy||!viewer)return;setBusy(true);setError('');try{const result=active.type==='customer'?await db.from('support_messages').insert({user_id:active.id,sender_id:viewer,sender_role:'admin',body:value}):await db.from('visitor_chat_messages').insert({chat_id:active.id,sender_id:viewer,sender_role:'admin',body:value});if(result.error)throw result.error;setBody('');await load()}catch{setError('پیام ثبت نشد. دوباره تلاش کنید.')}finally{setBusy(false)}}
