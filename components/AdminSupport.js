@@ -11,10 +11,10 @@ export default function AdminSupport(){
  db.from('support_messages').select('*').order('created_at',{ascending:false}).limit(1000),
  db.from('visitor_chats').select('id,full_name,phone,created_at,updated_at').order('updated_at',{ascending:false}).limit(500),
  db.from('visitor_chat_messages').select('*').order('created_at',{ascending:false}).limit(1000),
- db.from('profiles').select('id,full_name,phone,role').order('created_at',{ascending:false}).limit(1000)]);
+ db.from('profiles').select('id,full_name,phone,role,archived_at').order('created_at',{ascending:false}).limit(1000)]);
  if([customer,visitors,visitorMessages,profiles].some(r=>r.error))throw new Error('load');
- const map=new Map();for(const p of profiles.data){if(p.role==='admin')continue;const key='customer:'+p.id;map.set(key,{key,type:'customer',id:p.id,title:p.full_name||'مشتری بدون نام',phone:p.phone||'',messages:[]})}
- for(const m of customer.data){if(m.hidden_by?.includes(user.id))continue;const key='customer:'+m.user_id;if(!map.has(key))map.set(key,{key,type:'customer',id:m.user_id,title:'مشتری',phone:'',messages:[]});map.get(key).messages.push(m)}
+ const archivedIds=new Set(profiles.data.filter(p=>p.archived_at).map(p=>p.id));const map=new Map();for(const p of profiles.data){if(p.role==='admin'||p.archived_at)continue;const key='customer:'+p.id;map.set(key,{key,type:'customer',id:p.id,title:p.full_name||'مشتری بدون نام',phone:p.phone||'',messages:[]})}
+ for(const m of customer.data){if(m.hidden_by?.includes(user.id)||archivedIds.has(m.user_id))continue;const key='customer:'+m.user_id;if(!map.has(key))map.set(key,{key,type:'customer',id:m.user_id,title:'مشتری',phone:'',messages:[]});map.get(key).messages.push(m)}
  for(const c of visitors.data)map.set('visitor:'+c.id,{key:'visitor:'+c.id,type:'visitor',id:c.id,title:c.full_name||'بازدیدکننده · وب‌سایت',phone:c.phone||'',messages:[]});
  for(const m of visitorMessages.data){const t=map.get('visitor:'+m.chat_id);if(t&&!m.hidden_by?.includes(user.id))t.messages.push(m)}
  const all=[...map.values()].map(t=>({...t,messages:t.messages.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)||a.id.localeCompare(b.id))})).sort((a,b)=>new Date(b.messages.at(-1)?.created_at||0)-new Date(a.messages.at(-1)?.created_at||0)||a.title.localeCompare(b.title,'fa'));setThreads(all);setSelected(current=>current&&all.some(t=>t.key===current)?current:all[0]?.key||null);setError('');}catch{setError('دریافت گفت‌وگوها انجام نشد.')}finally{loading.current=false}},[db]);
