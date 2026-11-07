@@ -35,6 +35,6 @@ export default function CustomerDetails({customer,products,onChanged,onSubscript
    {(adding||editing)&&<form className="detail-access-form" onSubmit={saveCredential}><label>نام پلتفرم<input required maxLength={80} value={form.platform} onChange={e=>setForm({...form,platform:e.target.value})} placeholder="مثلاً ترب"/></label><label>یوزرنیم<input required maxLength={255} dir="ltr" value={form.username} onChange={e=>setForm({...form,username:e.target.value})} placeholder="نام کاربری"/></label><label>{editing?'رمز جدید (اختیاری)':'پسورد'}<input required={!editing} maxLength={500} type="password" autoComplete="new-password" dir="ltr" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="رمز عبور"/></label><div className="detail-form-actions"><button disabled={busy} type="submit">{editing?'ذخیره تغییرات':'افزودن دسترسی'}</button><button type="button" onClick={()=>{setEditing(null);setAdding(false)}}>انصراف</button></div></form>}
   </>}
   <CustomerApuDetails customerId={customer.id}/>
-  <button className="detail-danger" disabled={busy} onClick={()=>{if(confirm('حساب و همه اطلاعات این مشتری برای همیشه حذف شود؟'))action({action:'delete-customer',confirm:'DELETE_CUSTOMER'})}}>حذف مشتری</button>
+  {customer.role!=='admin'&&customer.id!=='e63e575f-6215-435a-8bbe-fdc3a199c54d'&&<button className="detail-danger" disabled={busy} onClick={()=>{if(confirm('حساب و همه اطلاعات این مشتری برای همیشه حذف شود؟'))action({action:'delete-customer',confirm:'DELETE_CUSTOMER'})}}>حذف مشتری</button>}
  </div>;
 }
