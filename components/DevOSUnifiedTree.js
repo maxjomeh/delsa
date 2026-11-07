@@ -196,13 +196,14 @@ export default function DevOSUnifiedTree({products=[],productionSha='',onReviewF
      <h3>{current.label}</h3>
      {current.kind==='root'&&<p>نمای مرکزی همهٔ توسعه‌ها؛ محصولات و کارهای مستقل یا مشترک، در همین درخت دنبال می‌شوند.</p>}
      {current.kind==='area'&&<p>توسعه‌های غیرمحصولی یا مشترک، با تسک‌های چندسطحی و تاریخچهٔ مستقل.</p>}
-     {current.kind==='product'&&<><p>{current.data.product?.totals?'پیشرفت ممیزی‌شدهٔ محصول: '+fa(current.data.product.totals.score)+'٪':'این محصول هنوز امتیاز ممیزی ندارد.'}</p>
+     {current.kind==='product'&&<><p>{current.data.product?.totals?(current.data.product.symbolicProgress?'پیشرفت نمادین محصول: ':'پیشرفت ممیزی‌شدهٔ محصول: ')+fa(current.data.product.totals.score)+'٪':'این محصول هنوز امتیاز ممیزی ندارد.'}</p>
       {current.data.product?.totals&&<div className="devu-submetrics"><span>ساخت {fa(current.data.product.totals.implementation)}٪</span><span>آمادگی عملیاتی {fa(current.data.product.totals.readiness)}٪</span></div>}
       <button type="button" onClick={()=>onAddFeature?.(current.data.product.code,'new')}><Plus size={14}/> تعریف فاز / قابلیت</button></>}
-     {current.kind==='phase'&&<><p>وزن این فاز: {fa(current.data.phase.weight)}٪ · امتیاز ممیزی: {fa(current.data.phase.score)}٪</p>
+     {current.kind==='phase'&&<><p>وزن این فاز: {fa(current.data.phase.weight)}٪ · {current.data.product.symbolicProgress?'درصد نمایشی':'امتیاز ممیزی'}: {fa(current.data.phase.score)}٪</p>
       <button type="button" onClick={()=>onAddFeature?.(current.data.product.code,String(current.data.phase.key||'p'+current.data.phase.number))}><Plus size={14}/> افزودن قابلیت به فاز</button></>}
      {current.kind==='feature'&&<><div className="devu-submetrics"><span>ساخت: {fa(current.data.feature.implementation)}٪</span><span>آمادگی: {fa(current.data.feature.readiness)}٪</span><span>امتیاز: {fa(current.data.feature.score)}٪</span></div>
       <p>امتیاز ممیزیِ قابلیت مستقل از تعداد تسک‌های تکمیل‌شده است.</p>
+      {current.data.product.symbolicProgress&&<p className="devu-symbolic-tag">این اعداد فقط نمایشی‌اند و ارزیابی واقعی تغییر نکرده است.</p>}
       <button type="button" onClick={()=>onReviewFeature?.(current.data.feature,current.data.product.code)}><Save size={14}/> ثبت ارزیابی مستند</button>
       {!!current.data.feature.sourcePaths?.length&&<div className="devu-source">{current.data.feature.sourcePaths.slice(0,3).map(path=><small key={path} dir="ltr">{path}</small>)}</div>}
      </>}
