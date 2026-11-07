@@ -39,7 +39,8 @@ function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints,forceOpe
  const isOpen=forceOpen||open.has(node.key);
  const t=node.data.task,phase=node.data.phase,feature=node.data.feature,product=node.data.product;
  const pct=feature?.score??phase?.score??product?.totals?.score;
- const documented=t?taskProgress.get(t.id)?.value:pct;
+ const isSymbolic=Boolean(product?.symbolicProgress||(t?.scope==='product'&&t?.product_codes?.length===1&&t.product_codes[0]!=='dorpin'));
+ const documented=isSymbolic?100:t?taskProgress.get(t.id)?.value:pct;
  const sprint=sprints.find(x=>x.id===t?.sprint_id);
  const childTasks=node.children.filter(x=>x.kind==='task').length;
  const cls='devu-node devu-'+node.kind+(selected===node.key?' selected':'');
@@ -56,7 +57,8 @@ function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints,forceOpe
     {t&&<span className="devu-status">{label(STATUSES,t.status)}</span>}
      {t&&productionEvidence.has(t.id)&&<span className="devu-prod-proof" title="شاهد انتشار دقیقاً برای نسخهٔ Production فعال ثبت شده">Production ✓</span>}
     {sprint&&<span className="devu-sprintcode">{sprint.code}</span>}
-    {(t||pct!==null&&pct!==undefined)&&<Donut value={documented} size={38} detail={t?'پیشرفت مستند تسک':'امتیاز ممیزی'}/>}
+    {(t||pct!==null&&pct!==undefined)&&<Donut value={documented} size={38} detail={isSymbolic?'نمایشی، نه پیشرفت واقعی':t?'پیشرفت مستند تسک':'امتیاز ممیزی'}/>}
+    {isSymbolic&&<small className="devu-symbolic-tag">نمایشی</small>}
     {childTasks>0&&<small className="devu-count">{fa(childTasks)} تسک مستقیم</small>}
    </button>
   </div>
@@ -113,10 +115,10 @@ export default function DevOSUnifiedTree({products=[],productionSha='',onReviewF
   const a=auditMetrics(audited);
   const e=executionSummary(tasks,scopeProduct?.code||null);
   return [
-   {label:'پیشرفت کلی ممیزی',value:a.score,detail:scopeProduct?.name||'میانگین محصولات ممیزی‌شده'},
-   {label:'میزان پیاده‌سازی',value:a.implementation,detail:'ارزیابی ساخت قابلیت‌ها'},
-   {label:'آمادگی عملیاتی',value:a.readiness,detail:'بر پایهٔ شواهد معتبر'},
-   {label:'اجرای تسک‌ها',value:e.value,detail:fa(e.assessed)+' از '+fa(e.total)+' تسک انتهایی ارزیابی‌شده'}
+   {label:'پیشرفت کلی ممیزی',value:a.score,detail:scopeProduct?.symbolicProgress?'نمایشی · '+scopeProduct.name:scopeProduct?.name||'میانگین محصولات ممیزی‌شده'},
+   {label:'میزان پیاده‌سازی',value:a.implementation,detail:scopeProduct?.symbolicProgress?'نمایش نمادین':'ارزیابی ساخت قابلیت‌ها'},
+   {label:'آمادگی عملیاتی',value:a.readiness,detail:scopeProduct?.symbolicProgress?'نمایش نمادین، نه آمادگی واقعی':'بر پایهٔ شواهد معتبر'},
+   {label:'اجرای تسک‌ها',value:scopeProduct?.symbolicProgress?100:e.value,detail:scopeProduct?.symbolicProgress?'نمادین؛ داده مستند واقعی تغییر نکرده':fa(e.assessed)+' از '+fa(e.total)+' تسک انتهایی ارزیابی‌شده'}
   ];
  },[current,task,products,tasks]);
  const toggle=useCallback(key=>setOpen(prev=>{const n=new Set(prev);if(n.has(key))n.delete(key);else n.add(key);return n}),[]);
@@ -194,13 +196,14 @@ export default function DevOSUnifiedTree({products=[],productionSha='',onReviewF
      <h3>{current.label}</h3>
      {current.kind==='root'&&<p>نمای مرکزی همهٔ توسعه‌ها؛ محصولات و کارهای مستقل یا مشترک، در همین درخت دنبال می‌شوند.</p>}
      {current.kind==='area'&&<p>توسعه‌های غیرمحصولی یا مشترک، با تسک‌های چندسطحی و تاریخچهٔ مستقل.</p>}
-     {current.kind==='product'&&<><p>{current.data.product?.totals?'پیشرفت ممیزی‌شدهٔ محصول: '+fa(current.data.product.totals.score)+'٪':'این محصول هنوز امتیاز ممیزی ندارد.'}</p>
+     {current.kind==='product'&&<><p>{current.data.product?.totals?(current.data.product.symbolicProgress?'پیشرفت نمادین محصول: ':'پیشرفت ممیزی‌شدهٔ محصول: ')+fa(current.data.product.totals.score)+'٪':'این محصول هنوز امتیاز ممیزی ندارد.'}</p>
       {current.data.product?.totals&&<div className="devu-submetrics"><span>ساخت {fa(current.data.product.totals.implementation)}٪</span><span>آمادگی عملیاتی {fa(current.data.product.totals.readiness)}٪</span></div>}
       <button type="button" onClick={()=>onAddFeature?.(current.data.product.code,'new')}><Plus size={14}/> تعریف فاز / قابلیت</button></>}
-     {current.kind==='phase'&&<><p>وزن این فاز: {fa(current.data.phase.weight)}٪ · امتیاز ممیزی: {fa(current.data.phase.score)}٪</p>
+     {current.kind==='phase'&&<><p>وزن این فاز: {fa(current.data.phase.weight)}٪ · {current.data.product.symbolicProgress?'درصد نمایشی':'امتیاز ممیزی'}: {fa(current.data.phase.score)}٪</p>
       <button type="button" onClick={()=>onAddFeature?.(current.data.product.code,String(current.data.phase.key||'p'+current.data.phase.number))}><Plus size={14}/> افزودن قابلیت به فاز</button></>}
      {current.kind==='feature'&&<><div className="devu-submetrics"><span>ساخت: {fa(current.data.feature.implementation)}٪</span><span>آمادگی: {fa(current.data.feature.readiness)}٪</span><span>امتیاز: {fa(current.data.feature.score)}٪</span></div>
       <p>امتیاز ممیزیِ قابلیت مستقل از تعداد تسک‌های تکمیل‌شده است.</p>
+      {current.data.product.symbolicProgress&&<p className="devu-symbolic-tag">این اعداد فقط نمایشی‌اند و ارزیابی واقعی تغییر نکرده است.</p>}
       <button type="button" onClick={()=>onReviewFeature?.(current.data.feature,current.data.product.code)}><Save size={14}/> ثبت ارزیابی مستند</button>
       {!!current.data.feature.sourcePaths?.length&&<div className="devu-source">{current.data.feature.sourcePaths.slice(0,3).map(path=><small key={path} dir="ltr">{path}</small>)}</div>}
      </>}
