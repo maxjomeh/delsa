@@ -23,7 +23,7 @@ export default function AdminUsersManager({users,products,subscriptions,apuChang
   const accounts=users.filter(u=>ids.includes(u.id));
   if(accounts.length!==ids.length||accounts.some(u=>u.role==='admin'||protectedCustomerIds.has(u.id))){setError('این حساب محافظت شده است و نمی‌توان آن را حذف کرد.');return;}
   const label=accounts.length===1?'«'+(accounts[0].full_name||'مشتری')+'»':accounts.length.toLocaleString('fa-IR')+' مشتری';
-  if(!window.confirm('حساب '+label+' و داده‌های وابسته حذف شود؟ این کار قابل بازگشت نیست. حساب‌های دارای CRM محافظت می‌شوند.'))return;
+  if(!window.confirm('حساب '+label+' از دسترسی خارج و از فهرست پنهان شود؟ اطلاعات وابسته برای حفاظت از داده‌ها آرشیو می‌شوند.'))return;
   setBusy(true);setError('');setNotice('');
   let completed=0;const failures=[];
   try{
@@ -35,7 +35,7 @@ export default function AdminUsersManager({users,products,subscriptions,apuChang
      completed++;
     }catch(e){failures.push(account.full_name+': '+e.message)}
    }
-   if(completed)setNotice(completed.toLocaleString('fa-IR')+' حساب با موفقیت حذف شد.');
+   if(completed)setNotice(completed.toLocaleString('fa-IR')+' حساب غیرفعال و از فهرست خارج شد.');
    if(failures.length)setError(failures.join(' | '));
    setMarked([]);router.refresh();
   }finally{setBusy(false)}
