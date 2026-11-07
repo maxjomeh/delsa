@@ -60,3 +60,19 @@ html[data-theme=light] .users-subscriptions,html[data-theme=light] .subscription
 h2.admin-widget-title{margin:0;cursor:default}
 @container (max-width:600px){.admin-support-layout{grid-template-columns:1fr;height:auto}.admin-support-list{height:150px;border-left:0;border-bottom:1px solid var(--line)}.admin-support-conversation{height:380px}}
 .admin-product-published{color:var(--muted)}.admin-product-published i{width:6px;height:6px;background:#a9d5b7;box-shadow:none;animation:adminPublishedBreath 3.6s ease-in-out infinite}.admin-product-edit+.admin-product-edit{margin-inline-start:0}@keyframes adminPublishedBreath{0%,100%{opacity:.35}50%{opacity:.7}}@media(prefers-reduced-motion:reduce){.admin-product-published i{animation:none;opacity:.6}}
+
+
+/* Admin cleanup controls — shared by support conversations and customer accounts. */
+.admin-cleanup-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--ink);font-size:12px}
+.admin-cleanup-bar label{display:inline-flex;align-items:center;gap:9px;cursor:pointer}.admin-cleanup-bar input[type=checkbox],.admin-cleanup-identity input,.support-thread-check input{accent-color:var(--orange);width:16px;height:16px;cursor:pointer}
+.admin-cleanup-filter{flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px}
+.admin-cleanup-filter input{min-width:0;flex:1;border:0;outline:0;background:transparent;color:var(--ink);font-size:12px}
+.admin-cleanup-danger{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #db6766!important;background:rgba(211,66,62,.1)!important;color:#dc6b68!important;border-radius:8px;padding:7px 11px;font-size:12px;white-space:nowrap}
+.admin-cleanup-danger:hover:not(:disabled){background:rgba(211,66,62,.2)!important}
+.admin-cleanup-danger:disabled{opacity:.45;cursor:not-allowed}
+.admin-cleanup-identity{display:flex;align-items:center;gap:7px;min-width:0;flex-wrap:wrap}.admin-cleanup-row-actions{display:flex;align-items:center;gap:7px}.admin-cleanup-row-actions>button:first-child{border:1px solid var(--line);border-radius:7px;background:var(--panel2);color:var(--ink);padding:7px 9px;font-size:11px}
+.admin-user-entry{border-bottom:1px solid var(--line)}.admin-user-entry>.users-row{cursor:default}.admin-user-entry>.users-row>span{min-width:0}
+.support-thread-row{display:flex;align-items:center;border-bottom:1px solid var(--line);min-width:0}.support-thread-row>button:not(.support-thread-trash){flex:1;min-width:0}.support-thread-check{flex-shrink:0;padding:9px;display:grid;place-items:center}.support-thread-trash{background:transparent;border:0;color:var(--muted);padding:9px;cursor:pointer;flex-shrink:0}.support-thread-trash:hover{color:#dc6b68}
+.devu-symbolic-tag{font-size:9px;color:var(--orange);border:1px solid var(--orange);border-radius:12px;padding:1px 6px;white-space:nowrap}
+.dev-symbolic-note{margin:12px 0 16px!important;color:var(--ink);background:var(--orangeSoft);border:1px solid var(--line)}
+@media(max-width:760px){.admin-cleanup-filter{flex-basis:100%}.admin-cleanup-bar{gap:9px}.admin-cleanup-row-actions{flex-wrap:wrap}.admin-user-entry>.users-row{overflow-x:auto}}
