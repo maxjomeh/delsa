@@ -39,7 +39,8 @@ function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints,forceOpe
  const isOpen=forceOpen||open.has(node.key);
  const t=node.data.task,phase=node.data.phase,feature=node.data.feature,product=node.data.product;
  const pct=feature?.score??phase?.score??product?.totals?.score;
- const documented=t?taskProgress.get(t.id)?.value:pct;
+ const isSymbolic=Boolean(product?.symbolicProgress||(t?.scope==='product'&&t?.product_codes?.length===1&&t.product_codes[0]!=='dorpin'));
+ const documented=isSymbolic?100:t?taskProgress.get(t.id)?.value:pct;
  const sprint=sprints.find(x=>x.id===t?.sprint_id);
  const childTasks=node.children.filter(x=>x.kind==='task').length;
  const cls='devu-node devu-'+node.kind+(selected===node.key?' selected':'');
@@ -56,7 +57,8 @@ function TreeBranch({node,depth,open,onToggle,selected,onSelect,sprints,forceOpe
     {t&&<span className="devu-status">{label(STATUSES,t.status)}</span>}
      {t&&productionEvidence.has(t.id)&&<span className="devu-prod-proof" title="شاهد انتشار دقیقاً برای نسخهٔ Production فعال ثبت شده">Production ✓</span>}
     {sprint&&<span className="devu-sprintcode">{sprint.code}</span>}
-    {(t||pct!==null&&pct!==undefined)&&<Donut value={documented} size={38} detail={t?'پیشرفت مستند تسک':'امتیاز ممیزی'}/>}
+    {(t||pct!==null&&pct!==undefined)&&<Donut value={documented} size={38} detail={isSymbolic?'نمایشی، نه پیشرفت واقعی':t?'پیشرفت مستند تسک':'امتیاز ممیزی'}/>}
+    {isSymbolic&&<small className="devu-symbolic-tag">نمایشی</small>}
     {childTasks>0&&<small className="devu-count">{fa(childTasks)} تسک مستقیم</small>}
    </button>
   </div>
@@ -113,10 +115,10 @@ export default function DevOSUnifiedTree({products=[],productionSha='',onReviewF
   const a=auditMetrics(audited);
   const e=executionSummary(tasks,scopeProduct?.code||null);
   return [
-   {label:'پیشرفت کلی ممیزی',value:a.score,detail:scopeProduct?.name||'میانگین محصولات ممیزی‌شده'},
-   {label:'میزان پیاده‌سازی',value:a.implementation,detail:'ارزیابی ساخت قابلیت‌ها'},
-   {label:'آمادگی عملیاتی',value:a.readiness,detail:'بر پایهٔ شواهد معتبر'},
-   {label:'اجرای تسک‌ها',value:e.value,detail:fa(e.assessed)+' از '+fa(e.total)+' تسک انتهایی ارزیابی‌شده'}
+   {label:'پیشرفت کلی ممیزی',value:a.score,detail:scopeProduct?.symbolicProgress?'نمایشی · '+scopeProduct.name:scopeProduct?.name||'میانگین محصولات ممیزی‌شده'},
+   {label:'میزان پیاده‌سازی',value:a.implementation,detail:scopeProduct?.symbolicProgress?'نمایش نمادین':'ارزیابی ساخت قابلیت‌ها'},
+   {label:'آمادگی عملیاتی',value:a.readiness,detail:scopeProduct?.symbolicProgress?'نمایش نمادین، نه آمادگی واقعی':'بر پایهٔ شواهد معتبر'},
+   {label:'اجرای تسک‌ها',value:scopeProduct?.symbolicProgress?100:e.value,detail:scopeProduct?.symbolicProgress?'نمادین؛ داده مستند واقعی تغییر نکرده':fa(e.assessed)+' از '+fa(e.total)+' تسک انتهایی ارزیابی‌شده'}
   ];
  },[current,task,products,tasks]);
  const toggle=useCallback(key=>setOpen(prev=>{const n=new Set(prev);if(n.has(key))n.delete(key);else n.add(key);return n}),[]);
