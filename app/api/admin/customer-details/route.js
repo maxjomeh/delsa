@@ -84,7 +84,7 @@ export async function POST(request){
   if(target.role==='admin')return fail('حساب ادمین را نمی‌توان از فهرست مشتریان حذف کرد.',403);
   // Avoid cascading or orphaning business CRM histories; these require an explicit migration plan.
   for(const table of ['crm_customers','crm_events','crm_interactions','crm_zernio_contacts','sima_human_review_cases']){
-   const {count,error:countError}=await service.from(table).select('id',{count:'exact',head:true}).eq('tenant_id',id);
+   const {count,error:countError}=await service.from(table).select('*',{count:'exact',head:true}).eq('tenant_id',id);
    if(countError)return fail('بررسی وابستگی‌های CRM انجام نشد؛ هیچ حسابی حذف نشد.',503);
    if(count>0)return fail('این حساب دارای داده‌های CRM است. ابتدا باید انتقال یا نگهداری امن داده‌های آن انجام شود.',409);
   }
