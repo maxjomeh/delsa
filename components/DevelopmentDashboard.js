@@ -85,7 +85,6 @@ export default function DevelopmentDashboard(){
    </div>
    {data.evidence.productionSha&&<a target="_blank" rel="noreferrer" href={'https://github.com/maxjomeh/delsa/commit/'+data.evidence.productionSha}>مشاهدهٔ Commit <ArrowUpLeft size={12}/></a>}
   </div>}
-  <div className="dev-banner dev-symbolic-note" role="note"><ShieldCheck size={17}/> پیشرفت ۱۰۰٪ محصولات (به‌جز دورپین) صرفاً نمایشی است؛ نه تأیید تکمیل واقعی یا آمادگی عملیاتی. دورپین پیشرفت مستند و واقعی را نشان می‌دهد.</div>
   <DevOSUnifiedTree products={displayProducts} productionSha={data?.evidence?.productionSha||''} onReviewFeature={review} onAddFeature={addFeature}/>
   {Array.isArray(data?.telemetry)&&<details className="dev-telemetry"><summary className="dev-telemetry-head"><Activity size={15}/><strong>مشاهدهٔ شاخص‌های عملیاتی Supabase</strong><small>آمار رکوردها؛ نه نتیجهٔ تست واقعی</small></summary>
    <div className="dev-telemetry-grid">{data.telemetry.map(x=><div key={x.table}><small>{x.label}</small><strong>{x.count===null?'—':fa(x.count)}</strong></div>)}</div>
