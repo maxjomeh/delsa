@@ -123,8 +123,10 @@ export default function AnimatedCimaInbox(){
  },[activeId,cycle,reduced,active]);
  useEffect(()=>{
   const el=scrollRef.current;
-  if(el){el.scrollTo({top:el.scrollHeight,behavior:reduced?'auto':'smooth'});}
- },[visible,typing,activeId,reduced]);
+  if(!el)return;
+  if(mobileSizing.mobile){el.scrollTop=0;return;}
+  el.scrollTo({top:el.scrollHeight,behavior:reduced?'auto':'smooth'});
+ },[visible,typing,activeId,reduced,mobileSizing.mobile]);
  const select=id=>{if(id===activeId){setCycle(v=>v+1)}else setActiveId(id)};
  const complete=visible>=active.messages.length;
  return <div className={styles.viewport} ref={viewportRef} style={{'--demo-scale':mobileSizing.scale,'--demo-height':mobileSizing.mobile?(BASE_HEIGHT*mobileSizing.scale)+'px':undefined}}>
