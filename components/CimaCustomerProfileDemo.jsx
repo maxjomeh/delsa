@@ -22,6 +22,7 @@ const eventIcons={message:MessageCircle,ai:Sparkles,order:ShoppingBag};
 export default function CimaCustomerProfileDemo(){
  const [active,setActive]=useState(0),[step,setStep]=useState(0),[reduced,setReduced]=useState(false),[paused,setPaused]=useState(false);
  const rootRef=useRef(null);
+ const resumeTimer=useRef(null);
  useEffect(()=>{
   const media=window.matchMedia('(prefers-reduced-motion: reduce)');
   const update=()=>setReduced(media.matches);
@@ -40,7 +41,8 @@ export default function CimaCustomerProfileDemo(){
   return()=>clearTimeout(timer);
  },[active,reduced,paused]);
  const customer=examples[active];
- const choose=index=>{setActive(index);setPaused(true)};
+ const choose=index=>{setActive(index);setPaused(true);window.clearTimeout(resumeTimer.current);resumeTimer.current=window.setTimeout(()=>setPaused(false),10500)};
+ useEffect(()=>()=>window.clearTimeout(resumeTimer.current),[]);
  return <div ref={rootRef} className={styles.showcase} dir="rtl" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)}>
   <div className={styles.story}>
    <div className={styles.storyLabel}><Sparkles size={14}/> هر پیام، اطلاعات ارزشمندتر</div>
