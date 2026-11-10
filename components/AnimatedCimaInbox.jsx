@@ -119,7 +119,7 @@ export default function AnimatedCimaInbox(){
        <span className={styles.receipt}>{m.from==='ai'?<CheckCheck size={11}/>:null} {String(10+i).padStart(2,'0')}:۳۴</span>
       </div>
      </div>)}
-     {typing&&<div className={styles.messageRow+' '+styles.aiRow}><span className={styles.typing} aria-label="دستیار در حال تایپ"><i/><i/><i/></span></div>}
+     {typing&&active.messages[visible]&&<div className={styles.messageRow+' '+(active.messages[visible].from==='customer'?styles.customerRow:styles.aiRow)}><span className={styles.typing+' '+(active.messages[visible].from==='customer'?styles.customerTyping:styles.aiTyping)} role="status" aria-label={active.messages[visible].from==='customer'?'مشتری در حال تایپ است':'دستیار دلسا در حال تایپ است'}><i/><i/><i/></span></div>}
     </div>
     <div className={styles.insight}>
      {complete?<><div className={styles.insightTitle}><Sparkles size={13}/><strong>{active.review?'نیازمند بررسی انسانی':'پاسخ پیشنهادی آماده'}</strong></div><p>{active.status}</p><small><ShieldCheck size={12}/> نمونه نمایشی؛ هیچ پیامی ارسال نمی‌شود</small></>:<><div className={styles.insightTitle}><Sparkles size={13}/><strong>دستیار هوشمند فعال است</strong></div><p>در حال نمایش مرحله‌به‌مرحله مکالمه…</p></>}
