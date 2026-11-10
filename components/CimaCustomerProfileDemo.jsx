@@ -6,15 +6,15 @@ import styles from './CimaCustomerProfileDemo.module.css';
 
 const examples=[
  {id:'maryam',name:'مریم احمدی',initial:'م',channel:'اینستاگرام',status:'مشتری فعال',color:'orange',last:'امروز · ۱۰:۴۱',
-  fields:[['شماره تماس','۰۹۱۲••••۵۴۳۲'],['علاقه‌مندی','مراقبت پوست'],['آخرین سفارش','۴۸۳۱'],['روش ارسال','پست پیشتاز']],
+  fields:[['شماره تماس','09124567890'],['علاقه‌مندی','مراقبت پوست'],['آخرین سفارش','۴۸۳۱'],['روش ارسال','پست پیشتاز']],
   details:[['نوع پوست','خشک'],['ترجیح خرید','محصول بدون عطر']],
   events:[['۱۰:۴۱','پیگیری وضعیت سفارش ۴۸۳۱','message'],['۱۰:۳۴','ثبت شماره سفارش از مکالمه','ai'],['دیروز','درخواست راهنمای انتخاب محصول','order']]},
  {id:'ali',name:'علی رضایی',initial:'ع',channel:'واتساپ',status:'در انتظار بررسی',color:'blue',last:'امروز · ۱۱:۱۴',
-  fields:[['شماره تماس','۰۹۳۵••••۱۹۶۰'],['علاقه‌مندی','تجهیزات دیجیتال'],['مدل موردنظر','K7'],['رنگ موردنظر','مشکی']],
+  fields:[['شماره تماس','09961234567'],['علاقه‌مندی','تجهیزات دیجیتال'],['مدل موردنظر','K7'],['رنگ موردنظر','مشکی']],
   details:[['بودجه خرید','تا ۵ میلیون'],['اولویت','موجودی سریع']],
   events:[['۱۱:۱۴','درخواست استعلام مدل K7 مشکی','message'],['۱۱:۰۸','ثبت خودکار مدل موردنظر','ai'],['هفته قبل','پرس‌وجو درباره شرایط ارسال','order']]},
  {id:'negar',name:'نگار محمدی',initial:'ن',channel:'بله',status:'در مسیر خرید',color:'purple',last:'امروز · ۱۲:۲۸',
-  fields:[['شماره تماس','۰۹۰۱••••۸۳۲۶'],['علاقه‌مندی','پوشاک'],['وضعیت سبد','آماده تأیید'],['کانال ارتباطی','بله']],
+  fields:[['شماره تماس','09012231654'],['علاقه‌مندی','پوشاک'],['وضعیت سبد','آماده تأیید'],['کانال ارتباطی','بله']],
   details:[['سایز','مدیوم'],['رنگ محبوب','سرمه‌ای']],
   events:[['۱۲:۲۸','تأیید آدرس ارسال در مکالمه','message'],['۱۲:۲۰','تکمیل مشخصات سفارش','ai'],['هفته قبل','پرس‌وجو درباره سایزبندی','order']]}
 ];
@@ -68,7 +68,7 @@ export default function CimaCustomerProfileDemo(){
     </div>
     <div className={styles.fieldHeader}><span>اطلاعات مشتری</span><span className={styles.fieldCount}>{(customer.fields.length+customer.details.length).toLocaleString('fa-IR')} فیلد</span></div>
     <div className={styles.fields}>
-     {customer.fields.map(([label,value],i)=><div className={styles.field+' '+(step>=1?styles.visible:'')} key={label} style={{'--delay':(i*95)+'ms'}}><small>{label}</small><b>{value}</b></div>)}
+     {customer.fields.map(([label,value],i)=><div className={styles.field+' '+(step>=1?styles.visible:'')} key={label} style={{'--delay':(i*95)+'ms'}}><small>{label}</small>{label==='شماره تماس'?<b className={styles.phone} dir="ltr"><bdi>{value}</bdi></b>:<b>{value}</b>}</div>)}
     </div>
     <div className={styles.dynamicHeader+' '+(step>=2?styles.visible:'')}><span><Sparkles size={13}/> فیلدهای اختصاصی</span><span className={styles.autoBadge}>اطلاعات تکمیلی</span></div>
     <div className={styles.dynamic}>
