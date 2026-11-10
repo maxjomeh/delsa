@@ -66,6 +66,7 @@ export default function AnimatedCimaInbox(){
  const [cycle,setCycle]=useState(0);
  const [visible,setVisible]=useState(1);
  const [typing,setTyping]=useState(false);
+ const [switching,setSwitching]=useState(false);
  const [reduced,setReduced]=useState(false);
  const scrollRef=useRef(null);
  const viewportRef=useRef(null);
@@ -98,15 +99,19 @@ export default function AnimatedCimaInbox(){
   const timeouts=[];
   const later=(fn,ms)=>{const t=window.setTimeout(fn,ms);timeouts.push(t)};
   setTyping(false);
+  setSwitching(false);
   if(reduced){setVisible(active.messages.length);return()=>timeouts.forEach(clearTimeout)}
   setVisible(1);
   let index=1;
   const advance=()=>{
    if(index>=active.messages.length){
-    later(()=>setActiveId(current=>{
-     const pos=conversations.findIndex(c=>c.id===current);
-     return conversations[(pos+1)%conversations.length].id;
-    }),6700);
+    later(()=>{
+     setSwitching(true);
+     later(()=>setActiveId(current=>{
+      const pos=conversations.findIndex(c=>c.id===current);
+      return conversations[(pos+1)%conversations.length].id;
+     }),520);
+    },2250);
     return;
    }
    const nextFrom=active.messages[index].from;
@@ -127,7 +132,7 @@ export default function AnimatedCimaInbox(){
   if(mobileSizing.mobile){el.scrollTop=0;return;}
   el.scrollTo({top:el.scrollHeight,behavior:reduced?'auto':'smooth'});
  },[visible,typing,activeId,reduced,mobileSizing.mobile]);
- const select=id=>{if(id===activeId){setCycle(v=>v+1)}else setActiveId(id)};
+ const select=id=>{setSwitching(true);window.setTimeout(()=>{if(id===activeId){setCycle(v=>v+1)}else setActiveId(id)},220)};
  const complete=visible>=active.messages.length;
  return <div className={styles.viewport} ref={viewportRef} style={{'--demo-scale':mobileSizing.scale,'--demo-height':mobileSizing.mobile?(BASE_HEIGHT*mobileSizing.scale)+'px':undefined}}>
   <section className={styles.frame} dir="rtl" aria-label="دموی تعاملی صندوق ورودی CIMA">
@@ -135,7 +140,7 @@ export default function AnimatedCimaInbox(){
    <div className={styles.topTitle}><span className={styles.dot}/><strong>صندوق ورودی CIMA</strong><small>دموی تعاملی · پیام‌های نمونه</small></div>
    <span className={styles.logo}>DELSA</span>
   </header>
-  <div className={styles.body}>
+  <div className={styles.body+' '+(switching?styles.switching:'')}>
    <aside className={styles.inbox} aria-label="گفت‌وگوهای نمونه">
     <div className={styles.inboxLabel}><span>گفت‌وگوها</span><span>{conversations.length.toLocaleString('fa-IR')} مکالمه</span></div>
     <div className={styles.contacts}>
