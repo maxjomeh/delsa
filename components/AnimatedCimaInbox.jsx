@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useRef,useState} from 'react';
-import {CheckCheck,ChevronLeft,Instagram,MessageCircle,ShieldCheck,Sparkles} from 'lucide-react';
+import {CheckCheck,MessageCircle,ShieldCheck,Sparkles} from 'lucide-react';
 import styles from './AnimatedCimaInbox.module.css';
 
 const conversations=[
@@ -42,6 +42,25 @@ const conversations=[
   ],status:'شناخت نیاز و پیشنهاد محصول',review:false}
 ];
 
+// Example conversation clocks. AI replies share the same minute as the incoming
+// customer message; a customer may respond several minutes later.
+// These are illustrative clocks, not live message receipts.
+const demoClocks={
+ instagram:[634,634,641,641],
+ whatsapp:[668,668,674,674],
+ bale:[740,740,748,748],
+ telegram:[545,545,557,557],
+ rubika:[990,990,1006,1006]
+};
+const persianDigits=number=>String(number).replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
+const demoClock=(conversationId,index)=>{
+ const values=demoClocks[conversationId]||demoClocks.instagram;
+ const minutes=values[Math.min(index,values.length-1)];
+ return persianDigits(String(Math.floor(minutes/60)).padStart(2,'0')+':'+String(minutes%60).padStart(2,'0'));
+};
+const BASE_WIDTH=640;
+const BASE_HEIGHT=520;
+
 export default function AnimatedCimaInbox(){
  const [activeId,setActiveId]=useState(conversations[0].id);
  const [cycle,setCycle]=useState(0);
@@ -49,7 +68,26 @@ export default function AnimatedCimaInbox(){
  const [typing,setTyping]=useState(false);
  const [reduced,setReduced]=useState(false);
  const scrollRef=useRef(null);
+ const viewportRef=useRef(null);
+ const [mobileSizing,setMobileSizing]=useState({mobile:false,scale:1});
  const active=useMemo(()=>conversations.find(c=>c.id===activeId)||conversations[0],[activeId]);
+ useEffect(()=>{
+  const node=viewportRef.current;
+  if(!node)return;
+  const media=window.matchMedia('(max-width: 600px)');
+  const update=()=>{
+   const mobile=media.matches;
+   const availableWidth=node.clientWidth||BASE_WIDTH;
+   const scale=mobile?Math.min(1,availableWidth/BASE_WIDTH):1;
+   setMobileSizing(prev=>prev.mobile===mobile&&Math.abs(prev.scale-scale)<0.001?prev:{mobile,scale});
+  };
+  update();
+  const observer=typeof ResizeObserver!=='undefined'?new ResizeObserver(update):null;
+  observer?.observe(node);
+  media.addEventListener?.('change',update);
+  window.addEventListener('resize',update);
+  return()=>{observer?.disconnect();media.removeEventListener?.('change',update);window.removeEventListener('resize',update)};
+ },[]);
  useEffect(()=>{
   const media=window.matchMedia('(prefers-reduced-motion: reduce)');
   const sync=()=>setReduced(media.matches);sync();
@@ -71,15 +109,16 @@ export default function AnimatedCimaInbox(){
     }),6700);
     return;
    }
+   const nextFrom=active.messages[index].from;
    setTyping(true);
    later(()=>{
     index+=1;
     setVisible(index);
     setTyping(false);
-    later(advance,1650);
-   },850);
+    later(advance,active.messages[index]?.from==='ai'?320:2100);
+   },nextFrom==='ai'?420:1050);
   };
-  later(advance,1900);
+  later(advance,active.messages[1]?.from==='ai'?320:2100);
   return()=>timeouts.forEach(clearTimeout);
  },[activeId,cycle,reduced,active]);
  useEffect(()=>{
@@ -88,7 +127,8 @@ export default function AnimatedCimaInbox(){
  },[visible,typing,activeId,reduced]);
  const select=id=>{if(id===activeId){setCycle(v=>v+1)}else setActiveId(id)};
  const complete=visible>=active.messages.length;
- return <section className={styles.frame} dir="rtl" aria-label="دموی تعاملی صندوق ورودی CIMA">
+ return <div className={styles.viewport} ref={viewportRef} style={{'--demo-scale':mobileSizing.scale,'--demo-height':mobileSizing.mobile?(BASE_HEIGHT*mobileSizing.scale)+'px':undefined}}>
+  <section className={styles.frame} dir="rtl" aria-label="دموی تعاملی صندوق ورودی CIMA">
   <header className={styles.top}>
    <div className={styles.topTitle}><span className={styles.dot}/><strong>صندوق ورودی CIMA</strong><small>دموی تعاملی · پیام‌های نمونه</small></div>
    <span className={styles.logo}>DELSA</span>
@@ -100,7 +140,7 @@ export default function AnimatedCimaInbox(){
      {conversations.map(c=><button key={c.id} type="button" className={styles.contact+' '+(c.id===activeId?styles.selected:'')} aria-pressed={c.id===activeId} onClick={()=>select(c.id)}>
       <span className={styles.avatar}>{c.initial}</span>
       <span className={styles.contactCopy}><strong>{c.name}</strong><small>{c.last}</small><span className={styles.channel+' '+styles[c.channelKey]}>{c.channel}</span></span>
-      <span className={styles.contactMeta}><small>{c.time}</small>{c.unread>0&&<b>{c.unread.toLocaleString('fa-IR')}</b>}</span>
+      <span className={styles.contactMeta}><small><bdi dir="ltr">{demoClock(c.id,c.messages.length-1)}</bdi></small>{c.unread>0&&<b>{c.unread.toLocaleString('fa-IR')}</b>}</span>
      </button>)}
     </div>
     <p className={styles.inboxNote}><MessageCircle size={12}/> برای دیدن هر مکالمه روی آن بزنید</p>
@@ -116,7 +156,7 @@ export default function AnimatedCimaInbox(){
       <div className={styles.bubble+' '+(m.from==='ai'?styles.aiBubble:styles.customerBubble)}>
        {m.from==='ai'&&<span className={styles.sender}><Sparkles size={11}/> دستیار دلسا</span>}
        <span>{m.text}</span>
-       <span className={styles.receipt}>{m.from==='ai'?<CheckCheck size={11}/>:null} {String(10+i).padStart(2,'0')}:۳۴</span>
+       <span className={styles.receipt}>{m.from==='ai'?<CheckCheck size={11}/>:null} <bdi dir="ltr">{demoClock(active.id,i)}</bdi></span>
       </div>
      </div>)}
      {typing&&active.messages[visible]&&<div className={styles.messageRow+' '+(active.messages[visible].from==='customer'?styles.customerRow:styles.aiRow)}><span className={styles.typing+' '+(active.messages[visible].from==='customer'?styles.customerTyping:styles.aiTyping)} role="status" aria-label={active.messages[visible].from==='customer'?'مشتری در حال تایپ است':'دستیار دلسا در حال تایپ است'}><i/><i/><i/></span></div>}
@@ -126,5 +166,6 @@ export default function AnimatedCimaInbox(){
     </div>
    </div>
   </div>
- </section>;
+ </section>
+ </div>;
 }
