@@ -66,3 +66,17 @@
  .closing-actions .button{font-size:12px;padding-inline:8px}
  .site-header.floating-header .mobile-store-link{display:none}
 }
+
+/* Give the mobile inbox a real, content-driven height instead of clipping it
+   inside the original 320px screenshot-style preview. */
+@media(max-width:820px){
+ .delsa-cima-hero-layout{gap:23px}
+ .delsa-cima-visual{height:auto;min-height:0;padding:12px;display:block;overflow:visible}
+}
+@media(max-width:600px){
+ .delsa-cima-visual{height:auto;min-height:0;padding:7px;border-radius:16px;box-shadow:0 14px 45px #00000013}
+ .delsa-cima-hero-layout{gap:19px}
+}
+@media(max-width:380px){
+ .delsa-cima-visual{height:auto;min-height:0;padding:5px;border-radius:13px}
+}
