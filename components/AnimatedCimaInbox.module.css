@@ -52,3 +52,9 @@
  .insight{padding:5px 7px}
  .insight small{display:flex;font-size:7px}
 }
+
+/* Mid-size tablets also need a real layout box once the surrounding mockup
+   changes from a fixed illustration height to intrinsic content sizing. */
+@media(min-width:601px) and (max-width:820px){
+ .frame{position:relative;inset:auto;width:100%;height:460px;min-height:460px}
+}
