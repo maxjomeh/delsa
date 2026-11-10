@@ -1,6 +1,7 @@
 import './homepage-cima.css';
 import Link from 'next/link';
 import ChatLaunch from '../components/ChatLaunch';
+import AnimatedCimaInbox from '../components/AnimatedCimaInbox';
 import { ArrowLeft, ArrowUpLeft, Check, ChevronDown, CircleHelp, Layers3, MessageCircle, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
 
 const steps = [
@@ -35,25 +36,7 @@ export default function Home() { return <>
    <div className="delsa-cima-highlights"><span><MessageCircle size={16}/> مدیریت پیام‌ها</span><span><Layers3 size={16}/> سبد خرید و سفارش</span><span><ShieldCheck size={16}/> نظارت انسانی</span></div>
   </div>
   <div className="delsa-cima-visual" aria-label="نمونه نمایشی داشبورد گفت‌وگوهای CIMA">
-    <div className="cima-board">
-      <div className="cima-board-top"><span className="cima-live"><i/> محیط نمونه</span><b>صندوق ورودی CIMA</b><span className="cima-board-mark">DELSA</span></div>
-      <div className="cima-board-body">
-        <div className="cima-conversations">
-          <div className="cima-search">جست‌وجوی مخاطب یا پیام</div>
-          <div className="cima-conversation active"><span className="cima-avatar">م</span><span><b>مریم احمدی</b><small>برای ارسال سفارش چه زمانی…</small></span><i>۲ دقیقه</i></div>
-          <div className="cima-conversation"><span className="cima-avatar alt">ع</span><span><b>علی رضایی</b><small>موجودی رنگ مشکی رو دارید؟</small></span><i>۱۸ دقیقه</i></div>
-          <div className="cima-conversation"><span className="cima-avatar muted">ن</span><span><b>نگار محمدی</b><small>ممنون از راهنمایی شما</small></span><i>۱ ساعت</i></div>
-          <div className="cima-channel-note"><MessageCircle size={14}/> اینستاگرام · گفت‌وگوی متصل</div>
-        </div>
-        <div className="cima-thread">
-          <div className="cima-contact"><span className="cima-avatar">م</span><span><b>مریم احمدی</b><small>پروندهٔ مشتری · ۶ تعامل</small></span><span className="cima-contact-tag">مشتری</span></div>
-          <div className="cima-message theirs">سلام، سفارش من امروز ارسال می‌شه؟</div>
-          <div className="cima-message mine">شماره سفارش رو می‌فرمایید تا بررسی کنم؟</div>
-          <div className="cima-message theirs">۴۸۲۱، ممنون</div>
-          <div className="cima-draft"><div><Sparkles size={14}/><b>پاسخ پیشنهادی · نیازمند بررسی</b></div><p>ممنون مریم. وضعیت سفارش ۴۸۲۱ را بررسی می‌کنم و نتیجه را همین‌جا اطلاع می‌دهم.</p><span><ShieldCheck size={13}/> پیش از ارسال، بازبینی انسانی</span></div>
-        </div>
-      </div>
-    </div>
+    <AnimatedCimaInbox/>
   </div>
  </div>
  <a className="delsa-cima-next" href="#cima" aria-label="مشاهده قابلیت‌های CIMA"><ChevronDown size={20}/></a>
