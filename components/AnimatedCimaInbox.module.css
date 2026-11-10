@@ -96,3 +96,10 @@
  .insightTitle{font-size:9px}.insight p{font-size:9px;line-height:1.75}
  .insight small{display:flex;font-size:8px}
 }
+
+/* Gentle hand-off when the completed demo automatically opens the next chat. */
+.chat{transition:opacity .48s ease,transform .48s cubic-bezier(.2,.8,.2,1)}
+.switching .chat{opacity:.12;transform:translateX(-12px)}
+.contact{transition:background .28s ease,box-shadow .28s ease,color .28s ease}
+.selected{transition:background .35s ease,box-shadow .35s ease}
+@media(prefers-reduced-motion:reduce){.chat,.contact,.selected{transition:none!important}.switching .chat{opacity:1;transform:none}}
