@@ -58,3 +58,41 @@
 @media(min-width:601px) and (max-width:820px){
  .frame{position:relative;inset:auto;width:100%;height:460px;min-height:460px}
 }
+
+/* The inbox now has a dedicated viewport; desktop keeps its original layout. */
+.viewport{position:absolute;inset:0;min-width:0}
+.receipt bdi,.contactMeta bdi{font-family:inherit;font-variant-numeric:tabular-nums;unicode-bidi:isolate;direction:ltr}
+.customerTyping i{background:var(--muted)}
+/* On phones, present the *unchanged two-column desktop UI* as a scaled
+   complete composition. No alternative tabs, stacked contacts, or inner scrollbars. */
+@media(max-width:600px){
+ .viewport{position:relative;inset:auto;width:100%;height:var(--demo-height,390px);overflow:hidden}
+ .frame{position:absolute;inset:auto 0 auto auto;width:640px;height:520px;min-width:640px;min-height:520px;max-height:520px;transform:scale(var(--demo-scale,.6));transform-origin:top right;border-radius:18px;overflow:hidden}
+ .top{height:49px;min-height:49px;padding:0 15px}
+ .topTitle{gap:8px}.topTitle strong{font-size:12px}.topTitle small{display:inline;font-size:9px}
+ .logo{font-size:12px}
+ .body{display:grid;grid-template-columns:minmax(0,43%) minmax(0,57%);min-height:0;flex:1}
+ .inbox{display:flex;min-height:0;flex-direction:column;flex:initial;border-left:1px solid var(--line);border-bottom:0;overflow:hidden}
+ .inboxLabel{display:flex;font-size:10px;padding:12px}
+ .contacts{display:block;flex:1;min-height:0;overflow:hidden;scroll-snap-type:none}
+ .contact{display:flex;align-items:flex-start;width:100%;min-width:0;min-height:0;flex:none;gap:8px;padding:11px 9px;border:0;border-bottom:1px solid var(--line);border-left:0;scroll-snap-align:none}
+ .contact .avatar{width:29px;height:29px;min-width:29px;font-size:12px}
+ .contactCopy{gap:3px}.contactCopy strong{font-size:11px;line-height:1.6;white-space:nowrap}
+ .contactCopy>small{display:block;font-size:9px;line-height:1.8}
+ .contactMeta{display:flex;gap:7px}.contactMeta small{display:block;font-size:8px}
+ .channel{font-size:9px;line-height:1.5;padding:2px 7px}
+ .selected{box-shadow:inset 3px 0 var(--orange)}
+ .inboxNote{display:flex;font-size:9px;padding:10px}
+ .chat{display:flex;flex:1;min-height:0;overflow:hidden}
+ .chatHeader{min-height:58px;padding:9px 13px}
+ .chatHeader .avatar{width:29px;height:29px;min-width:29px;font-size:12px}
+ .person strong{font-size:12px}.person small{font-size:9px}
+ .chatStatus{font-size:9px}
+ .messages{display:flex;flex:1;min-height:0;height:auto;max-height:none;overflow:hidden;overscroll-behavior:none;gap:9px;padding:12px 13px}
+ .bubble{max-width:89%;font-size:10px;line-height:1.8;padding:8px 10px;border-radius:12px;gap:4px}
+ .sender{font-size:9px}.receipt{font-size:8px}
+ .typing{padding:11px 15px}
+ .insight{margin:0 10px 10px;padding:9px 11px;min-height:65px;border-radius:10px}
+ .insightTitle{font-size:9px}.insight p{font-size:9px;line-height:1.75}
+ .insight small{display:flex;font-size:8px}
+}
