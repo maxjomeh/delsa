@@ -2,6 +2,7 @@ import './homepage-cima.css';
 import Link from 'next/link';
 import ChatLaunch from '../components/ChatLaunch';
 import AnimatedCimaInbox from '../components/AnimatedCimaInbox';
+import CimaCustomerProfileDemo from '../components/CimaCustomerProfileDemo';
 import { ArrowLeft, ArrowUpLeft, Check, ChevronDown, CircleHelp, Layers3, MessageCircle, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
 
 const steps = [
@@ -44,6 +45,7 @@ export default function Home() { return <>
 
 <section id="cima" className="wrap cima-intro">
   <div className="cima-section-heading"><span className="eyebrow">CIMA / CUSTOMER INTELLIGENCE & MESSAGING ASSISTANT</span><h2>CRM دلسا؛ از مکالمه<br/>تا مدیریت فروش.</h2><p>CIMA گفت‌وگوی مشتری را به مسیر فروش وصل می‌کند: از شناخت نیاز و معرفی محصول تا ساخت سبد خرید، دریافت اطلاعات سفارش، پرداخت و پیگیری ارسال. سابقهٔ مشتری و وضعیت هر سفارش هم در پنل دلسا در دسترس تیم است.</p></div>
+  <CimaCustomerProfileDemo/>
   <div className="cima-feature-grid">{features.map(([title, copy, Icon])=><article className="cima-feature" key={title}><span><Icon size={19}/></span><h3>{title}</h3><p>{copy}</p></article>)}</div>
 </section>
 
