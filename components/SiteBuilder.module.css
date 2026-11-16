@@ -7,7 +7,40 @@
 @media(max-width:700px){.shopStats{grid-template-columns:repeat(2,minmax(0,1fr))}.shopStats article{padding:16px 12px}.shopStats strong{font-size:17px}.storeFilters{flex-wrap:wrap}.storeFilters label{flex-basis:100%}.storeFilters select{flex:1;width:auto}.storeCatalog{padding:30px 18px}.catalogHeading h2{font-size:24px}.productGrid{gap:12px}.productImage{height:165px}.productImage>img{padding:12px}.productCardBody{padding:13px}.productCardBody h3{font-size:15px}.productCardBody p{font-size:11px}.productCardBody>strong{font-size:14px}.productCardBody button,.website .storeButton{font-size:11px;padding:10px 12px}.productDetail{grid-template-columns:1fr;padding:30px 18px}.galleryMain{height:320px}.productInfo h1{font-size:28px}.checkoutPage,.trackingPage{padding:30px 18px}.checkoutGrid{grid-template-columns:1fr}.checkoutGrid aside{order:-1}.checkoutTotals{padding:16px}.cartItems article{padding:14px;gap:10px}.cartItems strong{font-size:13px}.receipt{padding:20px}.receiptItems p{font-size:12px}.eventRow{flex-wrap:wrap;gap:8px}.trackingPage>form{flex-wrap:wrap}.trackingPage>form label{flex-basis:100%}.imageStrip img{width:65px;height:65px}}
 @media print{.sidebar,.toolbar,.hubHeader,.fileButton,.actions,.storeActions,.siteHeader nav,.storeNotice,.siteFooter{display:none!important}.shell{display:block}.workspace{padding:0}.website{background:white;color:black}.receipt{border:0;margin:0;max-width:none}.shopStats{display:none}}
 
-.products:has(.storeCatalog){padding:0;max-width:none}
+/* Retail products block: preserve the same readable gutters as other
+   site-builder sections. The nested catalog shares the block's inner width
+   rather than adding a second horizontal gutter. */
+.products:has(.storeCatalog){
+ padding-inline:max(6%,24px);
+ padding-block:clamp(30px,4vw,60px);
+ max-width:1400px;
+ margin-inline:auto;
+}
+.products:has(.storeCatalog)>.storeCatalog{
+ width:100%;
+ max-width:none;
+ margin:0;
+ padding-inline:0;
+ padding-block:0;
+ min-width:0;
+}
+@container(max-width:680px){
+ .website .products:has(.storeCatalog){padding:38px 22px}
+}
+@container(max-width:390px){
+ .website .products:has(.storeCatalog){padding-inline:16px}
+}
+/* Prevent long generated titles, filters and product grids from escaping the
+   intended layout gutter on narrow embedded and published storefronts. */
+.website .siteSections,.website .siteSections>.siteBlock,.website .storeCatalog{
+ min-width:0;
+ max-inline-size:100%;
+}
+.website .siteSections h2,.website .catalogHeading h2{
+ overflow-wrap:anywhere;
+}
+.website .storeCatalog .catalogHeading{min-width:0;flex-wrap:wrap}
+
 
 /* Embedded in the customer/admin dashboard; keep the parent sidebar visible. */
 .embedded.hub{max-width:none;padding:0;min-width:0}
