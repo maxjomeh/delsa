@@ -144,3 +144,15 @@
 @media print {
   [data-delsa-site] [data-reveal] { opacity: 1 !important; translate: none !important; filter: none !important; }
 }
+
+/* Book-store pages: author/publisher listings and the edition comparison table (all templates) */
+[data-delsa-site] [data-part="listing"] { padding: var(--ds-space-7) var(--ds-gutter); }
+[data-delsa-site] [data-part="listing"] h1 { font-size: var(--ds-text-xl); line-height: var(--ds-leading-heading); margin: 0 0 var(--ds-space-2); }
+[data-delsa-site] [data-part="listing"] > p { color: var(--muted); margin: 0 0 var(--ds-space-5); }
+[data-delsa-site] [data-part="editions"] { margin-top: var(--ds-space-5); }
+[data-delsa-site] [data-part="editions"] h3 { margin: 0 0 var(--ds-space-3); font-size: var(--ds-text-lg); }
+[data-delsa-site] [data-part="editions-scroll"] { overflow-x: auto; max-width: 100%; }
+[data-delsa-site] [data-part="editions"] table { width: 100%; border-collapse: collapse; font-size: var(--ds-text-sm); }
+[data-delsa-site] [data-part="editions"] th, [data-delsa-site] [data-part="editions"] td { padding: var(--ds-space-2) var(--ds-space-3); text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+[data-delsa-site] [data-part="editions"] th { color: var(--muted); font-weight: var(--ds-weight-medium); }
+[data-delsa-site] [data-part="editions"] tr[aria-current="true"] { background: color-mix(in srgb, var(--site-accent) 10%, transparent); }
