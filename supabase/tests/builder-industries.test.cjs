@@ -1,13 +1,14 @@
 const ts=require('typescript'),fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
 const root=path.resolve(__dirname,'../..');
 function load(file,mocks={}){const module={exports:{}};const code=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{fileName:'test.tsx',compilerOptions:{esModuleInterop:true,target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.React}}).outputText;vm.runInNewContext(code,{module,exports:module.exports,require:n=>mocks[n]||require(n),React:require('react'),globalThis:{crypto:require('crypto').webcrypto},console});return module.exports}
-const design=load('lib/builder-design.js'),ind=load('lib/builder-industries.js'),site=load('lib/site-builder.js',{'./builder-design':design,'./builder-industries':ind});
+const design=load('lib/builder-design.js'),ind=load('lib/builder-industries.js',{'./book-isbn':load('lib/book-isbn.js')}),site=load('lib/site-builder.js',{'./builder-design':design,'./builder-industries':ind});
 
 // Registry is internally consistent and only references existing templates and block types.
 assert.deepEqual(ind.validateRegistry(site.templates.map(t=>t.id),Object.keys(site.blockLabels)),[]);
 assert.deepEqual(ind.industries.map(i=>i.id),['general','books','apparel','digital','auto']);
 
 // Legacy and unknown industries resolve to "general".
+assert.equal(ind.industryById(ind.industryById('books')).id,'books','industryById accepts an industry object as well as an id');assert.equal(ind.industryById({id:'nope'}).id,'general');
 assert.equal(ind.normalizeIndustry(undefined),'general');assert.equal(ind.normalizeIndustry('<script>'),'general');assert.equal(ind.industryById('nope').id,'general');
 assert.equal(site.normalizeDocument({template:'studio'}).industry,'general');
 assert.equal(site.normalizeDocument({template:'studio',industry:'books'}).industry,'books');
@@ -38,7 +39,12 @@ assert.equal(merged.pages,'240');assert.equal(merged.author,'علی');
 assert(!('language' in merged)&&!('isbn' in merged),'invalid select/pattern values are dropped');
 assert.equal(merged.vehicle_brand,'پژو');assert.equal(merged['جنس'],'کاغذ');
 assert.equal(ind.cleanFieldValue({type:'number',max:100},'101'),'');assert.equal(ind.cleanFieldValue({type:'text',max:3},'abcdef'),'abc');
-assert.equal(ind.cleanFieldValue(ind.industryById('books').fields.find(f=>f.key==='isbn'),'978-600-123-456-7'),'978-600-123-456-7');
+const isbnField=ind.industryById('books').fields.find(f=>f.key==='isbn');
+assert.equal(ind.cleanFieldValue(isbnField,'978-0-306-40615-7'),'9780306406157','ISBN is stored as a valid ISBN-13');
+assert.equal(ind.cleanFieldValue(isbnField,'0-306-40615-2'),'9780306406157','ISBN-10 is converted');
+assert.equal(ind.cleanFieldValue(isbnField,'978-600-123-456-7'),'','bad checksum is rejected');
+assert.deepEqual(ind.invalidFields('books',{isbn:'978-600-123-456-7',pages:'12',author:'ا',language:'کلینگون'}),['شابک (ISBN)','زبان']);
+assert.deepEqual(ind.invalidFields('books',{isbn:'',author:''}),[]);
 const unchanged=ind.mergeAttributes('general',{},{x:'1'});assert.deepEqual(unchanged,{x:'1'});
 
 // Storefront helpers.
