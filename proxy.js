@@ -23,4 +23,6 @@ export async function proxy(request) {
   response.headers.set('Cache-Control','private, no-store');
   return response;
 }
-export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'] };
+// Published sites (/s/*) are public and cacheable: skipping the proxy avoids the per-request
+// auth refresh and the `private, no-store` header that would disable ISR/CDN caching.
+export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico|s/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'] };
