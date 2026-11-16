@@ -8,7 +8,7 @@ const custom={...old,pages:[{...old.pages[0],columns:3,gap:16,blocks:[{...old.pa
 const bounded=design.normalizeDesign({paddingTop:99999,titleSize:-10,background:'url(javascript:alert(1))',textColor:'#fff',position:'fixed',span:9,hiddenDesktop:true});assert.equal(bounded.paddingTop,240);assert.equal(bounded.titleSize,16);assert.equal(bounded.span,4);assert.equal(bounded.hiddenDesktop,true);assert.equal(bounded.background,undefined);assert.equal(bounded.position,undefined);
 const blocks=[{id:'a'},{id:'b'},{id:'c'}];assert.equal(design.reorderBlock(blocks,'c','a').map(b=>b.id).join(','),'c,a,b');assert.equal(blocks.map(b=>b.id).join(','),'a,b,c');assert.equal(design.reorderBlock(blocks,'unknown','a'),blocks);
 for(const type of ['heading','button','divider','spacer'])assert.equal(site.normalizeDocument({pages:[{blocks:[site.newBlock(type)]}]}).pages[0].blocks[0].type,type);
-const React=require('react'),render=require('react-dom/server').renderToStaticMarkup;const extra=load('components/BuilderExtraElements.js',{'../lib/site-builder':site,'./BuilderExtraElements.module.css':new Proxy({},{get:(_,k)=>String(k)})});const view=load('components/BuilderSiteView.js',{'../lib/site-builder':site,'../lib/builder-design':design,'./BuilderTemplateArt':()=>null,'./BuilderExtraElements':extra,'./SiteBuilder.module.css':new Proxy({},{get:(_,k)=>String(k)}),'next/link':({children,...props})=>React.createElement('a',props,children)}).default;const html=render(React.createElement(view,{name:'آزمون',document:result}));assert(html.includes('--block-mobile-title:24px'));assert(html.includes('data-design-background'));assert(html.includes('محتوای محفوظ'));assert(!html.includes('designSelectable'));
+const React=require('react'),render=require('react-dom/server').renderToStaticMarkup;const extra=load('components/BuilderExtraElements.js',{'../lib/site-builder':site,'./BuilderExtraElements.module.css':new Proxy({},{get:(_,k)=>String(k)})});const view=load('components/BuilderSiteView.js',{'../lib/site-builder':site,'../lib/builder-design':design,'./BuilderTemplateArt':()=>null,'./BuilderMotion':()=>null,'./builder-design-system.css':{},'./BuilderExtraElements':extra,'./SiteBuilder.module.css':new Proxy({},{get:(_,k)=>String(k)}),'next/link':({children,...props})=>React.createElement('a',props,children)}).default;const html=render(React.createElement(view,{name:'آزمون',document:result}));assert(html.includes('--block-mobile-title:24px'));assert(html.includes('data-design-background'));assert(html.includes('محتوای محفوظ'));assert(!html.includes('designSelectable'));
 assert.equal(Object.keys(site.blockLabels).length,26);
 for(const type of extra.extraElementTypes){const b=site.newBlock(type);const d=site.normalizeDocument({pages:[{blocks:[b]}]});assert.equal(d.pages[0].blocks[0].type,type);assert(render(React.createElement(view,{name:'آزمون',document:d})).includes(b.title));}
 const longFAQ={...site.newBlock('faq'),items:['س'.repeat(600)+'|'+'پ'.repeat(600)]};assert.equal(site.normalizeDocument({pages:[{blocks:[longFAQ]}]}).pages[0].blocks[0].items[0].length,1201);
@@ -19,3 +19,17 @@ console.log('PASS: legacy compatibility, saved/mobile design round trip, safe CS
 
 for(const t of site.templates){const d=site.normalizeDocument(site.starter(t.id,"آزمون فروشگاه"));assert.equal(d.template,t.id);assert(d.pages[0].blocks.some(b=>b.type==="products"));assert(render(React.createElement(view,{name:"آزمون فروشگاه",document:d})).includes("آزمون فروشگاه"));}
 assert.equal(site.templates.length,9);
+
+// Motion intensity: legacy documents stay gentle, unknown values are rejected, new sites are balanced.
+assert.equal(site.normalizeDocument({template:'studio'}).motion,'simple');
+assert.equal(site.normalizeDocument({template:'studio',motion:'cinematic'}).motion,'cinematic');
+assert.equal(site.normalizeDocument({template:'studio',motion:'url(javascript:alert(1))'}).motion,'simple');
+assert.equal(site.normalizeDocument(site.starter('studio','x')).motion,'balanced');
+assert.deepEqual(site.motionLevels.map(m=>m.id),['simple','balanced','cinematic']);
+console.log('PASS: motion intensity normalization');
+const motionHtml=render(React.createElement(view,{name:'x',document:{...result,motion:'cinematic'}}));
+assert(motionHtml.includes('data-delsa-site')&&motionHtml.includes('data-motion="cinematic"'));
+assert(/<section[^>]*data-reveal=""/.test(motionHtml)||motionHtml.includes('data-reveal=""'));
+const editorHtml=render(React.createElement(view,{name:'x',document:result,editor:{selectedId:null,dropId:null,onSelect(){},onDragOver(){},onDrop(){},controls:()=>null}}));
+assert(!editorHtml.includes('data-motion=')&&!editorHtml.includes('data-reveal'));
+console.log('PASS: motion attributes on published sites, none in the editor canvas');
