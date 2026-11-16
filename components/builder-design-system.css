@@ -1,0 +1,146 @@
+/*
+ * Delsa site-builder design system: shared tokens + motion system.
+ *
+ * Scope: only elements inside a published/preview site root ([data-delsa-site]).
+ * Colour tokens are aliases of the per-template palette (--bg, --panel, --ink ...), which already
+ * flips with html[data-theme=dark]; templates therefore keep their own identity and new templates
+ * only need to define their palette once.
+ *
+ * Motion uses the standalone `translate`, `scale`, `opacity` and `filter` properties so it composes
+ * with each template's own `transform` (e.g. the rotated hero of the studio template) instead of
+ * overriding it. Three intensities are selected with data-motion on the site root.
+ */
+
+[data-delsa-site] {
+  /* Spacing (4px base) */
+  --ds-space-1: 4px; --ds-space-2: 8px; --ds-space-3: 12px; --ds-space-4: 16px; --ds-space-5: 24px;
+  --ds-space-6: 32px; --ds-space-7: 48px; --ds-space-8: 72px; --ds-space-9: 104px;
+  /* Side gutter shared by every section and template */
+  --ds-gutter: clamp(16px, 4.5vw, 56px);
+
+  /* Typography (Persian needs generous leading) */
+  --ds-text-xs: .75rem; --ds-text-sm: .875rem; --ds-text-base: 1rem; --ds-text-lg: 1.125rem;
+  --ds-text-xl: clamp(1.5rem, 3vw, 2.25rem);
+  --ds-text-display: clamp(2.25rem, 5vw, 4.5rem);
+  --ds-leading-tight: 1.35; --ds-leading-heading: 1.6; --ds-leading-body: 2;
+  --ds-weight-regular: 400; --ds-weight-medium: 500; --ds-weight-bold: 700; --ds-weight-black: 900;
+
+  /* Radius follows each template's identity (0px for sharp templates, 24px for soft ones) */
+  --ds-radius-sm: calc(var(--template-round, 12px) * .5);
+  --ds-radius-md: var(--template-round, 12px);
+  --ds-radius-lg: calc(var(--template-round, 12px) * 1.5);
+  --ds-radius-pill: 999px;
+
+  /* Semantic colours (aliases; light/dark comes from the template palette) */
+  --ds-bg: var(--bg); --ds-surface: var(--panel); --ds-surface-2: var(--panel2);
+  --ds-ink: var(--ink); --ds-muted: var(--muted); --ds-line: var(--line); --ds-accent: var(--site-accent);
+
+  /* Elevation, derived from the ink colour so it stays correct in dark mode */
+  --ds-shadow-1: 0 1px 2px color-mix(in srgb, var(--ink, #000) 8%, transparent);
+  --ds-shadow-2: 0 8px 24px color-mix(in srgb, var(--ink, #000) 12%, transparent);
+  --ds-shadow-3: 0 18px 48px color-mix(in srgb, var(--ink, #000) 18%, transparent);
+
+  /* Motion primitives */
+  --ds-ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ds-ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --ds-motion-scale: 1;
+  --ds-dur-fast: calc(150ms * var(--ds-motion-scale));
+  --ds-dur-base: calc(280ms * var(--ds-motion-scale));
+  --ds-dur-slow: calc(560ms * var(--ds-motion-scale));
+  --ds-reveal-distance: 16px; --ds-reveal-blur: 0px; --ds-stagger: 60ms;
+  --ds-hover-lift: -4px; --ds-media-zoom: 1.04;
+}
+
+/* Intensity levels */
+[data-delsa-site][data-motion="simple"] {
+  --ds-motion-scale: .8; --ds-reveal-distance: 10px; --ds-reveal-blur: 0px;
+  --ds-stagger: 35ms; --ds-hover-lift: -2px; --ds-media-zoom: 1.02;
+}
+[data-delsa-site][data-motion="balanced"] {
+  --ds-motion-scale: 1; --ds-reveal-distance: 22px; --ds-reveal-blur: 0px;
+  --ds-stagger: 70ms; --ds-hover-lift: -5px; --ds-media-zoom: 1.05;
+}
+[data-delsa-site][data-motion="cinematic"] {
+  --ds-motion-scale: 1.6; --ds-reveal-distance: 44px; --ds-reveal-blur: 8px;
+  --ds-stagger: 110ms; --ds-hover-lift: -9px; --ds-media-zoom: 1.1;
+}
+
+/* Hero entrance: pure CSS, plays once on load */
+@keyframes ds-rise {
+  from { opacity: 0; translate: 0 var(--ds-reveal-distance); filter: blur(var(--ds-reveal-blur)); }
+  to   { opacity: 1; translate: 0 0; filter: blur(0); }
+}
+[data-delsa-site][data-motion] [data-ds="hero"] > * {
+  animation: ds-rise var(--ds-dur-slow) var(--ds-ease-out) both;
+}
+[data-delsa-site][data-motion] [data-ds="hero"] > :nth-child(2) { animation-delay: calc(var(--ds-stagger) * 1); }
+[data-delsa-site][data-motion] [data-ds="hero"] > :nth-child(3) { animation-delay: calc(var(--ds-stagger) * 2); }
+[data-delsa-site][data-motion] [data-ds="hero"] > :nth-child(4) { animation-delay: calc(var(--ds-stagger) * 3); }
+[data-delsa-site][data-motion] [data-ds="hero"] > :nth-child(n+5) { animation-delay: calc(var(--ds-stagger) * 4); }
+[data-delsa-site][data-motion] [data-ds="hero-visual"] {
+  animation: ds-rise calc(var(--ds-dur-slow) * 1.3) var(--ds-ease-out) both;
+  animation-delay: calc(var(--ds-stagger) * 2);
+}
+
+/* Page-to-page transition: content is remounted per route (key), so it only needs to fade in */
+@keyframes ds-fade { from { opacity: 0; } to { opacity: 1; } }
+[data-delsa-site][data-motion][data-nav] [data-ds="page"] {
+  animation: ds-fade var(--ds-dur-base) var(--ds-ease-out) both;
+}
+
+/* Scroll reveal. Items are visible by default; the client hook arms below-the-fold items only. */
+[data-delsa-site] [data-reveal] {
+  transition:
+    opacity var(--ds-dur-slow) var(--ds-ease-out) calc(var(--i, 0) * var(--ds-stagger)),
+    translate var(--ds-dur-slow) var(--ds-ease-out) calc(var(--i, 0) * var(--ds-stagger)),
+    filter var(--ds-dur-slow) var(--ds-ease-out) calc(var(--i, 0) * var(--ds-stagger)),
+    box-shadow var(--ds-dur-base) var(--ds-ease-out),
+    border-color var(--ds-dur-base) var(--ds-ease-out);
+}
+[data-delsa-site][data-motion-ready] [data-reveal="pending"] {
+  opacity: 0; translate: 0 var(--ds-reveal-distance); filter: blur(var(--ds-reveal-blur));
+}
+[data-delsa-site][data-motion-ready] [data-reveal="pending"][data-ds="media"] img { scale: 1.08; }
+/* After the entrance, drop the stagger delay so hover feedback is immediate */
+[data-delsa-site] [data-reveal="done"] {
+  transition: translate var(--ds-dur-base) var(--ds-ease-out), box-shadow var(--ds-dur-base) var(--ds-ease-out),
+    border-color var(--ds-dur-base) var(--ds-ease-out), background-color var(--ds-dur-base) var(--ds-ease-out);
+}
+
+/* Interactive surfaces */
+[data-delsa-site] [data-ds="card"] {
+  transition: translate var(--ds-dur-base) var(--ds-ease-out), box-shadow var(--ds-dur-base) var(--ds-ease-out),
+    border-color var(--ds-dur-base) var(--ds-ease-out);
+}
+[data-delsa-site] [data-ds="media"] { overflow: hidden; }
+[data-delsa-site] [data-ds="media"] img {
+  transition: scale calc(var(--ds-dur-slow) * 1.4) var(--ds-ease-out);
+}
+[data-delsa-site] [data-ds="button"] {
+  transition: translate var(--ds-dur-fast) var(--ds-ease-out), box-shadow var(--ds-dur-fast) var(--ds-ease-out),
+    background-color var(--ds-dur-fast), color var(--ds-dur-fast), border-color var(--ds-dur-fast);
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-delsa-site][data-motion] [data-ds="card"]:not([data-reveal="pending"]):hover {
+    translate: 0 var(--ds-hover-lift); box-shadow: var(--ds-shadow-2); border-color: var(--ds-accent);
+  }
+  [data-delsa-site][data-motion] [data-ds="card"]:hover [data-ds="media"] img,
+  [data-delsa-site][data-motion] [data-ds="media"]:hover img { scale: var(--ds-media-zoom); }
+  [data-delsa-site][data-motion] [data-ds="button"]:hover { translate: 0 -2px; box-shadow: var(--ds-shadow-2); }
+}
+[data-delsa-site][data-motion] [data-ds="button"]:active { translate: 0 0; scale: .98; }
+[data-delsa-site] [data-ds="button"]:focus-visible,
+[data-delsa-site] [data-ds="card"] a:focus-visible { outline: 2px solid var(--ds-accent); outline-offset: 3px; }
+
+/* Respect the operating-system "reduce motion" setting, whatever the chosen intensity */
+@media (prefers-reduced-motion: reduce) {
+  [data-delsa-site], [data-delsa-site] * {
+    animation: none !important; transition-duration: .01ms !important; transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-delsa-site] [data-reveal] { opacity: 1 !important; translate: none !important; filter: none !important; }
+  [data-delsa-site] [data-ds]:hover, [data-delsa-site] [data-ds] img { translate: none !important; scale: none !important; }
+}
+@media print {
+  [data-delsa-site] [data-reveal] { opacity: 1 !important; translate: none !important; filter: none !important; }
+}
