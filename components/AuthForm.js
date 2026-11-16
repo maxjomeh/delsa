@@ -74,7 +74,16 @@ export default function AuthForm({ mode = 'login', admin = false }) {
         throw new Error('این حساب دسترسی ادمین ندارد.');
       }
       router.replace(profile?.role === 'admin' ? '/admin' : '/dashboard'); router.refresh();
-    } catch (e) { setError(e?.message || 'ورود انجام نشد. دوباره تلاش کن.'); }
+    } catch (e) {
+      const reason = String(e?.message || '');
+      if (signup && /database error saving new user/i.test(reason)) {
+        setError('ثبت‌نام به دلیل خطای ذخیره‌سازی حساب انجام نشد. لطفاً دوباره تلاش کن؛ اگر تکرار شد با پشتیبانی تماس بگیر.');
+      } else if (signup && /user already registered|already been registered/i.test(reason)) {
+        setError('این شماره قبلاً ثبت شده است. از بخش ورود استفاده کن.');
+      } else {
+        setError(reason || (signup ? 'ثبت‌نام انجام نشد. دوباره تلاش کن.' : 'ورود انجام نشد. دوباره تلاش کن.'));
+      }
+    }
     finally { setBusy(false); }
   }
   const setupError = params.get('error') === 'setup';
