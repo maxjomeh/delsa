@@ -12,7 +12,7 @@
   --green:#52d68f;--blue:#7db2ff;--violet:#b39bff;
   --glass:rgba(27,24,21,.74);--hbg:rgba(11,10,9,.9);
   --shadow:0 30px 80px rgba(0,0,0,.55);--cardsh:0 1px 0 rgba(255,255,255,.05) inset;
-  --btn-ink:#1d0e06;
+  --btn-ink:#1d0e06;--ico:#ff6a2f;
   /* bridge to the legacy CSS-module demos (AnimatedCimaInbox / CimaCustomerProfileDemo) */
   --panel:var(--card);--panel2:var(--card2);--muted:var(--mute);--orange:var(--or);--orangeSoft:var(--orsoft);
   --gut:clamp(18px,4vw,40px);
@@ -25,6 +25,7 @@ html[data-theme=light] .hx{
   --or:#f25012;--or2:#c2410c;--or3:#e8590c;--ortxt:#983005;--orsoft:rgba(242,80,18,.14);
   --grad-a:#c2410c;--grad-b:#e8590c;
   --green:#14733f;--blue:#1d56b8;--violet:#5b3fc2;
+  --ico:#d9480f;
   --glass:rgba(255,250,241,.86);--hbg:rgba(250,244,233,.94);
   --shadow:0 28px 70px -28px rgba(70,45,15,.45);--cardsh:0 1px 0 #fff inset,0 18px 40px -26px rgba(70,45,15,.4);
 }
@@ -131,7 +132,9 @@ html[data-theme=light] .hx-stage-glow{opacity:.7}
 .hx-marquee:hover .hx-track{animation-play-state:paused}
 @keyframes hx-marq{to{transform:translateX(-50%)}}
 .hx-ch{direction:rtl;display:inline-flex;align-items:center;gap:11px;padding:13px 28px;border:1.5px solid var(--line);border-radius:99px;background:var(--card);box-shadow:var(--cardsh);font-weight:700;font-size:18px;color:var(--ink)}
-.hx-ch i{width:11px;height:11px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c)}
+.hx-bi{color:var(--ico);flex:none;display:inline-block}
+.hx-bn{display:inline;white-space:nowrap}
+.hx-bn .hx-bi{vertical-align:-.2em;margin-inline-end:.4em}
 
 /* ---------- Stats ---------- */
 .hx-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,2vw,24px);margin-top:clamp(40px,6vw,70px)}
@@ -220,7 +223,7 @@ html[data-theme=light] .hx-stage-glow{opacity:.7}
 .hx-slot{position:absolute;top:50%;left:50%;width:0;height:0;transform:rotate(var(--a)) translateY(calc(var(--r) * -1))}
 .hx-pill{position:absolute;left:0;top:0;display:inline-flex;align-items:center;gap:9px;padding:9px 18px;border:1.5px solid var(--line2);border-radius:99px;background:var(--card);color:var(--ink);font-size:16px;font-weight:700;white-space:nowrap;box-shadow:0 10px 30px -10px rgba(0,0,0,.45);transform:translate(-50%,-50%) rotate(calc(var(--a) * -1));animation:hx-unspin 46s linear infinite}
 .hx-ring.r2 .hx-pill{animation-duration:34s;animation-direction:reverse}
-.hx-pill i{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+
 @keyframes hx-unspin{from{transform:translate(-50%,-50%) rotate(calc(var(--a) * -1))}to{transform:translate(-50%,-50%) rotate(calc(var(--a) * -1 - 360deg))}}
 .hx-orbit .r1 .hx-slot{--r:calc(var(--size)*.48)}
 .hx-orbit .r2 .hx-slot{--r:calc(var(--size)*.3)}

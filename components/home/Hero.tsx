@@ -8,6 +8,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import AnimatedCimaInbox from '../AnimatedCimaInbox';
+import { BrandName } from './BrandIcon';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -156,7 +157,7 @@ export default function Hero() {
 
           <motion.div className="hx-chip a" style={reduce ? undefined : { x: ax, y: ay }} aria-hidden="true">
             <span className="ic"><Check size={18} /></span>
-            <span><b>سفارش ۴۸۳۱ ثبت شد</b><small>از گفت‌وگوی اینستاگرام</small></span>
+            <span><b>سفارش ۴۸۳۱ ثبت شد</b><small>از گفت‌وگوی <BrandName name="اینستاگرام" size={15} /></small></span>
           </motion.div>
           <motion.div className="hx-chip b" style={reduce ? undefined : { x: bx, y: by }} aria-hidden="true">
             <span className="ic"><Flag size={17} /></span>

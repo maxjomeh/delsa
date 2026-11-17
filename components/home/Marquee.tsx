@@ -1,3 +1,5 @@
+import { BrandIcon } from './BrandIcon';
+
 const channels: [string, string][] = [
   ['اینستاگرام', '#e1306c'],
   ['واتساپ', '#25d366'],
@@ -18,7 +20,7 @@ export default function Marquee() {
           <div key={k} style={{ display: 'flex', gap: 14 }}>
             {half.map(([name, color], i) => (
               <span className="hx-ch" key={`${k}-${i}`} style={{ ['--c' as string]: color }}>
-                <i /> {name}
+                <BrandIcon name={name} size={22} /> {name}
               </span>
             ))}
           </div>

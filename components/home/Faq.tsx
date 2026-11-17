@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { BrandText } from './BrandIcon';
 
 export type QA = [string, string];
 
@@ -20,7 +21,7 @@ export default function Faq({ items }: { items: QA[] }) {
               </button>
             </h3>
             <div className="hx-q-body" id={`hx-a-${i}`} role="region" aria-labelledby={`hx-q-${i}`}>
-              <div><p>{a}</p></div>
+              <div><p><BrandText text={a} /></p></div>
             </div>
           </div>
         );

@@ -2,6 +2,7 @@
 
 import {useEffect,useRef,useState} from 'react';
 import {Activity,CalendarDays,CheckCircle2,ChevronLeft,Database,Heart,MessageCircle,PackageCheck,Phone,Plus,ShoppingBag,Sparkles,UserRound} from 'lucide-react';
+import {BrandName} from './home/BrandIcon';
 import styles from './CimaCustomerProfileDemo.module.css';
 
 const examples=[
@@ -63,12 +64,12 @@ export default function CimaCustomerProfileDemo(){
     <div className={styles.cardTop}><div className={styles.cardBrand}><span className={styles.onlineDot}/> DELSA CRM</div><span className={styles.cardTag}><UserRound size={12}/> پرونده مشتری</span></div>
     <div className={styles.identity}>
      <div className={styles.profileAvatar}>{customer.initial}</div>
-     <div className={styles.profileTitle}><strong>{customer.name}</strong><small>{customer.channel} · {customer.last}</small></div>
+     <div className={styles.profileTitle}><strong>{customer.name}</strong><small><BrandName name={customer.channel} size={14}/><br/>{customer.last}</small></div>
      <span className={styles.status}>{customer.status}</span>
     </div>
     <div className={styles.fieldHeader}><span>اطلاعات مشتری</span><span className={styles.fieldCount}>{(customer.fields.length+customer.details.length).toLocaleString('fa-IR')} فیلد</span></div>
     <div className={styles.fields}>
-     {customer.fields.map(([label,value],i)=><div className={styles.field+' '+(step>=1?styles.visible:'')} key={label} style={{'--delay':(i*95)+'ms'}}><small>{label}</small>{label==='شماره تماس'?<b className={styles.phone} dir="ltr"><bdi>{value}</bdi></b>:<b>{value}</b>}</div>)}
+     {customer.fields.map(([label,value],i)=><div className={styles.field+' '+(step>=1?styles.visible:'')} key={label} style={{'--delay':(i*95)+'ms'}}><small>{label}</small>{label==='شماره تماس'?<b className={styles.phone} dir="ltr"><bdi>{value}</bdi></b>:label==='کانال ارتباطی'?<b><BrandName name={value} size={16}/></b>:<b>{value}</b>}</div>)}
     </div>
     <div className={styles.dynamicHeader+' '+(step>=2?styles.visible:'')}><span><Sparkles size={13}/> فیلدهای اختصاصی</span><span className={styles.autoBadge}>اطلاعات تکمیلی</span></div>
     <div className={styles.dynamic}>

@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {CheckCheck,MessageCircle,ShieldCheck,Sparkles} from 'lucide-react';
+import {BrandIcon} from './home/BrandIcon';
 import styles from './AnimatedCimaInbox.module.css';
 
 const conversations=[
@@ -124,7 +125,7 @@ export default function AnimatedCimaInbox(){
     <div className={styles.contacts}>
      {conversations.map(c=><button key={c.id} type="button" className={styles.contact+' '+(c.id===activeId?styles.selected:'')} aria-pressed={c.id===activeId} onClick={()=>select(c.id)}>
       <span className={styles.avatar}>{c.initial}</span>
-      <span className={styles.contactCopy}><strong>{c.name}</strong><small>{c.last}</small><span className={styles.channel+' '+styles[c.channelKey]}>{c.channel}</span></span>
+      <span className={styles.contactCopy}><strong>{c.name}</strong><small>{c.last}</small><span className={styles.channel+' '+styles[c.channelKey]}><BrandIcon name={c.channel} size={13}/>{c.channel}</span></span>
       <span className={styles.contactMeta}><small><bdi dir="ltr">{demoClock(c.id,c.messages.length-1)}</bdi></small>{c.unread>0&&<b>{c.unread.toLocaleString('fa-IR')}</b>}</span>
      </button>)}
     </div>
@@ -133,7 +134,7 @@ export default function AnimatedCimaInbox(){
    <div className={styles.chat}>
     <div className={styles.chatHeader}>
      <span className={styles.avatar}>{active.initial}</span>
-     <span className={styles.person}><strong>{active.name}</strong><small><span className={styles.channel+' '+styles[active.channelKey]}>{active.channel}</span> · گفت‌وگوی نمونه</small></span>
+     <span className={styles.person}><strong>{active.name}</strong><small><span className={styles.channel+' '+styles[active.channelKey]}><BrandIcon name={active.channel} size={13}/>{active.channel}</span> · گفت‌وگوی نمونه</small></span>
      <span className={styles.chatStatus}><span className={styles.dot}/> فعال</span>
     </div>
     <div key={cycle} className={styles.messages} ref={scrollRef} aria-live="off">

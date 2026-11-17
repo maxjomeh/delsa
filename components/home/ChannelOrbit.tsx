@@ -1,3 +1,5 @@
+import { BrandIcon } from './BrandIcon';
+
 const outer = ['اینستاگرام', 'واتساپ', 'تلگرام', 'بله'];
 const inner = ['ایتا', 'روبیکا', 'سروش'];
 
@@ -7,14 +9,14 @@ export default function ChannelOrbit() {
       <div className="hx-ring r1">
         {outer.map((n, i) => (
           <div className="hx-slot" key={n} style={{ ['--a' as string]: `${i * 90 + 20}deg` }}>
-            <span className="hx-pill"><i />{n}</span>
+            <span className="hx-pill"><BrandIcon name={n} size={20} />{n}</span>
           </div>
         ))}
       </div>
       <div className="hx-ring r2">
         {inner.map((n, i) => (
           <div className="hx-slot" key={n} style={{ ['--a' as string]: `${i * 120 + 50}deg` }}>
-            <span className="hx-pill"><i />{n}</span>
+            <span className="hx-pill"><BrandIcon name={n} size={20} />{n}</span>
           </div>
         ))}
       </div>
