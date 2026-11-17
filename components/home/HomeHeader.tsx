@@ -14,7 +14,10 @@ const links = [
   { href: '/pricing', label: 'تعرفه' },
 ];
 
-export default function HomeHeader() {
+/** On the homepage hash links scroll in place; on other pages they point back to the homepage sections. */
+const resolve = (href: string, home: boolean) => (href.startsWith('#') && !home ? '/' + href : href);
+
+export default function HomeHeader({ home = true }: { home?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { scrollY, scrollYProgress } = useScroll();
@@ -30,7 +33,7 @@ export default function HomeHeader() {
         </Link>
         <nav className="hx-nav" aria-label="منوی اصلی">
           {links.map((l) => (
-            <Link key={l.href} href={l.href}>{l.label}</Link>
+            <Link key={l.href} href={resolve(l.href, home)}>{l.label}</Link>
           ))}
         </nav>
         <div className="hx-header-actions">
@@ -60,7 +63,7 @@ export default function HomeHeader() {
             transition={{ duration: 0.22 }}
           >
             {links.map((l) => (
-              <Link key={l.href} href={l.href} onClick={() => setOpen(false)}>{l.label}</Link>
+              <Link key={l.href} href={resolve(l.href, home)} onClick={() => setOpen(false)}>{l.label}</Link>
             ))}
             <Link className="hx-btn hx-btn-primary" href="/login" onClick={() => setOpen(false)}>
               ورود به پنل <ArrowUpLeft size={16} />

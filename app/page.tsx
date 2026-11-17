@@ -3,6 +3,7 @@ import '@fontsource/vazirmatn/800.css';
 import Link from 'next/link';
 import { ArrowLeft, ArrowUpLeft, Check } from 'lucide-react';
 import HomeHeader from '../components/home/HomeHeader';
+import SiteFooter from '../components/home/SiteFooter';
 import Hero from '../components/home/Hero';
 import Marquee from '../components/home/Marquee';
 import Stats from '../components/home/Stats';
@@ -122,17 +123,7 @@ export default function Home() {
           </section>
         </main>
 
-        <footer className="hx-footer">
-          <div className="hx-wrap hx-foot-grid">
-            <div className="hx-foot-about">
-              <Link href="/" className="hx-brand"><img src="/delsa-mark.svg" alt="" width={34} height={34} />DELSA</Link>
-              <p>Digital Engagement Layer System Automation</p>
-            </div>
-            <div><h4>محصولات</h4><a href="#cima">CIMA · CRM</a><a href="#apu">APU</a><Link href="/store">فروشگاه</Link></div>
-            <div><h4>دلسا</h4><a href="#how">نحوهٔ کار</a><a href="#channels">کانال‌ها</a><Link href="/pricing">تعرفه</Link></div>
-            <div><h4>حساب</h4><Link href="/login">ورود به پنل</Link><Link href="/signup">ساخت حساب</Link><Link href="/admin/login">ورود مدیر</Link></div>
-          </div>
-        </footer>
+        <SiteFooter />
       </div>
     </>
   );

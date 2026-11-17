@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '../lib/supabase/client';
 import { ArrowUpLeft, Eye, EyeOff, LoaderCircle, ShieldCheck } from 'lucide-react';
+import '../app/home.css';
+import HomeHeader from './home/HomeHeader';
 
 
 function normalizePhone(value) {
@@ -87,7 +89,7 @@ export default function AuthForm({ mode = 'login', admin = false }) {
     finally { setBusy(false); }
   }
   const setupError = params.get('error') === 'setup';
-  return <main className="auth-screen"><div className="auth-glow"/><Link href="/" className="auth-brand"><img src="/delsa-mark.svg" alt=""/><b>DELSA</b></Link><section className="auth-card">
+  return <div className="hx"><HomeHeader home={false}/><main className="auth-screen"><div className="auth-glow"/><section className="auth-card">
     <span className="auth-kicker">{admin ? <><ShieldCheck size={15}/> فضای مدیریت</> : 'DELSA / APU'}</span>
     <h1>{signup ? 'حساب دلسا را بساز' : admin ? 'ورود مدیر' : 'خوش برگشتی'}</h1>
     <p>{signup ? 'برای دسترسی به محیط APU، حساب کاربری‌ات را بساز.' : admin ? 'با شماره‌ای وارد شو که دسترسی مدیر برای آن فعال شده است.' : 'برای ادامه به فضای کاری امن دلسا وارد شو.'}</p>
@@ -99,10 +101,10 @@ export default function AuthForm({ mode = 'login', admin = false }) {
 {signup && <label>تکرار رمز عبور<div className="auth-password-wrap"><input name="password_confirmation" type={showPasswordConfirmation ? 'text' : 'password'} autoComplete="new-password" minLength={8} required placeholder="رمز عبور را دوباره وارد کن"/><button className="auth-password-toggle" type="button" onClick={() => setShowPasswordConfirmation((visible) => !visible)} aria-label={showPasswordConfirmation ? 'مخفی کردن رمز عبور' : 'نمایش رمز عبور'} aria-pressed={showPasswordConfirmation}>{showPasswordConfirmation ? <EyeOff size={18}/> : <Eye size={18}/>}</button></div></label>}
 
       {error && <div className="auth-error" role="alert">{error}</div>}{message && <div className="auth-success" role="status">{message}</div>}
-      <button className="button primary auth-submit" disabled={busy || !configured}>{busy ? <LoaderCircle className="spin" size={18}/> : signup ? 'ساخت حساب' : 'ورود امن'}<ArrowUpLeft size={18}/></button>
+      <button className="hx-btn hx-btn-primary auth-submit" disabled={busy || !configured}>{busy ? <LoaderCircle className="spin" size={18}/> : signup ? 'ساخت حساب' : 'ورود امن'}<ArrowUpLeft size={18}/></button>
     </form>
     {!admin && <div className="auth-switch">{signup ? <>حساب داری؟ <Link href="/login">ورود</Link></> : <>حساب نداری؟ <Link href="/signup">ثبت‌نام</Link></>}</div>}
     {admin && <div className="auth-switch"><Link href="/login">بازگشت به ورود کاربر</Link></div>}
     <small className="auth-legal">ورود با شماره تماس و رمز عبور · شماره با پیامک تأیید نمی‌شود و کدی ارسال نمی‌شود.</small>
-  </section><Link href="/" className="auth-back">بازگشت به سایت <ArrowUpLeft size={15}/></Link></main>;
+  </section><Link href="/" className="auth-back">بازگشت به سایت <ArrowUpLeft size={15}/></Link></main></div>;
 }
