@@ -45,7 +45,9 @@ node supabase/tests/book-isbn.test.cjs      # ISBN، نرمال‌سازی، Ope
 `run.sh` یک خوشه‌ی موقت Postgres می‌سازد، لایه‌ی سازگاری Supabase (`shim.sql`) و فایل‌های SQL موجود پروژه را اعمال می‌کند و بعد تست‌ها را می‌دوانَد. تست‌های SQL موجود (`site-builder-access`، `builder-commerce`) هم روی همین محیط پاس می‌شوند:
 `supabase/tests/local-postgres/run.sh supabase/tests/site-builder-access.sql`.
 
-## اعمال روی production (پس از تأیید)
+## اعمال روی production
+
+**وضعیت:** `supabase/book-catalog.sql` در ۱۷ آبان ۱۴۰۵ (۲۰۲۶-۱۱-۱۷) در SQL Editor پروژه‌ی `delsa-backend` اجرا شد (Success). بررسی بعدی: ۸ جدول، ۷ تابع و `book_isbn13('0-306-40615-2')` درست بود. مرحله‌ی ۳ (تست دسترسی) هنوز انجام نشده است.
 
 1. پروژه‌ی Supabase مربوط به delsaai را در SQL Editor باز کنید (یا با کانکتور Supabase).
 2. `supabase/book-catalog.sql` را یک بار اجرا کنید (افزونه‌ی `pg_trgm` لازم است و در Supabase در دسترس است).

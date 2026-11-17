@@ -1,5 +1,5 @@
 -- DELSA book catalog (site-builder phase 3b).
--- PENDING EXPLICIT APPROVAL: not applied to production. Tested only on a local Postgres
+-- APPLIED to the delsa-backend database on 2026-11-17 (run once; the file is not idempotent). Tested on a local Postgres
 -- (see supabase/tests/local-postgres/run.sh and supabase/tests/book-catalog.sql).
 --
 -- Design
