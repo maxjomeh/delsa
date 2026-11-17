@@ -23,7 +23,7 @@ export default function Zdog3D() {
       const cream = '#fbf7ef';
       const illo = new Zdog.Illustration({
         element: canvas,
-        zoom: 1.5,
+        zoom: 1.12,
         dragRotate: true,
         onDragStart: () => { swaying = false; },
         onDragEnd: () => { swaying = true; },

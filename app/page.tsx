@@ -52,7 +52,7 @@ export default function Home() {
             </div>
           </section>
 
-          <section id="how" className="hx-sec hx-steps-sec hx-inv">
+          <section id="how" className="hx-sec hx-steps-sec hx-alt">
             <div className="hx-wrap">
               <Reveal className="hx-center">
                 <span className="hx-eyebrow"><i /> یک مسیر پیوسته برای فروش پیام‌محور</span>
@@ -104,7 +104,7 @@ export default function Home() {
           <section className="hx-sec" style={{ paddingBlock: 'clamp(30px,5vw,60px) 0' }}>
             <div className="hx-wrap">
               <Reveal>
-                <div className="hx-cta hx-inv">
+                <div className="hx-cta">
                   <div className="hx-cta-copy">
                     <span className="hx-eyebrow"><i /> DELSA · CIMA</span>
                     <h2>هر گفت‌وگو را به <span className="hx-grad">شناخت بهتر مشتری</span> تبدیل کن.</h2>
@@ -121,7 +121,7 @@ export default function Home() {
           </section>
         </main>
 
-        <footer className="hx-footer hx-inv">
+        <footer className="hx-footer">
           <div className="hx-wrap hx-foot-grid">
             <div className="hx-foot-about">
               <Link href="/" className="hx-brand"><img src="/delsa-mark.svg" alt="" width={34} height={34} />DELSA</Link>
