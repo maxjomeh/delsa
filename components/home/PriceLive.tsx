@@ -97,7 +97,8 @@ export default function PriceLive() {
               <div className="pr">{toman(r.store)}</div>
               <div className={'pr' + (r.tick ? ' hx-flash' : '')} key={r.id + '-' + r.tick}>
                 {toman(r.source)}
-                {r.dir !== 0 && st !== 'ignored' && <small className={r.dir > 0 ? 'up' : 'dn'}>{r.dir > 0 ? '▲' : '▼'} {fa(Math.round(diffPct(r)))}٪</small>}
+                {/* always rendered (hidden when unused) so the row height never changes */}
+                {(() => { const show = r.dir !== 0 && st !== 'ignored'; return <small className={r.dir < 0 ? 'dn' : 'up'} style={{ visibility: show ? 'visible' : 'hidden' }} aria-hidden={!show}>{r.dir < 0 ? '▼' : '▲'} {fa(Math.round(diffPct(r)) || 1)}٪</small>; })()}
               </div>
               <div className="st-wrap">
                 <div className="hx-st">

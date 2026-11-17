@@ -136,18 +136,26 @@ export default function AnimatedCimaInbox(){
      <span className={styles.person}><strong>{active.name}</strong><small><span className={styles.channel+' '+styles[active.channelKey]}>{active.channel}</span> · گفت‌وگوی نمونه</small></span>
      <span className={styles.chatStatus}><span className={styles.dot}/> فعال</span>
     </div>
-    <div key={activeId+'-'+cycle} className={styles.messages} ref={scrollRef} aria-live="off">
-     {active.messages.slice(0,visible).map((m,i)=><div key={i} className={styles.messageRow+' '+(m.from==='ai'?styles.aiRow:styles.customerRow)}>
-      <div className={styles.bubble+' '+(m.from==='ai'?styles.aiBubble:styles.customerBubble)}>
-       {m.from==='ai'&&<span className={styles.sender}><Sparkles size={11}/> دستیار دلسا</span>}
-       <span>{m.text}</span>
-       <span className={styles.receipt}>{m.from==='ai'?<CheckCheck size={11}/>:null} <bdi dir="ltr">{demoClock(active.id,i)}</bdi></span>
-      </div>
-     </div>)}
-     {typing&&active.messages[visible]&&<div className={styles.messageRow+' '+(active.messages[visible].from==='customer'?styles.customerRow:styles.aiRow)}><span className={styles.typing+' '+(active.messages[visible].from==='customer'?styles.customerTyping:styles.aiTyping)} role="status" aria-label={active.messages[visible].from==='customer'?'مشتری در حال تایپ است':'دستیار دلسا در حال تایپ است'}><i/><i/><i/></span></div>}
+    <div key={cycle} className={styles.messages} ref={scrollRef} aria-live="off">
+     {/* All conversations are mounted and stacked so the box is always as tall as the longest one
+         (no layout shift while messages arrive); only received messages are visible. */}
+     {conversations.map(c=>{const on=c.id===activeId;return <div key={c.id} className={styles.stackItem+(on?' '+styles.stackOn:'')} aria-hidden={!on}>
+      {c.messages.map((m,i)=>{
+       const shown=on&&i<visible,typingHere=on&&typing&&i===visible;
+       return <div key={i} className={styles.messageRow+' '+(m.from==='ai'?styles.aiRow:styles.customerRow)+' '+(shown?styles.shown:styles.pending)+(typingHere?' '+styles.pendingTyping:'')}>
+        <div className={styles.bubble+' '+(m.from==='ai'?styles.aiBubble:styles.customerBubble)}>
+         {m.from==='ai'&&<span className={styles.sender}><Sparkles size={11}/> دستیار دلسا</span>}
+         <span>{m.text}</span>
+         <span className={styles.receipt}>{m.from==='ai'?<CheckCheck size={11}/>:null} <bdi dir="ltr">{demoClock(c.id,i)}</bdi></span>
+        </div>
+        {typingHere&&<span className={styles.typing+' '+styles.typingOverlay+' '+(m.from==='customer'?styles.customerTyping:styles.aiTyping)} role="status" aria-label={m.from==='customer'?'مشتری در حال تایپ است':'دستیار دلسا در حال تایپ است'}><i/><i/><i/></span>}
+       </div>})}
+     </div>})}
     </div>
     <div className={styles.insight}>
-     {complete?<><div className={styles.insightTitle}><Sparkles size={13}/><strong>{active.review?'نیازمند بررسی انسانی':'پاسخ پیشنهادی آماده'}</strong></div><p>{active.status}</p><small><ShieldCheck size={12}/> نمونه نمایشی؛ هیچ پیامی ارسال نمی‌شود</small></>:<><div className={styles.insightTitle}><Sparkles size={13}/><strong>دستیار هوشمند فعال است</strong></div><p>در حال نمایش مرحله‌به‌مرحله مکالمه…</p></>}
+     {/* every possible state is mounted and stacked, so the box height never changes */}
+     <div className={styles.insightLayer+(complete?'':' '+styles.layerOn)} aria-hidden={complete}><div className={styles.insightTitle}><Sparkles size={13}/><strong>دستیار هوشمند فعال است</strong></div><p>در حال نمایش مرحله‌به‌مرحله مکالمه…</p></div>
+     {conversations.map(c=>{const on=complete&&c.id===activeId;return <div key={c.id} className={styles.insightLayer+(on?' '+styles.layerOn:'')} aria-hidden={!on}><div className={styles.insightTitle}><Sparkles size={13}/><strong>{c.review?'نیازمند بررسی انسانی':'پاسخ پیشنهادی آماده'}</strong></div><p>{c.status}</p><small><ShieldCheck size={12}/> نمونه نمایشی؛ هیچ پیامی ارسال نمی‌شود</small></div>})}
     </div>
    </div>
   </div>
