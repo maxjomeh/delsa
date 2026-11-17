@@ -14,9 +14,9 @@
 .contact{width:100%;border:0;border-bottom:1.5px solid var(--line);background:transparent;text-align:right;display:flex;align-items:flex-start;gap:10px;padding:14px 12px;color:var(--ink);transition:background .28s ease,box-shadow .28s ease}
 .contact:hover{background:color-mix(in srgb,var(--orange) 8%,var(--panel2))}
 .selected{background:color-mix(in srgb,var(--orange) 14%,var(--panel2));box-shadow:inset 4px 0 var(--orange)}
-.avatar{display:grid;place-items:center;width:38px;height:38px;min-width:38px;border-radius:50%;background:color-mix(in srgb,var(--orange) 18%,var(--panel));color:var(--ortxt,var(--orange));font-size:16px;font-weight:700}
 .contactCopy{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;flex:1}
 .contactCopy strong{font-size:15px;line-height:1.6;white-space:nowrap}
+.nameFirst{display:none}
 .contactCopy>small{width:100%;font-size:13px;line-height:1.8;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .contactMeta{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0}
 .contactMeta small{font-size:13px;color:var(--muted);white-space:nowrap}
@@ -82,39 +82,35 @@
  .avatar{width:34px;height:34px;min-width:34px;font-size:15px}
  .contactMeta small{display:none}
 }
-/* Phone: same two-column composition as desktop (names on the right, chat on the left),
-   compact but real-size — no scaling; every text stays >= 12px. */
+/* Phone: same two-column composition as desktop (a slim names rail on the right, a wide chat on the left).
+   Real-size text (>= 13px), no scaling. The rail is sticky so it stays beside the chat while you read. */
 @media(max-width:640px){
- .frame{height:auto;border-radius:16px;box-shadow:0 10px 32px #0000001f}
+ .frame{height:auto;border-radius:16px;box-shadow:0 10px 32px #0000001f;overflow:clip}
  .top{height:50px;min-height:50px;padding:0 14px}
  .topTitle small{display:none}
- .body{display:grid;grid-template-columns:minmax(0,38%) minmax(0,62%);flex:none}
+ .body{display:grid;grid-template-columns:minmax(80px,25%) minmax(0,1fr);flex:none}
  .inbox{flex:none;overflow:visible}
- .inboxLabel{padding:10px 8px;font-size:13px}
+ .inboxLabel{padding:11px 4px;justify-content:center;font-size:13px}
  .inboxLabel span:last-child,.inboxNote{display:none}
- .contacts{overflow:visible;flex:none}
- .contact{flex-direction:column;align-items:center;text-align:center;gap:4px;padding:13px 5px}
- .contact .avatar{width:34px;height:34px;min-width:34px;font-size:15px}
- .contactCopy{align-items:center;gap:4px;flex:none;width:100%}
+ .contacts{position:sticky;top:86px;overflow:visible;flex:none}
+ .contact{flex-direction:column;align-items:center;text-align:center;gap:7px;padding:14px 4px}
+ .contactCopy{align-items:center;gap:0;flex:none;width:100%}
  .contactCopy strong{font-size:14px;white-space:normal;line-height:1.5}
- .contactCopy>small,.contactMeta{display:none}
- .channel{align-self:center;font-size:13px;padding:0 7px}
+ .nameFull,.contactCopy>small,.contactCopy .channel,.contactMeta,.sampleTag,.chatStatus{display:none}
+ .nameFirst{display:inline}
  .chat{flex:none;overflow:visible}
- .chatHeader{min-height:0;padding:11px 10px;gap:8px}
- .chatHeader .avatar{width:34px;height:34px;min-width:34px;font-size:15px}
- .person strong{font-size:15px}
- .person small{gap:4px;min-height:52px;align-content:flex-start}
- .chatStatus{display:none}
- .messages{flex:none;overflow:visible;overscroll-behavior:auto;padding:12px 10px;display:grid}
+ .chatHeader{min-height:0;padding:11px 12px;gap:10px}
+ .person strong{font-size:16px}
+ .person small{gap:4px;min-height:0}
+ .messages{flex:none;overflow:visible;overscroll-behavior:auto;padding:12px;display:grid}
  .stackItem{grid-area:1/1;display:flex;gap:10px;visibility:hidden}
  .stackOn{visibility:visible}
  .pending{display:flex;visibility:hidden}
  .pendingTyping .bubble{display:flex}
  .typingOverlay{position:absolute;top:0;visibility:visible}
- .bubble{max-width:100%;font-size:14px;line-height:1.85;padding:9px 11px}
+ .bubble{max-width:100%;font-size:15px;line-height:1.85;padding:10px 13px}
  .sender{font-size:13px}
- .insight{margin:0 8px 8px;min-height:0;padding:10px 11px}
- .insight p{font-size:13px}
+ .insight{margin:0 10px 10px;min-height:0;padding:10px 13px}
 }
 /* insight layers: grid-stacked so the tallest state sets the height */
 .insight{display:grid}

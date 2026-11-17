@@ -311,6 +311,13 @@ html[data-theme=light] .hx-cta{background:radial-gradient(ellipse at 80% 0%,rgba
 .hx-foot-grid a.hx-brand{display:inline-flex;padding:0;color:var(--ink);font-size:21px}
 .hx-foot-about p{margin-top:14px;font-size:15px;max-width:320px;font-family:Arial,sans-serif;direction:ltr;text-align:right;color:var(--dim)}
 
+
+/* ---------- Customer avatars (messenger-profile look) ---------- */
+.hx-cav{position:relative;display:inline-block;flex:none;width:var(--av,40px);height:var(--av,40px);vertical-align:middle}
+.hx-cav-pic{display:block;width:100%;height:100%;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px var(--card,#fff),0 0 0 3.5px var(--line2)}
+.hx-cav-pic svg{display:block;width:100%;height:100%}
+.hx-cav-badge{position:absolute;inset-inline-end:-3px;bottom:-3px;width:var(--bd,18px);height:var(--bd,18px);display:grid;place-items:center;border-radius:50%;background:var(--card,#fff);box-shadow:0 0 0 1.5px var(--line2)}
+
 /* ---------- Responsive ---------- */
 @media(max-width:1100px){
   .hx-nav{display:none}.hx-menu-btn{display:grid}
@@ -335,7 +342,7 @@ html[data-theme=light] .hx-cta{background:radial-gradient(ellipse at 80% 0%,rgba
   .hx-brand{font-size:19px}
   .hx-h1{font-size:clamp(40px,11.5vw,54px);margin-top:20px}
   .hx-actions .hx-btn{flex:1 1 160px}
-  .hx-device{height:auto;min-height:0}
+  .hx-device{height:auto;min-height:0;overflow:clip}
   .hx-chip{padding:9px 13px;gap:10px;border-radius:14px}
   .hx-chip b{font-size:14px}.hx-chip small{display:none}.hx-chip .ic{width:32px;height:32px;border-radius:10px}
   .hx-chip.a{top:-44px;inset-inline-end:4%}.hx-chip.b{display:none}.hx-chip.c{bottom:-26px;inset-inline-end:4%}

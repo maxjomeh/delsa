@@ -40,8 +40,11 @@ export default function Hero() {
       const tl = gsap.timeline({ scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom top', scrub: 0.5 } });
       tl.to('.hx-aurora', { yPercent: 18, ease: 'none' }, 0)
         .to('.hx-blob.b', { x: -90, ease: 'none' }, 0)
-        .to('.hx-copy', { y: -50, ease: 'none' }, 0)
-        .to('.hx-par-stage', { y: -80, ease: 'none' }, 0);
+        .to('.hx-copy', { y: -50, ease: 'none' }, 0);
+    });
+    // The device drifts only in the two-column desktop layout; on phones it must stay put (the names rail is sticky).
+    mm.add('(prefers-reduced-motion: no-preference) and (min-width: 1101px)', () => {
+      gsap.to('.hx-par-stage', { y: -80, ease: 'none', scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom top', scrub: 0.5 } });
     });
   }, { scope: ref });
 

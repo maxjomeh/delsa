@@ -4,6 +4,7 @@ import type { PointerEvent, ReactNode } from 'react';
 import { Activity, CreditCard, Layers3, MessageCircle, RefreshCw, ShoppingBag, Sparkles, UserRound } from 'lucide-react';
 import Reveal from './Reveal';
 import TiltCard from './TiltCard';
+import CustomerAvatar from './CustomerAvatar';
 
 function spot(e: PointerEvent<HTMLElement>) {
   if (e.pointerType === 'touch') return;
@@ -63,7 +64,7 @@ const features: Feature[] = [
     icon: <UserRound size={18} />,
     visual: (
       <div className="hx-prof">
-        <span className="hx-av">م</span>
+        <CustomerAvatar name="مریم احمدی" channel="اینستاگرام" size={76} />
         <div className="hx-tags"><span>علاقه‌مندی</span><span>آخرین سفارش</span><span>روش ارسال</span><span>سابقهٔ گفت‌وگو</span></div>
       </div>
     ),

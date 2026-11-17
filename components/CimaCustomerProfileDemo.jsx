@@ -3,6 +3,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {Activity,CalendarDays,CheckCircle2,ChevronLeft,Database,Heart,MessageCircle,PackageCheck,Phone,Plus,ShoppingBag,Sparkles,UserRound} from 'lucide-react';
 import {BrandName} from './home/BrandIcon';
+import CustomerAvatar from './home/CustomerAvatar';
 import styles from './CimaCustomerProfileDemo.module.css';
 
 const examples=[
@@ -63,7 +64,7 @@ export default function CimaCustomerProfileDemo(){
    <div className={styles.card} key={customer.id}>
     <div className={styles.cardTop}><div className={styles.cardBrand}><span className={styles.onlineDot}/> DELSA CRM</div><span className={styles.cardTag}><UserRound size={12}/> پرونده مشتری</span></div>
     <div className={styles.identity}>
-     <div className={styles.profileAvatar}>{customer.initial}</div>
+     <span className={styles.profileAvatar}><CustomerAvatar name={customer.name} channel={customer.channel} size={62}/></span>
      <div className={styles.profileTitle}><strong>{customer.name}</strong><small><BrandName name={customer.channel} size={14}/><br/>{customer.last}</small></div>
      <span className={styles.status}>{customer.status}</span>
     </div>
