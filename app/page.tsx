@@ -13,6 +13,7 @@ import ChannelOrbit from '../components/home/ChannelOrbit';
 import PriceLive from '../components/home/PriceLive';
 import Faq, { type QA } from '../components/home/Faq';
 import Zdog3D from '../components/home/Zdog3D';
+import { BrandText } from '../components/home/BrandIcon';
 import CimaCustomerProfileDemo from '../components/CimaCustomerProfileDemo';
 
 const faq: QA[] = [
@@ -68,7 +69,7 @@ export default function Home() {
               <Reveal>
                 <span className="hx-eyebrow"><i /> کانال‌های ارتباطی</span>
                 <h2 className="hx-h2">یک پنل برای<br /><span className="hx-grad">پیام‌رسان‌های مختلف</span></h2>
-                <p className="hx-lead">طبق معرفی سیستم دلسا، اتصال اینستاگرام، واتساپ، تلگرام، بله، ایتا، روبیکا و سروش آمادهٔ استفاده است؛ گفت‌وگوها از هر مسیر در فضای مشترک مدیریت می‌شوند.</p>
+                <p className="hx-lead"><BrandText text="طبق معرفی سیستم دلسا، اتصال اینستاگرام، واتساپ، تلگرام، بله، ایتا، روبیکا و سروش آمادهٔ استفاده است؛ گفت‌وگوها از هر مسیر در فضای مشترک مدیریت می‌شوند." size={19} /></p>
               </Reveal>
               <Reveal delay={0.12}><ChannelOrbit /></Reveal>
             </div>
