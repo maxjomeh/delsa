@@ -3,6 +3,7 @@
 import { animate, useInView, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { fa } from './fa';
+import TiltCard from './TiltCard';
 
 function Count({ to }: { to: number }) {
   const ref = useRef<HTMLElement>(null);
@@ -28,10 +29,10 @@ export default function Stats() {
   return (
     <div className="hx-stats">
       {items.map(([n, label]) => (
-        <div className="hx-stat" key={label}>
+        <TiltCard className="hx-stat" key={label} max={9}>
           <Count to={n} />
           <span>{label}</span>
-        </div>
+        </TiltCard>
       ))}
     </div>
   );

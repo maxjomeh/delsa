@@ -58,8 +58,6 @@ const demoClock=(conversationId,index)=>{
  const minutes=values[Math.min(index,values.length-1)];
  return persianDigits(String(Math.floor(minutes/60)).padStart(2,'0')+':'+String(minutes%60).padStart(2,'0'));
 };
-const BASE_WIDTH=640;
-const BASE_HEIGHT=520;
 
 export default function AnimatedCimaInbox(){
  const [activeId,setActiveId]=useState(conversations[0].id);
@@ -69,26 +67,7 @@ export default function AnimatedCimaInbox(){
  const [switching,setSwitching]=useState(false);
  const [reduced,setReduced]=useState(false);
  const scrollRef=useRef(null);
- const viewportRef=useRef(null);
- const [mobileSizing,setMobileSizing]=useState({mobile:false,scale:1});
  const active=useMemo(()=>conversations.find(c=>c.id===activeId)||conversations[0],[activeId]);
- useEffect(()=>{
-  const node=viewportRef.current;
-  if(!node)return;
-  const media=window.matchMedia('(max-width: 600px)');
-  const update=()=>{
-   const mobile=media.matches;
-   const availableWidth=node.clientWidth||BASE_WIDTH;
-   const scale=mobile?Math.min(1,availableWidth/BASE_WIDTH):1;
-   setMobileSizing(prev=>prev.mobile===mobile&&Math.abs(prev.scale-scale)<0.001?prev:{mobile,scale});
-  };
-  update();
-  const observer=typeof ResizeObserver!=='undefined'?new ResizeObserver(update):null;
-  observer?.observe(node);
-  media.addEventListener?.('change',update);
-  window.addEventListener('resize',update);
-  return()=>{observer?.disconnect();media.removeEventListener?.('change',update);window.removeEventListener('resize',update)};
- },[]);
  useEffect(()=>{
   const media=window.matchMedia('(prefers-reduced-motion: reduce)');
   const sync=()=>setReduced(media.matches);sync();
@@ -129,12 +108,11 @@ export default function AnimatedCimaInbox(){
  useEffect(()=>{
   const el=scrollRef.current;
   if(!el)return;
-  if(mobileSizing.mobile){el.scrollTop=0;return;}
   el.scrollTo({top:el.scrollHeight,behavior:reduced?'auto':'smooth'});
- },[visible,typing,activeId,reduced,mobileSizing.mobile]);
+ },[visible,typing,activeId,reduced]);
  const select=id=>{setSwitching(true);window.setTimeout(()=>{if(id===activeId){setCycle(v=>v+1)}else setActiveId(id)},220)};
  const complete=visible>=active.messages.length;
- return <div className={styles.viewport} ref={viewportRef} style={{'--demo-scale':mobileSizing.scale,'--demo-height':mobileSizing.mobile?(BASE_HEIGHT*mobileSizing.scale)+'px':undefined}}>
+ return <div className={styles.viewport}>
   <section className={styles.frame} dir="rtl" aria-label="دموی تعاملی صندوق ورودی CIMA">
   <header className={styles.top}>
    <div className={styles.topTitle}><span className={styles.dot}/><strong>صندوق ورودی CIMA</strong><small>دموی تعاملی · پیام‌های نمونه</small></div>

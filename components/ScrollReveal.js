@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 // hundreds of CRM customers). An IntersectionObserver threshold on the whole
 // section would never be met and could hide the entire application.
 const MARKETING_SELECTOR =
-  'main > section:not(.apu-hero), .apu-demo, .steps-grid > article, .soon-list > div, .faq details';
+  'main > section:not(.apu-hero):not(.hx-hero):not(.hx-sec), .apu-demo, .steps-grid > article, .soon-list > div, .faq details';
 
 export default function ScrollReveal() {
   const pathname = usePathname();

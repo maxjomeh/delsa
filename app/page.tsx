@@ -12,6 +12,7 @@ import Steps from '../components/home/Steps';
 import ChannelOrbit from '../components/home/ChannelOrbit';
 import PriceLive from '../components/home/PriceLive';
 import Faq, { type QA } from '../components/home/Faq';
+import Zdog3D from '../components/home/Zdog3D';
 import CimaCustomerProfileDemo from '../components/CimaCustomerProfileDemo';
 
 const faq: QA[] = [
@@ -51,7 +52,7 @@ export default function Home() {
             </div>
           </section>
 
-          <section id="how" className="hx-sec hx-steps-sec">
+          <section id="how" className="hx-sec hx-steps-sec hx-inv">
             <div className="hx-wrap">
               <Reveal className="hx-center">
                 <span className="hx-eyebrow"><i /> یک مسیر پیوسته برای فروش پیام‌محور</span>
@@ -73,7 +74,7 @@ export default function Home() {
             </div>
           </section>
 
-          <section id="apu" className="hx-sec">
+          <section id="apu" className="hx-sec hx-alt">
             <div className="hx-wrap hx-apu-grid">
               <Reveal className="hx-apu-copy">
                 <span className="hx-eyebrow"><i /> یک محصول دیگر دلسا · APU</span>
@@ -103,21 +104,24 @@ export default function Home() {
           <section className="hx-sec" style={{ paddingBlock: 'clamp(30px,5vw,60px) 0' }}>
             <div className="hx-wrap">
               <Reveal>
-                <div className="hx-cta">
-                  <span className="hx-eyebrow"><i /> DELSA · CIMA</span>
-                  <h2 style={{ marginTop: 20 }}>هر گفت‌وگو را به <span className="hx-grad">شناخت بهتر مشتری</span> تبدیل کن.</h2>
-                  <p>برای دیدن فضای کاری دلسا حساب بساز یا تعرفه‌ها را بررسی کن.</p>
-                  <div className="hx-actions">
-                    <Link className="hx-btn hx-btn-primary" href="/signup">شروع با CIMA <ArrowUpLeft size={18} /></Link>
-                    <Link className="hx-btn" href="/pricing">دیدن تعرفه‌ها <ArrowLeft size={17} /></Link>
+                <div className="hx-cta hx-inv">
+                  <div className="hx-cta-copy">
+                    <span className="hx-eyebrow"><i /> DELSA · CIMA</span>
+                    <h2>هر گفت‌وگو را به <span className="hx-grad">شناخت بهتر مشتری</span> تبدیل کن.</h2>
+                    <p>برای دیدن فضای کاری دلسا حساب بساز یا تعرفه‌ها را بررسی کن.</p>
+                    <div className="hx-actions">
+                      <Link className="hx-btn hx-btn-primary" href="/signup">شروع با CIMA <ArrowUpLeft size={18} /></Link>
+                      <Link className="hx-btn" href="/pricing">دیدن تعرفه‌ها <ArrowLeft size={17} /></Link>
+                    </div>
                   </div>
+                  <Zdog3D />
                 </div>
               </Reveal>
             </div>
           </section>
         </main>
 
-        <footer className="hx-footer">
+        <footer className="hx-footer hx-inv">
           <div className="hx-wrap hx-foot-grid">
             <div className="hx-foot-about">
               <Link href="/" className="hx-brand"><img src="/delsa-mark.svg" alt="" width={34} height={34} />DELSA</Link>

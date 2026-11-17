@@ -4,7 +4,12 @@ import Link from 'next/link';
 import { useRef } from 'react';
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react';
 import { ArrowUpLeft, Check, CreditCard, Flag, Layers3, MessageCircle, ShieldCheck } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import AnimatedCimaInbox from '../AnimatedCimaInbox';
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const line1 = ['از', 'اولین', 'پیام'];
 const line2 = ['تا', 'فروش', 'موفق.'];
@@ -26,6 +31,18 @@ export default function Hero() {
   const ay = useSpring(useTransform(my, [-0.5, 0.5], [-14, 14]), spring);
   const bx = useSpring(useTransform(mx, [-0.5, 0.5], [26, -26]), spring);
   const by = useSpring(useTransform(my, [-0.5, 0.5], [18, -18]), spring);
+
+  // GSAP ScrollTrigger parallax: background, copy and device drift at different speeds as the hero scrolls away.
+  useGSAP(() => {
+    const mm = gsap.matchMedia();
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      const tl = gsap.timeline({ scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom top', scrub: 0.5 } });
+      tl.to('.hx-aurora', { yPercent: 18, ease: 'none' }, 0)
+        .to('.hx-blob.b', { x: -90, ease: 'none' }, 0)
+        .to('.hx-copy', { y: -50, ease: 'none' }, 0)
+        .to('.hx-par-stage', { y: -80, ease: 'none' }, 0);
+    });
+  }, { scope: ref });
 
   function onMove(e: React.PointerEvent<HTMLElement>) {
     if (reduce || e.pointerType === 'touch') return;
@@ -123,6 +140,7 @@ export default function Hero() {
           </motion.div>
         </div>
 
+        <div className="hx-par-stage">
         <motion.div
           className="hx-stage"
           initial={reduce ? false : { opacity: 0, y: 50, scale: 0.94 }}
@@ -150,6 +168,7 @@ export default function Hero() {
           </motion.div>
           <p className="hx-demo-note">نمونهٔ نمایشی از رابط CIMA؛ مکالمه‌ها واقعی نیستند.</p>
         </motion.div>
+        </div>
       </div>
 
       <div className="hx-scroll" aria-hidden="true"><i /></div>

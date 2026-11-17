@@ -3,6 +3,7 @@
 import type { PointerEvent, ReactNode } from 'react';
 import { Activity, CreditCard, Layers3, MessageCircle, RefreshCw, ShoppingBag, Sparkles, UserRound } from 'lucide-react';
 import Reveal from './Reveal';
+import TiltCard from './TiltCard';
 
 function spot(e: PointerEvent<HTMLElement>) {
   if (e.pointerType === 'touch') return;
@@ -86,16 +87,16 @@ export default function Bento() {
     <div className="hx-bento">
       {features.map((f, i) => (
         <Reveal key={f.title} delay={(i % 3) * 0.08} className={f.wide ? 'hx-card-wrap s2' : 'hx-card-wrap'}>
-          <article className={'hx-card' + (f.wide ? ' s2' : '')} onPointerMove={spot} style={{ height: '100%' }}>
+          <TiltCard as="article" className={'hx-card' + (f.wide ? ' s2' : '')} onPointerMove={spot} style={{ height: '100%' }}>
             <div className="hx-vis" aria-hidden="true">{f.visual}</div>
             <div>
               <h3 style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <span style={{ color: 'var(--or)', display: 'inline-flex' }}>{f.icon}</span>
+                <span style={{ color: 'var(--ortxt)', display: 'inline-flex' }}>{f.icon}</span>
                 {f.title}
               </h3>
               <p>{f.copy}</p>
             </div>
-          </article>
+          </TiltCard>
         </Reveal>
       ))}
     </div>
