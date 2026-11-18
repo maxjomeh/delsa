@@ -9,6 +9,7 @@ import {cardLine} from '../lib/builder-industries';
 import {money,effectivePrice,normalizeText} from '../lib/builder-commerce';
 import './builder-design-system.css';
 import './builder-templates.css';
+import './builder-polish.css';
 import styles from './SiteBuilder.module.css';
 const labels={studio:'برای برندهایی که متفاوت فکر می‌کنند',catalog:'ویترین آنلاین کسب‌وکار شما',consultant:'تخصص، گفت‌وگو، راه‌حل',atelier:'پوشاک و اکسسوری',tech:'تکنولوژی برای زندگی',botanical:'انتخاب‌های طبیعی',jewel:'زیورآلات و اکسسوری',home:'دکور و لوازم خانه',sport:'پوشاک و تجهیزات ورزشی',editorial:'مجلهٔ کتاب و فرهنگ',commerce:'خرید آنلاین، ساده و سریع',cinematic:'کتاب‌ها، روی پرده'};
 const brandSymbols={studio:'✳',catalog:'◈',editorial:'§',commerce:'▣',cinematic:'◐'};
