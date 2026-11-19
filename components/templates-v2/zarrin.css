@@ -6,7 +6,9 @@
   --gold-grad: linear-gradient(105deg, var(--gold-lo), var(--gold) 22%, var(--gold-hi) 40%, var(--gold) 58%, var(--gold-lo) 80%, var(--gold-hi));
   --btn-r: 999px; --card-r: 22px; --hw: 700;
 }
-html[data-theme="light"] [data-delsa-site][data-v2][data-template="zarrin"] { --bg: #f8f2e4; --panel: #fffaf0; --panel2: #f1e7cf; --ink: #2a2112; --muted: #6b5c3e; --line: #d9c9a0; }
+html[data-theme="light"] [data-delsa-site][data-v2][data-template="zarrin"] { --bg: #f8f2e4; --panel: #fffaf0; --panel2: #f1e7cf; --ink: #2a2112; --muted: #6b5c3e; --line: #d9c9a0;
+  --gold: color-mix(in srgb, var(--site-accent) 70%, #000); --gold-hi: color-mix(in srgb, var(--site-accent) 58%, #000); --gold-lo: color-mix(in srgb, var(--site-accent) 38%, #000);
+  --gold-grad: linear-gradient(105deg, var(--gold-lo), var(--gold) 30%, color-mix(in srgb, var(--site-accent) 82%, #3a2600) 48%, var(--gold) 64%, var(--gold-lo)); }
 [data-delsa-site][data-v2][data-template="zarrin"] :is(h2, [data-block="quote"] blockquote) { text-align: center; }
 [data-delsa-site][data-v2][data-template="zarrin"] [data-block] > h2::after, [data-delsa-site][data-v2][data-template="zarrin"] [data-block] .element > h2::after { content: "◆"; display: block; margin: 10px auto 0; font-size: .7rem; line-height: 1; color: var(--gold); background: none; }
 [data-delsa-site][data-v2][data-template="zarrin"] [data-block] > p, [data-delsa-site][data-v2][data-template="zarrin"] [data-block] .element > p { margin-inline: auto; text-align: center; }

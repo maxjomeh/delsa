@@ -23,11 +23,18 @@ export default function BuilderMotion(){
   root.addEventListener('click',linkClick,true);
   window.addEventListener('popstate',followed);
   root.addEventListener('transitionend',settled);
+  // Statistics count up from zero the first time they scroll into view (numbers keep their digits, prefix and suffix).
+  const FA='۰۱۲۳۴۵۶۷۸۹',parts=/^(\D*?)([0-9۰-۹][0-9۰-۹,٬.]*)(.*)$/s;
+  const countIO=new IntersectionObserver(entries=>{for(const e of entries){if(!e.isIntersecting)continue;countIO.unobserve(e.target);const el=e.target,m=parts.exec(el.textContent||'');if(!m)continue;
+   const persian=/[۰-۹]/.test(m[2]),target=Number(m[2].replace(/[۰-۹]/g,d=>FA.indexOf(d)).replace(/[,٬]/g,''));if(!Number.isFinite(target)||target<=0||target>1e9)continue;
+   const fmt=n=>(persian?new Intl.NumberFormat('fa-IR',{useGrouping:/[,٬]/.test(m[2])}):new Intl.NumberFormat('en',{useGrouping:/,/.test(m[2])})).format(Math.round(n)),start=performance.now(),dur=1400;
+   const tick=t=>{const k=Math.min(1,(t-start)/dur),ease=1-Math.pow(1-k,3);el.textContent=m[1]+fmt(target*ease)+m[3];if(k<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)}},{threshold:.4});
+  root.querySelectorAll('[data-block="stats"] dd').forEach(el=>countIO.observe(el));
   scan(root);
   root.setAttribute('data-motion-ready','');
   const mo=new MutationObserver(list=>list.forEach(m=>m.addedNodes.forEach(scan)));
   mo.observe(root,{childList:true,subtree:true});
-  return()=>{io.disconnect();mo.disconnect();root.removeEventListener('transitionend',settled);root.removeEventListener('click',linkClick,true);window.removeEventListener('popstate',followed);root.removeAttribute('data-motion-ready');root.querySelectorAll('[data-reveal]').forEach(el=>el.setAttribute('data-reveal',''))};
+  return()=>{countIO.disconnect();io.disconnect();mo.disconnect();root.removeEventListener('transitionend',settled);root.removeEventListener('click',linkClick,true);window.removeEventListener('popstate',followed);root.removeAttribute('data-motion-ready');root.querySelectorAll('[data-reveal]').forEach(el=>el.setAttribute('data-reveal',''))};
  },[]);
  return <span ref={ref} hidden/>;
 }

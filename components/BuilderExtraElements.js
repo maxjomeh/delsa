@@ -1,11 +1,13 @@
 import {safeUrl} from '../lib/site-builder';
 import styles from './BuilderExtraElements.module.css';
-export const extraElementTypes=['faq','testimonials','stats','pricing','steps','team','gallery','video','quote','checklist','alert','logos','links','hours','progress','table'];
+export const extraElementTypes=['faq','testimonials','stats','pricing','steps','team','gallery','video','quote','checklist','alert','logos','links','hours','progress','table','marquee','banner','timeline'];
 const cells=s=>String(s).split('|').map(x=>x.trim());
 const percent=s=>Math.max(0,Math.min(100,Number(String(s||'0').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))||0));
 export default function BuilderExtraElements({block:b,preview=false}){
  const rows=b.items.map(cells),intro=<>{b.title&&<h2>{b.title}</h2>}{b.text&&<p>{b.text}</p>}</>;
  const links=rows.map(([label,url])=>({label,url:safeUrl(url)})).filter(x=>x.url);
+ if(b.type==='marquee'){const words=b.items.map(x=>x.trim()).filter(Boolean);return <div className={styles.element} data-part="marquee" role="marquee" aria-label={b.title||words.join('، ')}><div data-part="marquee-track" aria-hidden="true">{[0,1].map(k=><span key={k}>{(words.length?words:['متن نوار']).map((w,i)=><b key={i}>{w}</b>)}</span>)}</div></div>}
+ if(b.type==='banner')return <aside className={styles.element} data-part="banner" style={b.image?{'--banner-image':`url("${b.image.replace(/["\\()\s]/g,encodeURIComponent)}")`}:undefined}><div>{b.title&&<h2>{b.title}</h2>}{b.text&&<p>{b.text}</p>}</div>{b.url&&<a data-ds="button" href={preview?undefined:safeUrl(b.url)}>{b.button||'بیشتر بدانید'} <span aria-hidden="true">↗</span></a>}</aside>;
  if(b.type==='quote')return <figure className={styles.quote}><blockquote>{b.text}</blockquote><figcaption>{b.title}</figcaption></figure>;
  if(b.type==='alert')return <aside className={styles.alert}>{intro}{b.url&&<a href={preview?undefined:safeUrl(b.url)}>{b.button||'بیشتر بدانید'} ↗</a>}</aside>;
  return <div className={styles.element}>{intro}
@@ -21,6 +23,7 @@ export default function BuilderExtraElements({block:b,preview=false}){
  {b.type==='links'&&<div className={styles.links}>{links.map(({label,url},i)=><a key={i} href={preview?undefined:url}>{label}<span aria-hidden="true">↗</span></a>)}</div>}
  {b.type==='hours'&&<dl className={styles.hours}>{rows.map(([day,...hours],i)=><div key={i}><dt>{day}</dt><dd>{hours.join(' | ')}</dd></div>)}</dl>}
  {b.type==='progress'&&<div className={styles.progress}>{rows.map(([label,value],i)=><label key={i}><span>{label}<strong>{percent(value).toLocaleString('fa-IR')}٪</strong></span><progress max="100" value={percent(value)} aria-label={label}/></label>)}</div>}
+ {b.type==='timeline'&&<ol data-part="timeline">{rows.map(([when,title,...text],i)=><li key={i}><time>{when}</time><div><h3>{title}</h3><p>{text.join(' | ')}</p></div></li>)}</ol>}
  {b.type==='table'&&rows.length>0&&<div className={styles.tableWrap}><table><thead><tr>{rows[0].slice(0,6).map((v,i)=><th key={i} scope="col">{v}</th>)}</tr></thead><tbody>{rows.slice(1).map((row,i)=><tr key={i}>{rows[0].slice(0,6).map((_,j)=><td key={j}>{row[j]||'—'}</td>)}</tr>)}</tbody></table></div>}
  </div>;
 }
