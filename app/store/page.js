@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeft, ArrowUpLeft, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, ArrowUpLeft, ShoppingBag, Sparkles } from 'lucide-react';
 import { SITE_BUILDER_PRODUCT } from '../../lib/site-builder';
 import { createClient } from '../../lib/supabase/server';
 
@@ -19,7 +19,7 @@ export default async function StorePage() {
   return <>
     <header className="site-header wrap store-page-header">
       <Link href="/" className="brand" aria-label="دلسا، خانه"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link>
-      <nav aria-label="منوی اصلی"><Link href="/">خانه</Link><Link href="/#apu">APU</Link><Link href="/store" aria-current="page">فروشگاه</Link><Link href="/pricing">تعرفه</Link></nav>
+      <nav aria-label="منوی اصلی"><Link href="/">خانه</Link><Link className="nav-feature" href="/builder"><Sparkles size={15}/>سایت‌ساز<em>جدید</em></Link><Link href="/#apu">APU</Link><Link href="/store" aria-current="page">فروشگاه</Link><Link href="/pricing">تعرفه</Link></nav>
       <Link className="button small" href="/login">ورود به پنل <ArrowUpLeft size={17}/></Link>
     </header>
     <main className="store-main wrap">

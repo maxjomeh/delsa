@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } from 'motion/react';
-import { ArrowUpLeft, Menu, X } from 'lucide-react';
+import { ArrowUpLeft, Menu, Sparkles, X } from 'lucide-react';
 
-const links = [
+const links: { href: string; label: string; featured?: boolean }[] = [
+  { href: '/builder', label: 'سایت‌ساز', featured: true },
   { href: '#cima', label: 'CIMA · CRM' },
   { href: '#how', label: 'نحوهٔ کار' },
   { href: '#channels', label: 'کانال‌ها' },
@@ -30,7 +31,11 @@ export default function HomeHeader() {
         </Link>
         <nav className="hx-nav" aria-label="منوی اصلی">
           {links.map((l) => (
-            <Link key={l.href} href={l.href}>{l.label}</Link>
+            <Link key={l.href} href={l.href} className={l.featured ? 'hx-nav-feature' : undefined}>
+              {l.featured && <Sparkles size={15} aria-hidden="true" />}
+              {l.label}
+              {l.featured && <em className="hx-new">جدید</em>}
+            </Link>
           ))}
         </nav>
         <div className="hx-header-actions">
@@ -60,7 +65,11 @@ export default function HomeHeader() {
             transition={{ duration: 0.22 }}
           >
             {links.map((l) => (
-              <Link key={l.href} href={l.href} onClick={() => setOpen(false)}>{l.label}</Link>
+              <Link key={l.href} href={l.href} className={l.featured ? 'hx-nav-feature' : undefined} onClick={() => setOpen(false)}>
+                {l.featured && <Sparkles size={16} aria-hidden="true" />}
+                {l.label}
+                {l.featured && <em className="hx-new">جدید</em>}
+              </Link>
             ))}
             <Link className="hx-btn hx-btn-primary" href="/login" onClick={() => setOpen(false)}>
               ورود به پنل <ArrowUpLeft size={16} />
