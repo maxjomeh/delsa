@@ -334,3 +334,12 @@ html[data-theme=light] .hx-pillst.same{color:#1b7a46}
   .hx *,.hx *::before,.hx *::after{animation:none!important;transition:none!important}
   .hx-grad{background-position:0 0}
 }
+
+/* Site-builder entry: the one nav item that is a product, not a section anchor. */
+.hx-nav a.hx-nav-feature,.hx-drawer a.hx-nav-feature{display:inline-flex;align-items:center;gap:7px;font-weight:700;color:var(--ink);border:1px solid rgba(255,122,61,.55);background:linear-gradient(135deg,rgba(255,122,61,.22),rgba(255,90,31,.08));box-shadow:0 0 0 0 rgba(255,90,31,.45),inset 0 1px 0 rgba(255,255,255,.12);animation:hx-feature-pulse 3.2s ease-in-out infinite}
+.hx-nav a.hx-nav-feature svg,.hx-drawer a.hx-nav-feature svg{color:#ff7a3d}
+.hx-nav a.hx-nav-feature:hover,.hx-drawer a.hx-nav-feature:hover{border-color:#ff7a3d;background:linear-gradient(135deg,rgba(255,122,61,.36),rgba(255,90,31,.16))}
+.hx-new{font-style:normal;font-size:10px;font-weight:800;line-height:1;padding:3px 6px;border-radius:999px;color:#1d0e06;background:linear-gradient(135deg,#ff7a3d,#ff5a1f)}
+.hx-drawer a.hx-nav-feature{padding:13px 14px}
+@keyframes hx-feature-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,90,31,.4),inset 0 1px 0 rgba(255,255,255,.12)}50%{box-shadow:0 0 0 6px rgba(255,90,31,0),inset 0 1px 0 rgba(255,255,255,.12)}}
+@media(prefers-reduced-motion:reduce){.hx-nav a.hx-nav-feature,.hx-drawer a.hx-nav-feature{animation:none}}
