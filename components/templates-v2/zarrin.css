@@ -1,0 +1,93 @@
+/* ZARRIN - luxury gold noir: centred symmetry, bezel ring artwork, shimmering gold, arch-topped cards. */
+[data-delsa-site][data-v2][data-template="zarrin"] {
+  --tpl-display: "Aref Ruqaa", "Cinzel", "Vazirmatn", serif; --tpl-body: "Vazirmatn", system-ui, sans-serif; --tpl-accent: "Cinzel", "Aref Ruqaa", serif;
+  --bg: #0a0907; --panel: #14110c; --panel2: #1d1810; --ink: #f4ead4; --muted: #b8ad94; --line: #3b3222;
+  --gold: var(--site-accent); --gold-hi: color-mix(in srgb, var(--site-accent) 55%, #fff); --gold-lo: color-mix(in srgb, var(--site-accent) 60%, #000);
+  --gold-grad: linear-gradient(105deg, var(--gold-lo), var(--gold) 22%, var(--gold-hi) 40%, var(--gold) 58%, var(--gold-lo) 80%, var(--gold-hi));
+  --btn-r: 999px; --card-r: 22px; --hw: 700;
+}
+html[data-theme="light"] [data-delsa-site][data-v2][data-template="zarrin"] { --bg: #f8f2e4; --panel: #fffaf0; --panel2: #f1e7cf; --ink: #2a2112; --muted: #6b5c3e; --line: #d9c9a0; }
+[data-delsa-site][data-v2][data-template="zarrin"] :is(h2, [data-block="quote"] blockquote) { text-align: center; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block] > h2::after, [data-delsa-site][data-v2][data-template="zarrin"] [data-block] .element > h2::after { content: "◆"; display: block; margin: 10px auto 0; font-size: .7rem; line-height: 1; color: var(--gold); background: none; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block] > p, [data-delsa-site][data-v2][data-template="zarrin"] [data-block] .element > p { margin-inline: auto; text-align: center; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block="text"], [data-delsa-site][data-v2][data-template="zarrin"] [data-block="products"], [data-delsa-site][data-v2][data-template="zarrin"] [data-block="features"] { text-align: center; }
+
+/* ambient: slow gold dust */
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="decor"] { background: radial-gradient(60% 40% at 50% 0%, color-mix(in srgb, var(--gold) 16%, transparent), transparent 70%), radial-gradient(40% 30% at 90% 60%, color-mix(in srgb, var(--gold) 8%, transparent), transparent); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="decor"] > i { display: block; width: 6px; aspect-ratio: 1; border-radius: 50%; background: var(--gold-hi); box-shadow: 0 0 14px 2px var(--gold); opacity: .5; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="decor"] > i:nth-child(1) { top: 14%; inset-inline-start: 8%; animation: v2-pulse 5s ease-in-out infinite; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="decor"] > i:nth-child(2) { top: 31%; inset-inline-end: 12%; animation: v2-pulse 7s 1s ease-in-out infinite; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="decor"] > i:nth-child(3) { top: 52%; inset-inline-start: 18%; animation: v2-pulse 6s 2s ease-in-out infinite; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="decor"] > i:nth-child(4) { top: 71%; inset-inline-end: 7%; animation: v2-pulse 8s .5s ease-in-out infinite; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="decor"] > i:nth-child(5) { top: 86%; inset-inline-start: 30%; animation: v2-pulse 5.5s 3s ease-in-out infinite; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="decor"] > i:nth-child(6) { top: 42%; inset-inline-start: 52%; animation: v2-pulse 9s 2s ease-in-out infinite; }
+
+/* header: brand centred over a ruled nav */
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="header"] { position: relative; flex-direction: column; justify-content: center; gap: 6px; padding-block: 26px 12px; background: transparent; backdrop-filter: none; border-bottom: 0; text-align: center; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="brand"] { justify-content: center; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="brand"] strong { font-size: clamp(1.9rem, 4vw, 2.8rem); background: var(--gold-grad); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: v2-shimmer 9s linear infinite; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="nav"] { width: 100%; justify-content: center; align-items: center; gap: 4px 14px; padding-block: 6px; font-family: var(--ff-accent); letter-spacing: .04em; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="nav"]::before, [data-delsa-site][data-v2][data-template="zarrin"] [data-part="nav"]::after { content: ""; flex: 1 1 40px; max-width: 280px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="nav"]::after { background: linear-gradient(270deg, transparent, var(--gold)); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="nav"] [aria-current="page"] { background: none; color: var(--gold-hi); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="nav"] :is(a, button):hover { color: var(--gold-hi); }
+
+/* hero: centred title over a rotating bezel */
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block="hero"] { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; min-height: min(92vh, 840px); padding-block: clamp(56px, 8vw, 110px); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-ds="hero"] { display: grid; justify-items: center; text-align: center; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-ds="hero"] h1 { font-size: clamp(2.6rem, 7vw, 6rem); line-height: 1.4; background: var(--gold-grad); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: v2-shimmer 10s linear infinite; padding-inline: .1em; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-ds="hero"] > span:first-child { font-family: var(--ff-accent); letter-spacing: .28em; font-size: .78rem; color: var(--gold-hi); text-transform: uppercase; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-ds="hero"] > span:first-child::before, [data-delsa-site][data-v2][data-template="zarrin"] [data-ds="hero"] > span:first-child::after { content: ""; width: 34px; height: 1px; background: var(--gold); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-ds="hero"] p { margin-inline: auto; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-ds="hero"] > div:last-child { justify-content: center; font-family: var(--ff-accent); letter-spacing: .2em; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-ds="hero-visual"] { position: absolute; inset: 0; display: grid; place-items: center; z-index: 0; pointer-events: none; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-ds="hero-visual"] > img { max-width: min(560px, 80%); border-radius: 999px 999px 24px 24px; opacity: .55; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="art"] { width: min(96vw, 700px); opacity: .85; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="art"] > i:nth-child(1) { inset: 0; border-radius: 50%; border: 1px solid var(--gold); box-shadow: 0 0 60px color-mix(in srgb, var(--gold) 30%, transparent), inset 0 0 60px color-mix(in srgb, var(--gold) 14%, transparent); animation: v2-spin 120s linear infinite; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="art"] > i:nth-child(2) { inset: 7%; border-radius: 50%; background: repeating-conic-gradient(from 0deg, var(--gold) 0 .45deg, transparent .45deg 5deg); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 13px)); mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 13px)); animation: v2-spin-rev 90s linear infinite; opacity: .8; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="art"] > i:nth-child(3) { inset: 14%; border-radius: 50%; border: 1px dashed color-mix(in srgb, var(--gold) 70%, transparent); animation: v2-spin 70s linear infinite; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="art"] > i:nth-child(4) { inset: 24%; border-radius: 999px 999px 0 0; border: 1px solid color-mix(in srgb, var(--gold) 60%, transparent); border-bottom: 0; translate: 0 8%; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="art"] > i:nth-child(5) { inset: 34%; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--gold) 36%, transparent), transparent); animation: v2-pulse 6s ease-in-out infinite; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="art"] > i:nth-child(6), [data-delsa-site][data-v2][data-template="zarrin"] [data-part="art"] > i:nth-child(7) { width: 22px; aspect-ratio: 1; background: var(--gold-hi); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: v2-pulse 4s ease-in-out infinite; filter: drop-shadow(0 0 8px var(--gold)); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="art"] > i:nth-child(6) { top: 8%; inset-inline-end: 14%; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="art"] > i:nth-child(7) { bottom: 12%; inset-inline-start: 10%; width: 14px; animation-delay: 1.5s; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="art"] > b { inset: 0; display: grid; place-items: center; font-family: var(--ff-display); font-size: clamp(9rem, 26vw, 17rem); background: var(--gold-grad); -webkit-background-clip: text; background-clip: text; color: transparent; opacity: .13; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="hero-ticker"] { display: none; }
+
+/* buttons */
+[data-delsa-site][data-v2][data-template="zarrin"] [data-ds="button"] { position: relative; overflow: hidden; background: var(--gold-grad); background-size: 220% 100%; color: #1a1306; border: 0; font-family: var(--ff-accent); letter-spacing: .04em; box-shadow: 0 10px 34px -10px var(--gold); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-ds="button"]:hover { background-position: 100% 0; box-shadow: 0 16px 44px -10px var(--gold); }
+
+/* cards: tall arches */
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="card"] { background: transparent; border-color: color-mix(in srgb, var(--gold) 38%, var(--line)); text-align: center; border-radius: 999px 999px 22px 22px; padding-top: 10px; transition: border-color .3s, box-shadow .4s, translate .3s; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="card"]:hover { border-color: var(--gold); box-shadow: 0 24px 60px -24px var(--gold); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="card-media"] { margin: 6px 10px 0; aspect-ratio: 3 / 4; border-radius: 999px 999px 16px 16px; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="card-body"] { align-items: center; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="card-body"] > strong { color: var(--gold-hi); font-family: var(--ff-accent); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="card-body"] button { align-self: center; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="filters"] { justify-content: center; }
+
+/* features: ruled columns */
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="feature-grid"] > [data-ds="card"] { background: transparent; border: 0; border-radius: 0; padding: 18px 26px; border-inline-start: 1px solid color-mix(in srgb, var(--gold) 40%, transparent); text-align: center; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="feature-grid"] article:first-child { border-inline-start: 0; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="feature-grid"] article > span { display: grid; place-items: center; width: 54px; aspect-ratio: 1; margin: 0 auto 10px; border: 1px solid var(--gold); border-radius: 50%; transition: rotate .8s var(--ds-ease-out), background .3s; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="feature-grid"] article:hover > span { rotate: 180deg; background: color-mix(in srgb, var(--gold) 16%, transparent); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="feature-grid"] article > i { display: none; }
+
+/* elements */
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block="quote"] { text-align: center; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block="quote"] figure { margin-inline: auto; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block="quote"] blockquote::before { content: "”"; display: block; font-family: var(--ff-accent); font-size: 6rem; line-height: .6; color: var(--gold); opacity: .6; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block="divider"] hr { height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+[data-delsa-site][data-v2][data-template="zarrin"] :is([data-block="testimonials"] figure, [data-block="pricing"] article, [data-block="stats"] dl > div, [data-block="steps"] li, [data-block="team"] article) { background: transparent; border-color: color-mix(in srgb, var(--gold) 36%, var(--line)); text-align: center; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block="stats"] dd { background: var(--gold-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block="steps"] li { grid-template-columns: 1fr; justify-items: center; }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block="steps"] li > span { background: transparent; color: var(--gold-hi); border: 1px solid var(--gold); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block="steps"] ol { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-block="contact"] { flex-direction: column; text-align: center; border-top: 1px solid color-mix(in srgb, var(--gold) 40%, transparent); }
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="footer"] { flex-direction: column; text-align: center; border-top-color: color-mix(in srgb, var(--gold) 40%, transparent); font-family: var(--ff-accent); letter-spacing: .06em; }
+
+/* motion: slower, softer reveals */
+[data-delsa-site][data-v2][data-template="zarrin"][data-motion] { --ds-reveal-distance: 18px; --ds-reveal-blur: 6px; }
+
+[data-delsa-site][data-v2][data-template="zarrin"] [data-part="card-media"] > div:last-child { inset-block-start: auto; inset-block-end: 14px; inset-inline: 0; justify-content: center; }
