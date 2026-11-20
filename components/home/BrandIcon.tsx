@@ -25,6 +25,13 @@ export const CHANNEL_KEY: Record<string, string> = {
   'بله': 'bale', 'ایتا': 'eitaa', 'روبیکا': 'rubika', 'سروش': 'soroush',
 };
 
+// Localized display names (as written in the translations) map to the same logos.
+const ALIASES: Record<string, string> = {
+  Instagram: 'instagram', WhatsApp: 'whatsapp', Telegram: 'telegram', Bale: 'bale', Eitaa: 'eitaa', Rubika: 'rubika', Soroush: 'soroush',
+  'إنستغرام': 'instagram', 'واتساب': 'whatsapp', 'تلغرام': 'telegram', 'بله': 'bale', 'إيتا': 'eitaa', 'روبيكا': 'rubika', 'سروش': 'soroush',
+};
+Object.assign(CHANNEL_KEY, ALIASES);
+
 export function BrandIcon({ name, size = 16 }: { name: string; size?: number }) {
   const icon = ICONS[CHANNEL_KEY[name] ?? name];
   if (!icon) return null;

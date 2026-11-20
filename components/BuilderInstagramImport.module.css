@@ -14,7 +14,7 @@
 .connect{display:grid;gap:12px;justify-items:start;padding:20px;border:1px dashed var(--line);border-radius:14px}
 .connect ul{margin:0;padding-inline-start:20px;color:var(--muted);line-height:2}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:12px;margin:0;padding:0;list-style:none}
-.root .card{position:relative;display:flex;flex-direction:column;width:100%;text-align:right;padding:0!important;border:2px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);overflow:hidden;cursor:pointer;font:inherit}
+.root .card{position:relative;display:flex;flex-direction:column;width:100%;text-align:start;padding:0!important;border:2px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);overflow:hidden;cursor:pointer;font:inherit}
 .root .card[aria-pressed=true]{border-color:var(--orange);box-shadow:0 0 0 3px color-mix(in srgb,var(--orange) 25%,transparent)}
 .root .card:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
 .media{position:relative;aspect-ratio:4/5;background:var(--panel2,var(--panel));overflow:hidden}

@@ -28,17 +28,18 @@ assert(productList(false).includes('فعال‌سازی'));
 assert(!productList(false).includes('منتشرشده'));
 
 async function testLogin(path,user,role,expected){
-const prefix=path.startsWith('app/admin')?'../../../':'../../';
+const prefix=path.includes('/admin/')?'../../../../':'../../../';
 const db={auth:{getUser:async()=>({data:{user}})},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{role}})})})})};
 const mocks={'next/navigation':{redirect:p=>{throw Error('REDIRECT:'+p)}},react:React};
 mocks[prefix+'lib/supabase/server']={createClient:async()=>db};
 mocks[prefix+'lib/supabase/config']={isSupabaseConfigured:()=>true};
+mocks[prefix+'lib/i18n/server']={getI18n:async()=>({href:p=>p})};
 mocks[prefix+'components/AuthForm']=()=>null;
 mocks[prefix+'components/auth.css']={};
 const Page=load(path,mocks).default;
 if(expected)await assert.rejects(Page(),{message:'REDIRECT:'+expected});else assert(await Page());
 }
-(async()=>{for(const p of ['app/login/page.js','app/admin/login/page.js']){await testLogin(p,{id:'u'},'admin','/admin');await testLogin(p,{id:'u'},'user','/dashboard');await testLogin(p,null,null,null)}console.log('PASS: service-specific overview/menu and customer/admin session return routing');})();
+(async()=>{for(const p of ['app/(main)/login/page.js','app/(main)/admin/login/page.js']){await testLogin(p,{id:'u'},'admin','/admin');await testLogin(p,{id:'u'},'user','/dashboard');await testLogin(p,null,null,null)}console.log('PASS: service-specific overview/menu and customer/admin session return routing');})();
 
 assert(dash([sub("crm")]).includes("سیما · CRM"));
 assert(!dash([]).includes("سیما · CRM"));
