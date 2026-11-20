@@ -16,7 +16,7 @@ import '../../app/home.css';
 import '../../app/pages.css';
 import '../../app/builder-landing.css';
 
-const HERO_CYCLE = ['commerce', 'studio', 'atelier', 'tech', 'botanical', 'cinematic'];
+const HERO_CYCLE = ['zarrin', 'shab', 'jashn', 'mehr', 'bagh', 'noor'];
 const SWATCHES = ['#ff5a1f', '#7c3aed', '#2563eb', '#0f766e', '#a33c57', '#53763c', '#b96943', '#de432b'];
 
 function spot(e: React.PointerEvent<HTMLElement>) {
@@ -87,7 +87,7 @@ function HeroPreview() {
 
 function Studio() {
   const [industry, setIndustry] = useState('general');
-  const [template, setTemplate] = useState('commerce');
+  const [template, setTemplate] = useState('mehr');
   const [color, setColor] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
   const narrow = useNarrow();

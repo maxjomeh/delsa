@@ -1,0 +1,124 @@
+/*
+ * Surface styles (Glassmorphism / Claymorphism / Skeuomorphism / Neumorphism) for every current template.
+ * Selected with doc.surface -> data-surface on the site root. They only restyle surfaces (cards, header, buttons, fields,
+ * card images) and reuse the template's own palette tokens, so typography, artwork and layout keep the template identity.
+ * !important is deliberate: the template rules for these hooks are more specific and each template styles them differently.
+ */
+
+/* ============================== GLASS ============================== */
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="decor"]::before, [data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="decor"]::after { content: ""; position: absolute; border-radius: 50%; filter: blur(80px); opacity: .6; pointer-events: none; }
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="decor"]::before { width: 46vw; aspect-ratio: 1; top: 4%; inset-inline-start: -10%; background: var(--site-accent); animation: v2-drift 20s ease-in-out infinite; }
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="decor"]::after { width: 40vw; aspect-ratio: 1; top: 44%; inset-inline-end: -10%; background: color-mix(in srgb, var(--site-accent) 35%, #7c5cff); animation: v2-drift 26s ease-in-out infinite reverse; }
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="card"],
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="feature-grid"] > [data-ds="card"],
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="stats"] dl > div,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="testimonials"] figure,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="pricing"] article,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="steps"] li,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="team"] article,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="alert"] aside,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="faq"] details,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="header"] {
+  background: color-mix(in srgb, var(--panel) 36%, transparent) linear-gradient(135deg, rgb(255 255 255 / .24), rgb(255 255 255 / .04)) !important;
+  border: 1px solid rgb(255 255 255 / .34) !important; border-radius: 22px !important;
+  box-shadow: 0 12px 40px -12px rgb(0 0 0 / .4), inset 0 1px 0 rgb(255 255 255 / .5) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.7) !important; backdrop-filter: blur(20px) saturate(1.7) !important; }
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-ds="button"],
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="card-body"] button { background: color-mix(in srgb, var(--site-accent) 60%, transparent) !important; color: var(--ink) !important; border: 1px solid rgb(255 255 255 / .5) !important; border-radius: 14px !important;
+  -webkit-backdrop-filter: blur(12px) !important; backdrop-filter: blur(12px) !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / .55), 0 10px 28px -10px var(--site-accent) !important; text-shadow: none !important; }
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="filters"] :is(input, select),
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="header-search"] { background: rgb(255 255 255 / .14) !important; border: 1px solid rgb(255 255 255 / .34) !important; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="card-media"] { border-radius: 16px !important; margin: 8px 8px 0 !important; }
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="card"]:hover,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-part="feature-grid"] > [data-ds="card"]:hover,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="stats"] dl > div:hover,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="testimonials"] figure:hover,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="pricing"] article:hover,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="steps"] li:hover,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="team"] article:hover,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="alert"] aside:hover,
+[data-delsa-site][data-v2][data-surface="glass"][data-template] [data-block="faq"] details:hover { border-color: rgb(255 255 255 / .6) !important; }
+
+/* ============================== CLAY ============================== */
+[data-delsa-site][data-v2][data-surface="clay"][data-template] { --clay-hi: rgb(255 255 255 / .75); --clay-lo: rgb(60 40 20 / .16); }
+html[data-theme="dark"] [data-delsa-site][data-v2][data-surface="clay"][data-template] { --clay-hi: rgb(255 255 255 / .1); --clay-lo: rgb(0 0 0 / .5); }
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-part="card"],
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-part="feature-grid"] > [data-ds="card"],
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="stats"] dl > div,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="testimonials"] figure,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="pricing"] article,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="steps"] li,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="team"] article,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="alert"] aside,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="faq"] details,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-part="header"] {
+  background: color-mix(in srgb, var(--site-accent) 9%, var(--panel)) !important; background-image: none !important; border: 0 !important; border-radius: 30px !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  box-shadow: inset -8px -8px 16px var(--clay-lo), inset 8px 8px 16px var(--clay-hi), 12px 18px 30px -10px rgb(0 0 0 / .3) !important; }
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-part="card"]:hover,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-part="feature-grid"] > [data-ds="card"]:hover,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="stats"] dl > div:hover,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="testimonials"] figure:hover,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="pricing"] article:hover,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="steps"] li:hover,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="team"] article:hover,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="alert"] aside:hover,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-block="faq"] details:hover { scale: 1.025; }
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-ds="button"],
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-part="card-body"] button { background: linear-gradient(145deg, color-mix(in srgb, var(--site-accent) 78%, #fff), var(--site-accent)) !important; color: var(--site-on-accent, #fff) !important; border: 0 !important; border-radius: 999px !important;
+  box-shadow: inset -4px -5px 10px rgb(0 0 0 / .22), inset 4px 5px 10px rgb(255 255 255 / .5), 6px 10px 18px -4px color-mix(in srgb, var(--site-accent) 65%, #000) !important; text-shadow: none !important; transition: scale .25s cubic-bezier(.34, 1.8, .5, 1), box-shadow .2s !important; }
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-ds="button"]:hover,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-part="card-body"] button:hover { scale: 1.06; translate: 0 -2px; } [data-delsa-site][data-v2][data-surface="clay"][data-template] [data-ds="button"]:active,
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-part="card-body"] button:active { scale: .94; box-shadow: inset 4px 5px 10px rgb(0 0 0 / .3), inset -3px -4px 8px rgb(255 255 255 / .3) !important; }
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-part="filters"] :is(input, select),
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-part="header-search"] { background: color-mix(in srgb, var(--site-accent) 6%, var(--panel)) !important; border: 0 !important; border-radius: 999px !important; box-shadow: inset 4px 4px 10px var(--clay-lo), inset -4px -4px 10px var(--clay-hi) !important; }
+[data-delsa-site][data-v2][data-surface="clay"][data-template] [data-part="card-media"] { border-radius: 24px !important; margin: 12px 12px 0 !important; box-shadow: inset 0 0 0 4px rgb(255 255 255 / .35), 0 10px 18px -8px rgb(0 0 0 / .3) !important; }
+
+/* ============================ SKEUOMORPH ============================ */
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-part="card"],
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-part="feature-grid"] > [data-ds="card"],
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-block="stats"] dl > div,
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-block="testimonials"] figure,
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-block="pricing"] article,
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-block="steps"] li,
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-block="team"] article,
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-block="alert"] aside,
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-block="faq"] details,
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-part="header"] {
+  background: repeating-linear-gradient(45deg, rgb(0 0 0 / .018) 0 2px, transparent 2px 4px), linear-gradient(180deg, color-mix(in srgb, var(--panel) 84%, #fff), color-mix(in srgb, var(--panel) 90%, #000)) !important;
+  border: 1px solid color-mix(in srgb, var(--ink) 26%, transparent) !important; border-radius: 14px !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .6), inset 0 -2px 0 rgb(0 0 0 / .14), 0 2px 0 rgb(0 0 0 / .2), 0 16px 26px -14px rgb(0 0 0 / .55) !important; }
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-ds="button"],
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-part="card-body"] button { background: linear-gradient(180deg, color-mix(in srgb, var(--site-accent) 68%, #fff) 0, var(--site-accent) 48%, color-mix(in srgb, var(--site-accent) 78%, #000) 100%) !important; color: var(--site-on-accent, #fff) !important;
+  border: 1px solid color-mix(in srgb, var(--site-accent) 55%, #000) !important; border-radius: 10px !important; text-shadow: 0 1px 0 rgb(255 255 255 / .25) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .65), inset 0 -3px 6px rgb(0 0 0 / .25), 0 3px 0 color-mix(in srgb, var(--site-accent) 52%, #000), 0 12px 16px -6px rgb(0 0 0 / .55) !important; }
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-ds="button"]:active,
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-part="card-body"] button:active { translate: 0 3px; box-shadow: inset 0 2px 6px rgb(0 0 0 / .4), 0 0 0 color-mix(in srgb, var(--site-accent) 52%, #000) !important; }
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-part="filters"] :is(input, select),
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-part="header-search"] { background: color-mix(in srgb, var(--panel) 80%, #000) !important; border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent) !important; border-radius: 10px !important; box-shadow: inset 0 3px 6px rgb(0 0 0 / .4), 0 1px 0 rgb(255 255 255 / .35) !important; color: var(--ink) !important; }
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] [data-part="card-media"] { margin: 10px 10px 0 !important; border-radius: 6px !important; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .3), inset 0 8px 14px rgb(0 0 0 / .3), 0 1px 0 rgb(255 255 255 / .5) !important; }
+[data-delsa-site][data-v2][data-surface="skeuo"][data-template] :is(h1, h2) { text-shadow: 0 1px 0 rgb(255 255 255 / .35), 0 -1px 0 rgb(0 0 0 / .15); }
+
+/* ============================== NEU ============================== */
+[data-delsa-site][data-v2][data-surface="neu"][data-template] { --n-l: rgb(255 255 255 / .9); --n-d: rgb(70 55 30 / .24); }
+html[data-theme="dark"] [data-delsa-site][data-v2][data-surface="neu"][data-template] { --n-l: rgb(255 255 255 / .06); --n-d: rgb(0 0 0 / .75); }
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-part="card"],
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-part="feature-grid"] > [data-ds="card"],
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-block="stats"] dl > div,
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-block="testimonials"] figure,
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-block="pricing"] article,
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-block="steps"] li,
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-block="team"] article,
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-block="alert"] aside,
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-block="faq"] details,
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-part="header"] { background: var(--bg) !important; background-image: none !important; border: 0 !important; border-radius: 26px !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: 10px 10px 22px var(--n-d), -10px -10px 22px var(--n-l) !important; }
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-ds="button"],
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-part="card-body"] button { background: var(--bg) !important; color: var(--ink) !important; border: 0 !important; border-radius: 16px !important; text-shadow: none !important; box-shadow: 6px 6px 14px var(--n-d), -6px -6px 14px var(--n-l) !important; }
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-ds="button"]:hover,
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-part="card-body"] button:hover { box-shadow: 8px 8px 18px var(--n-d), -8px -8px 18px var(--n-l) !important; }
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-ds="button"]:active,
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-part="card-body"] button:active { box-shadow: inset 4px 4px 10px var(--n-d), inset -4px -4px 10px var(--n-l) !important; }
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-part="filters"] :is(input, select),
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-part="header-search"] { background: var(--bg) !important; border: 0 !important; border-radius: 16px !important; box-shadow: inset 4px 4px 9px var(--n-d), inset -4px -4px 9px var(--n-l) !important; }
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-part="card-media"] { margin: 12px 12px 0 !important; border-radius: 18px !important; box-shadow: inset 5px 5px 10px var(--n-d), inset -5px -5px 10px var(--n-l) !important; }
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-part="nav"] [aria-current="page"] { background: var(--bg) !important; color: var(--ink) !important; box-shadow: inset 3px 3px 7px var(--n-d), inset -3px -3px 7px var(--n-l) !important; }
+[data-delsa-site][data-v2][data-surface="neu"][data-template] [data-part="footer"] { background: var(--bg) !important; }

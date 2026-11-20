@@ -1,0 +1,50 @@
+/* SHAB - neon noir: glass HUD, animated gradient borders, orbital rings, grid floor, marquee band. */
+@property --ang { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+[data-delsa-site][data-v2][data-template="shab"] {
+  --tpl-display: "Reem Kufi", "Unbounded", "Vazirmatn", sans-serif; --tpl-body: "Vazirmatn", system-ui, sans-serif; --tpl-accent: "Unbounded", "Reem Kufi", sans-serif;
+  --bg: #05060b; --panel: #0c0f1a; --panel2: #121729; --ink: #e8eeff; --muted: #94a0c0; --line: #1f2a47;
+  --n1: var(--site-accent); --n2: #8b5cf6; --n3: #ff3df0; --neon: linear-gradient(120deg, var(--n1), var(--n2) 55%, var(--n3));
+  --btn-r: 14px; --card-r: 20px; --hw: 700; --sec-y: clamp(48px, 6.5vw, 92px);
+}
+html[data-theme="light"] [data-delsa-site][data-v2][data-template="shab"] { --bg: #eef2ff; --panel: #ffffff; --panel2: #e3e9ff; --ink: #0b1230; --muted: #4a5578; --line: #c9d3f5; --n3: #d6249f; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="decor"] > i { display: block; border-radius: 50%; filter: blur(70px); opacity: .45; animation: v2-drift 18s ease-in-out infinite; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="decor"] > i:nth-child(1) { width: 46vw; aspect-ratio: 1; top: -8%; inset-inline-start: -10%; background: var(--n2); }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="decor"] > i:nth-child(2) { width: 40vw; aspect-ratio: 1; top: 20%; inset-inline-end: -12%; background: var(--n1); animation-delay: -6s; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="decor"] > i:nth-child(3) { width: 34vw; aspect-ratio: 1; top: 60%; inset-inline-start: 10%; background: var(--n3); opacity: .28; animation-delay: -11s; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="decor"] > i:nth-child(4) { inset: 0; filter: none; border-radius: 0; opacity: .5; animation: none; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 56px 56px; -webkit-mask: radial-gradient(70% 55% at 50% 12%, #000, transparent); mask: radial-gradient(70% 55% at 50% 12%, #000, transparent); }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="header"] { top: 12px; margin: 12px max(var(--sec-x), calc((100% - var(--maxw)) / 2)) 0; border: 1px solid transparent; border-radius: 18px; background: linear-gradient(var(--panel), var(--panel)) padding-box, var(--neon) border-box; background-color: transparent; box-shadow: 0 10px 50px -20px var(--n2); padding: 10px 20px; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="brand"] strong { font-family: var(--ff-accent); font-size: 1.05rem; letter-spacing: .02em; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="brand"] span { background: var(--neon); -webkit-background-clip: text; background-clip: text; color: transparent; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="nav"] [aria-current="page"] { background: color-mix(in srgb, var(--n1) 18%, transparent); box-shadow: inset 0 0 0 1px var(--n1); }
+
+[data-delsa-site][data-v2][data-template="shab"] [data-ds="hero"] h1 { font-size: clamp(2.5rem, 6vw, 5.2rem); line-height: 1.3; background: var(--neon); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 28px color-mix(in srgb, var(--n1) 45%, transparent)); }
+[data-delsa-site][data-v2][data-template="shab"] [data-ds="hero"] > span:first-child { font-family: var(--ff-accent); font-size: .72rem; letter-spacing: .08em; padding: 7px 14px; border-radius: 999px; background: color-mix(in srgb, var(--n1) 12%, transparent); border: 1px solid color-mix(in srgb, var(--n1) 50%, transparent); }
+[data-delsa-site][data-v2][data-template="shab"] [data-ds="button"] { background: var(--neon); color: #05060b; border: 0; box-shadow: 0 0 0 1px rgb(255 255 255 / .2) inset, 0 14px 44px -10px var(--n2); position: relative; }
+[data-delsa-site][data-v2][data-template="shab"] [data-ds="button"]:hover { box-shadow: 0 0 0 1px rgb(255 255 255 / .4) inset, 0 20px 56px -8px var(--n3); }
+/* orbital artwork */
+[data-delsa-site][data-v2][data-template="shab"] [data-part="art"] { width: min(100%, 500px); }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="art"] > i:nth-child(1) { inset: 0; border-radius: 50%; border: 1px dashed color-mix(in srgb, var(--n1) 60%, transparent); animation: v2-spin 50s linear infinite; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="art"] > i:nth-child(2) { inset: 12%; border-radius: 50%; border: 2px solid transparent; background: conic-gradient(from var(--ang), transparent 0 60%, var(--n1), var(--n3)) border-box; -webkit-mask: linear-gradient(#000 0 0) padding-box exclude, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) padding-box exclude, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: shab-ang 6s linear infinite; }
+@keyframes shab-ang { to { --ang: 360deg; } }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="art"] > i:nth-child(3) { inset: 26%; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--n2) 60%, transparent); animation: v2-spin-rev 30s linear infinite; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="art"] > i:nth-child(4) { inset: 38%; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, var(--n1) 30%, var(--n2) 70%, transparent 72%); box-shadow: 0 0 80px 10px color-mix(in srgb, var(--n1) 55%, transparent); animation: v2-pulse 4s ease-in-out infinite; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="art"] > i:nth-child(5), [data-delsa-site][data-v2][data-template="shab"] [data-part="art"] > i:nth-child(6), [data-delsa-site][data-v2][data-template="shab"] [data-part="art"] > i:nth-child(7) { inset: 0; animation: v2-spin 14s linear infinite; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="art"] > i:nth-child(6) { inset: 12%; animation-duration: 9s; animation-direction: reverse; } [data-delsa-site][data-v2][data-template="shab"] [data-part="art"] > i:nth-child(7) { inset: 26%; animation-duration: 6s; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="art"] > i:nth-child(n+5)::after { content: ""; position: absolute; top: -6px; inset-inline-start: 50%; width: 12px; aspect-ratio: 1; border-radius: 50%; background: var(--n3); box-shadow: 0 0 18px 4px var(--n3); }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="art"] > b { inset: 0; display: grid; place-items: center; font-family: var(--ff-accent); font-size: clamp(4rem, 10vw, 6.5rem); color: #fff; mix-blend-mode: overlay; opacity: .9; }
+/* marquee band */
+[data-delsa-site][data-v2][data-template="shab"] [data-part="hero-ticker"] { display: block; position: absolute; inset-inline: 0; bottom: 0; overflow: hidden; border-block: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 70%, transparent); padding-block: 8px; z-index: 2; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="hero-ticker"] > span { display: inline-flex; width: max-content; gap: 40px; white-space: nowrap; animation: v2-marquee 26s linear infinite; font-family: var(--ff-accent); font-size: .75rem; letter-spacing: .12em; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="hero-ticker"] b { font-weight: 400; background: var(--neon); -webkit-background-clip: text; background-clip: text; color: transparent; padding-inline: 20px; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="hero-ticker"] b::after { content: "✦"; margin-inline-start: 40px; color: var(--n1); -webkit-text-fill-color: var(--n1); }
+[data-delsa-site][data-v2][data-template="shab"] [data-block="hero"] { padding-bottom: 90px; }
+/* glass cards with spinning gradient border */
+[data-delsa-site][data-v2][data-template="shab"] :is([data-part="card"], [data-part="feature-grid"] > [data-ds="card"], [data-block="stats"] dl > div, [data-block="testimonials"] figure, [data-block="pricing"] article, [data-block="steps"] li, [data-block="team"] article) {
+  border: 1px solid transparent; background: linear-gradient(color-mix(in srgb, var(--panel) 92%, transparent), color-mix(in srgb, var(--panel) 92%, transparent)) padding-box, conic-gradient(from var(--ang), var(--line) 0 70%, var(--n1), var(--n3)) border-box; animation: shab-ang 8s linear infinite; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="card"]:hover { box-shadow: 0 24px 60px -24px var(--n2); }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="card-body"] > strong { font-family: var(--ff-accent); font-size: .95rem; color: var(--n1); }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="feature-grid"] article > span { font-family: var(--ff-accent); background: var(--neon); -webkit-background-clip: text; background-clip: text; color: transparent; font-size: 1.1rem; }
+[data-delsa-site][data-v2][data-template="shab"] [data-block="stats"] dd { font-family: var(--ff-accent); font-size: clamp(1.8rem, 4vw, 3rem); background: var(--neon); -webkit-background-clip: text; background-clip: text; color: transparent; }
+[data-delsa-site][data-v2][data-template="shab"] [data-block] > h2::before, [data-delsa-site][data-v2][data-template="shab"] [data-block] .element > h2::before { content: "//"; font-family: var(--ff-accent); color: var(--n1); margin-inline-end: .4em; font-size: .6em; }
+[data-delsa-site][data-v2][data-template="shab"] [data-part="footer"] { border-top: 1px solid var(--line); background: linear-gradient(transparent, color-mix(in srgb, var(--n2) 12%, transparent)); }
+[data-delsa-site][data-v2][data-template="shab"][data-motion] { --ds-reveal-distance: 30px; --ds-reveal-blur: 6px; }

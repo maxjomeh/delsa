@@ -1,0 +1,58 @@
+/* QALAM - pen and paper: nastaliq headings, cinnabar seal stamp, ink blot, ruled paper, book-cover cards. */
+[data-delsa-site][data-v2][data-template="qalam"] {
+  --tpl-display: "Noto Nastaliq Urdu", "Amiri", "Vazirmatn", serif; --tpl-body: "Vazirmatn", system-ui, sans-serif; --tpl-accent: "Amiri", "Noto Naskh Arabic", serif;
+  --bg: #efe6d2; --panel: #f7f0de; --panel2: #e5dabf; --ink: #1b1612; --muted: #5d5242; --line: #b9aa8a; --seal: var(--site-accent);
+  --btn-r: 4px; --card-r: 3px; --hw: 700; --sec-y: clamp(52px, 7vw, 96px);
+  background-image: repeating-linear-gradient(0deg, transparent 0 35px, color-mix(in srgb, var(--line) 26%, transparent) 35px 36px), radial-gradient(circle at 20% 10%, rgb(120 90 40 / .08), transparent 40%);
+}
+html[data-theme="dark"] [data-delsa-site][data-v2][data-template="qalam"] { --bg: #16120d; --panel: #1f1a13; --panel2: #2a2318; --ink: #efe4cc; --muted: #b0a283; --line: #4a3f2c; }
+[data-delsa-site][data-v2][data-template="qalam"] :is(h1, h2) { line-height: 2.1; font-weight: 400; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-ds="hero"] h1 { font-size: clamp(2.4rem, 5.4vw, 4.6rem); line-height: 2.05; animation: qalam-ink 1.6s var(--ds-ease-out) both; }
+@keyframes qalam-ink { from { clip-path: inset(0 0 0 100%); filter: blur(6px); } to { clip-path: inset(0 0 0 0); filter: blur(0); } }
+[data-delsa-site][data-v2][data-template="qalam"] [data-block] > h2, [data-delsa-site][data-v2][data-template="qalam"] [data-block] .element > h2 { font-size: clamp(1.9rem, 3.6vw, 3rem); display: inline-block; background: linear-gradient(transparent 78%, color-mix(in srgb, var(--seal) 30%, transparent) 78% 92%, transparent 92%); padding-inline: .3em; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-block="text"] > p:first-of-type::first-letter { float: right; font-family: var(--ff-display); font-size: 4.4em; line-height: 1.15; color: var(--seal); margin-inline-start: .15em; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="decor"] > i { display: block; border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%; background: color-mix(in srgb, var(--ink) 6%, transparent); animation: qalam-blot 14s ease-in-out infinite alternate; }
+@keyframes qalam-blot { to { border-radius: 38% 62% 47% 53% / 44% 58% 42% 56%; rotate: 25deg; scale: 1.12; } }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="decor"] > i:nth-child(1) { width: 260px; aspect-ratio: 1.2; top: 20%; inset-inline-start: -4%; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="decor"] > i:nth-child(2) { width: 180px; aspect-ratio: 1; top: 55%; inset-inline-end: -3%; animation-delay: -5s; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="decor"] > i:nth-child(3) { width: 90px; aspect-ratio: 1; top: 80%; inset-inline-start: 12%; animation-delay: -9s; }
+
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="header"] { background: color-mix(in srgb, var(--bg) 90%, transparent); border-bottom: 3px double var(--ink); backdrop-filter: blur(6px); }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="brand"] strong { font-size: 2rem; line-height: 2; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="brand"] span { display: grid; place-items: center; width: 40px; aspect-ratio: 1; background: var(--seal); color: var(--site-on-accent, #fff); font-size: 1.3rem; border-radius: 3px; rotate: -6deg; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="nav"] :is(a, button) { border-radius: 0; font-family: var(--ff-accent); font-size: 1.15rem; color: var(--ink); }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="nav"] [aria-current="page"] { background: none; color: var(--seal); box-shadow: inset 0 -2px 0 var(--seal); }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="nav"] > * + *::before { content: "✦"; position: absolute; inset-inline-start: -8px; font-size: .6rem; color: var(--muted); top: 50%; translate: 0 -50%; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="nav"] :is(a, button):hover { color: var(--seal); }
+
+/* hero: sheets, blot, stamp */
+[data-delsa-site][data-v2][data-template="qalam"] [data-ds="hero"] > span:first-child { font-family: var(--ff-accent); font-size: 1.15rem; color: var(--seal); border-bottom: 1px solid var(--seal); padding-bottom: 2px; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="art"] { width: min(100%, 460px); aspect-ratio: 1; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="art"] > i:nth-child(1) { inset: 8% 14% 4% 6%; background: var(--panel) repeating-linear-gradient(0deg, transparent 0 27px, color-mix(in srgb, var(--seal) 35%, transparent) 27px 28px); border: 1px solid var(--line); box-shadow: 0 30px 50px -28px rgb(60 40 10 / .55); rotate: -6deg; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="art"] > i:nth-child(2) { inset: 4% 6% 10% 16%; background: var(--panel2); border: 1px solid var(--line); box-shadow: 0 24px 40px -26px rgb(60 40 10 / .5); rotate: 5deg; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="art"] > i:nth-child(3) { inset: 12% 18% 14% 14%; background: var(--panel) repeating-linear-gradient(0deg, transparent 0 27px, color-mix(in srgb, var(--ink) 18%, transparent) 27px 28px); border: 1px solid var(--line); box-shadow: 0 18px 30px -22px rgb(60 40 10 / .5); animation: v2-float 8s ease-in-out infinite; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="art"] > i:nth-child(4) { width: 34%; aspect-ratio: 1.15; top: 26%; inset-inline-start: 28%; background: var(--ink); opacity: .86; border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%; animation: qalam-blot 9s ease-in-out infinite alternate; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="art"] > i:nth-child(5) { width: 22%; aspect-ratio: 1; bottom: 8%; inset-inline-end: 6%; background: var(--seal); border-radius: 4px; rotate: 8deg; display: grid; box-shadow: inset 0 0 0 4px var(--seal), inset 0 0 0 6px rgb(255 255 255 / .5); animation: qalam-stamp 1.1s .5s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes qalam-stamp { from { scale: 1.9; opacity: 0; rotate: -20deg; } 60% { opacity: 1; } to { scale: 1; rotate: 8deg; } }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="art"] > i:nth-child(6) { width: 38%; height: 3px; top: 66%; inset-inline-start: 22%; background: var(--ink); opacity: .7; transform-origin: right; animation: v2-draw 3s ease-in-out infinite alternate; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="art"] > i:nth-child(7) { width: 12px; aspect-ratio: 1; top: 12%; inset-inline-end: 18%; border-radius: 50%; background: var(--seal); animation: v2-pulse 3s infinite; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="art"] > b { top: 18%; inset-inline-start: 31%; font-family: var(--ff-display); font-size: clamp(4rem, 10vw, 7rem); line-height: 1.6; color: var(--bg); z-index: 3; }
+
+/* cards: book covers */
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="grid"] { grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 34px 26px; perspective: 1200px; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="card"] { background: none; border: 0; border-radius: 0; overflow: visible; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="card-media"] { aspect-ratio: 2 / 3; border-radius: 3px 8px 8px 3px; box-shadow: 0 22px 30px -16px rgb(40 25 5 / .6), inset 8px 0 8px -4px rgb(0 0 0 / .3); transform-origin: 100% 50%; transition: transform .5s var(--ds-ease-out); }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="card"]:hover [data-part="card-media"] { transform: rotateY(-14deg) translateY(-6px); }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="card-body"] { padding: 14px 4px; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="card-body"] h3 { font-family: var(--ff-accent); font-size: 1.25rem; font-weight: 700; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="card-body"] > strong { color: var(--seal); }
+[data-delsa-site][data-v2][data-template="qalam"] [data-ds="button"] { border-radius: 3px; box-shadow: 4px 4px 0 var(--ink); font-family: var(--ff-accent); font-size: 1.1rem; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-ds="button"]:hover { translate: 2px 2px; box-shadow: 2px 2px 0 var(--ink); }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="feature-grid"] > [data-ds="card"] { background: var(--panel); border: 1px solid var(--line); border-top: 4px solid var(--seal); border-radius: 0; box-shadow: 5px 5px 0 color-mix(in srgb, var(--ink) 14%, transparent); }
+[data-delsa-site][data-v2][data-template="qalam"] [data-block="quote"] figure { border-inline-start: 5px solid var(--seal); padding-inline-start: 28px; max-width: 70ch; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-block="quote"] blockquote { font-size: clamp(1.7rem, 3.4vw, 2.7rem); line-height: 2.1; }
+[data-delsa-site][data-v2][data-template="qalam"] :is([data-block="testimonials"] figure, [data-block="pricing"] article, [data-block="stats"] dl > div, [data-block="steps"] li) { background: var(--panel); border-radius: 0; border: 1px solid var(--line); box-shadow: 4px 4px 0 color-mix(in srgb, var(--ink) 12%, transparent); }
+[data-delsa-site][data-v2][data-template="qalam"] [data-block="stats"] dd { color: var(--seal); }
+[data-delsa-site][data-v2][data-template="qalam"] [data-block="steps"] li > span { border-radius: 3px; rotate: -5deg; }
+[data-delsa-site][data-v2][data-template="qalam"] [data-part="footer"] { border-top: 3px double var(--ink); font-family: var(--ff-accent); font-size: 1.05rem; }
+[data-delsa-site][data-v2][data-template="qalam"][data-motion] { --ds-reveal-distance: 14px; --ds-reveal-blur: 4px; }
