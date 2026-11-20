@@ -6,13 +6,14 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { ShieldCheck } from 'lucide-react';
+import { useI18n } from '../i18n/I18nProvider';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-const steps: [string, string, string, string][] = [
-  ['۱', 'نیاز مشتری را از گفت‌وگو بفهم', 'هوش مصنوعی دلسا منظور مشتری و زمینهٔ مکالمه را دنبال می‌کند؛ حتی وقتی انتخاب محصول در چند پیام شکل می‌گیرد.', 'فهم گفت‌وگو'],
-  ['۲', 'انتخاب را به سفارش تبدیل کن', 'محصول، رنگ، سایز و تعداد در سبد خرید جمع می‌شوند و اطلاعات لازم برای ثبت سفارش دریافت می‌شود.', 'سبد و سفارش'],
-  ['۳', 'پرداخت تا ارسال را پیگیری کن', 'پرداخت، وضعیت سفارش و کد رهگیری به همان گفت‌وگو و پروندهٔ مشتری متصل می‌مانند.', 'پرداخت و رهگیری'],
+const makeSteps = (t: (s: string) => string, nf: (n: number) => string): [string, string, string, string][] => [
+  [nf(1), t('نیاز مشتری را از گفت‌وگو بفهم'), t('هوش مصنوعی دلسا منظور مشتری و زمینهٔ مکالمه را دنبال می‌کند؛ حتی وقتی انتخاب محصول در چند پیام شکل می‌گیرد.'), t('فهم گفت‌وگو')],
+  [nf(2), t('انتخاب را به سفارش تبدیل کن'), t('محصول، رنگ، سایز و تعداد در سبد خرید جمع می‌شوند و اطلاعات لازم برای ثبت سفارش دریافت می‌شود.'), t('سبد و سفارش')],
+  [nf(3), t('پرداخت تا ارسال را پیگیری کن'), t('پرداخت، وضعیت سفارش و کد رهگیری به همان گفت‌وگو و پروندهٔ مشتری متصل می‌مانند.'), t('پرداخت و رهگیری')],
 ];
 
 function Step({ n, title, copy, tag }: { n: string; title: string; copy: string; tag: string }) {
@@ -37,6 +38,8 @@ function Step({ n, title, copy, tag }: { n: string; title: string; copy: string;
 }
 
 export default function Steps() {
+  const { t, intl } = useI18n();
+  const steps = makeSteps(t, (n) => new Intl.NumberFormat(intl).format(n));
   const ref = useRef<HTMLDivElement>(null);
   const fill = useRef<HTMLDivElement>(null);
   // GSAP ScrollTrigger: the orange progress line is scrubbed by scroll position.
@@ -58,7 +61,7 @@ export default function Steps() {
           <Step key={n} n={n} title={title} copy={copy} tag={tag} />
         ))}
       </div>
-      <p className="hx-trust"><ShieldCheck size={17} /> هرجا تصمیم یا بررسی صاحب کسب‌وکار لازم باشد، گفت‌وگو از پنل برای رسیدگی انسانی در دسترس است.</p>
+      <p className="hx-trust"><ShieldCheck size={17} /> {t('هرجا تصمیم یا بررسی صاحب کسب‌وکار لازم باشد، گفت‌وگو از پنل برای رسیدگی انسانی در دسترس است.')}</p>
     </>
   );
 }

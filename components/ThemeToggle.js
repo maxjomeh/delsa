@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
+import { useI18n } from './i18n/I18nProvider';
 
 export default function ThemeToggle() {
+  const { t } = useI18n();
   const [dark, setDark] = useState(true);
 
   useEffect(() => {
@@ -46,11 +48,11 @@ export default function ThemeToggle() {
       className="theme-toggle"
       type="button"
       onClick={toggleTheme}
-      aria-label={dark ? 'فعال‌کردن حالت روشن' : 'فعال‌کردن حالت تیره'}
-      title={dark ? 'حالت روشن' : 'حالت تیره'}
+      aria-label={dark ? t('فعال‌کردن حالت روشن') : t('فعال‌کردن حالت تیره')}
+      title={dark ? t('حالت روشن') : t('حالت تیره')}
     >
       {dark ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
-      <span>{dark ? 'حالت روشن' : 'حالت تیره'}</span>
+      <span>{dark ? t('حالت روشن') : t('حالت تیره')}</span>
     </button>
   );
 }
