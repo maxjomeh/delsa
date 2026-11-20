@@ -5,6 +5,8 @@ import {normalizeDocument} from '../../../../../lib/site-builder';
 import BuilderStorefront from '../../../../../components/BuilderStorefront';
 import {safePermalink} from '../../../../../lib/builder-instagram';
 import {defaultShop} from '../../../../../lib/builder-commerce';
+import {loadMessages} from '../../../../../lib/i18n/messages';
+import {LOCALE_INFO,createTranslator} from '../../../../../lib/i18n/config';
 import {listingFor,listingKinds,safeDecode,safeJson,productJsonLd,listingJsonLd} from '../../../../../lib/book-seo';
 // Published sites are public and cookie-free, so they are served from the ISR cache.
 // Publishing/unpublishing calls /api/builder/revalidate; the TTL bounds stock/price staleness
@@ -23,13 +25,13 @@ const origin=process.env.NEXT_PUBLIC_SITE_URL||'https://www.delsaai.ir';
 export async function generateMetadata({params}){
  const s=await read(params);
  if(!s)return {title:'سایت یافت نشد',robots:{index:false,follow:false},referrer:'same-origin'};
- const {site,view,pageSlug,productSlug,products,listing}=s,name=site.name,product=products.find(p=>p.slug===productSlug),page=view==='page'?site.document.pages.find(p=>p.slug===pageSlug):null;
- const title=listing?(listing.kind==='author'?'کتاب‌های ':'کتاب‌های ناشر ')+listing.name+' | '+name:product?product.title+' | '+name:view==='shop'?'فروشگاه | '+name:page&&page.slug!==''?page.title+' | '+name:name;
- const description=(listing?'فهرست کتاب‌های '+(listingKinds[listing.kind])+' '+listing.name+' در فروشگاه '+name+' ('+listing.products.length+' کتاب).':product?.summary||page?.description||site.document.description||'').trim()||undefined;
+ const {site,view,pageSlug,productSlug,products,listing}=s,name=site.name,lang=site.document.lang,t=createTranslator(lang,await loadMessages(lang,'site'),{quiet:true}),product=products.find(p=>p.slug===productSlug),page=view==='page'?site.document.pages.find(p=>p.slug===pageSlug):null;
+ const title=listing?(listing.kind==='author'?t('کتاب‌های {name}',{name:listing.name}):t('کتاب‌های ناشر {name}',{name:listing.name}))+' | '+name:product?product.title+' | '+name:view==='shop'?t('فروشگاه')+' | '+name:page&&page.slug!==''?page.title+' | '+name:name;
+ const description=(listing?t('فهرست کتاب‌های {kind} {name} در فروشگاه {shop} ({n} کتاب).',{kind:t(listingKinds[listing.kind]),name:listing.name,shop:name,n:listing.products.length}):product?.summary||page?.description||site.document.description||'').trim()||undefined;
  const image=[listing?.products?.[0]?.images?.[0],product?.images?.[0],...(page?.blocks||[]).map(b=>b.image)].find(x=>/^https:\/\//i.test(x||''));
  const path='/s/'+site.slug+(listing?'/'+view+'/'+encodeURIComponent(listing.slug):view==='product'?'/product/'+productSlug:view==='page'?(pageSlug?'/'+pageSlug:''):'/'+view);
  const indexable=!['cart','checkout','orders'].includes(view);
- return {metadataBase:new URL(origin),title,description,alternates:{canonical:path},openGraph:{title,description,url:path,siteName:name,locale:'fa_IR',type:'website',...(image?{images:[image]}:{})},twitter:{card:image?'summary_large_image':'summary',title,description,...(image?{images:[image]}:{})},robots:{index:indexable,follow:true},referrer:'same-origin'};
+ return {metadataBase:new URL(origin),title,description,alternates:{canonical:path},openGraph:{title,description,url:path,siteName:name,locale:LOCALE_INFO[lang].og,type:'website',...(image?{images:[image]}:{})},twitter:{card:image?'summary_large_image':'summary',title,description,...(image?{images:[image]}:{})},robots:{index:indexable,follow:true},referrer:'same-origin'};
 }
 // schema.org JSON-LD for the book industry: Product+Book on product pages, CollectionPage on author/publisher pages.
 function jsonLdFor(s){
@@ -39,4 +41,6 @@ function jsonLdFor(s){
  const product=s.view==='product'?s.products.find(p=>p.slug===s.productSlug):null;
  return product?productJsonLd({origin,base,product,siteName:s.site.name}):null;
 }
-export default async function PublicSite({params}){const s=await read(params);if(!s)notFound();const ld=jsonLdFor(s);return <>{ld&&<script type="application/ld+json" dangerouslySetInnerHTML={{__html:safeJson(ld)}}/>}<BuilderStorefront key={s.site.slug} {...s}/></>}
+export default async function PublicSite({params}){const s=await read(params);if(!s)notFound();const ld=jsonLdFor(s);
+// The site renders in its own language (document.lang); its dictionary is loaded here so the route stays static (ISR).
+const messages=await loadMessages(s.site.document.lang,'site');return <>{ld&&<script type="application/ld+json" dangerouslySetInnerHTML={{__html:safeJson(ld)}}/>}<BuilderStorefront key={s.site.slug} messages={messages} {...s}/></>}

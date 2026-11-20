@@ -37,7 +37,7 @@ function DemoProducts() {
  * publishes customers' sites). The frame has a fixed aspect ratio, so swapping templates never shifts the layout;
  * the page inside slowly pans so the visitor sees the whole template.
  */
-export default function ScaledSite({ doc, width = 1280, ratio = '16 / 11', pan = true }: { doc: any; width?: number; ratio?: string; pan?: boolean }) {
+export default function ScaledSite({ doc, messages, width = 1280, ratio = '16 / 11', pan = true }: { doc: any; messages?: Record<string, string>; width?: number; ratio?: string; pan?: boolean }) {
   const { t } = useI18n();
   const frame = useRef<HTMLDivElement>(null);
   const inner = useRef<HTMLDivElement>(null);
@@ -72,7 +72,7 @@ export default function ScaledSite({ doc, width = 1280, ratio = '16 / 11', pan =
         aria-hidden="true"
         style={{ width, ['--s' as string]: scale, ['--dist' as string]: `${dist}px` }}
       >
-        {ready && <BuilderSiteView name={t('کسب‌وکار شما')} document={doc} preview productsSlot={<DemoProducts />} />}
+        {ready && <BuilderSiteView name={t('کسب‌وکار شما')} document={doc} messages={messages} preview productsSlot={<DemoProducts />} />}
       </div>
     </div>
   );
