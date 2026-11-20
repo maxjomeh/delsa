@@ -1,5 +1,6 @@
 import {createPublicClient} from '../lib/supabase/public';
 import {normalizeDocument} from '../lib/site-builder';
+import {LOCALES, localizeHref} from '../lib/i18n/config';
 
 const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.delsaai.ir';
 // Regenerated hourly; published sites are public rows readable by the anonymous role.
@@ -7,7 +8,15 @@ export const revalidate = 3600;
 
 export default async function sitemap() {
   const now = new Date();
-  const entries = ['', '/store', '/pricing', '/builder'].map(path => ({url: origin + path, lastModified: now}));
+  // Translated public pages exist in every language; the site builder is Persian-only for now.
+  const entries = [
+    ...['/', '/store', '/pricing'].flatMap(path => LOCALES.map(locale => ({
+      url: origin + localizeHref(locale, path).replace(/^\/$/, ''),
+      lastModified: now,
+      alternates: {languages: Object.fromEntries(LOCALES.map(code => [code, origin + localizeHref(code, path).replace(/^\/$/, '')]))},
+    }))),
+    {url: origin + '/builder', lastModified: now},
+  ];
   try {
     const db = createPublicClient();
     const {data: sites, error} = await db.from('builder_publications').select('site_id,slug,document,published_at').eq('is_live', true).order('published_at', {ascending: false}).limit(2000);
