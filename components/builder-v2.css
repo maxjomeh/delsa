@@ -228,3 +228,5 @@
 [data-delsa-site] [data-part="timeline"] time { font-family: var(--ff-accent, inherit); font-weight: 700; color: var(--site-accent-text, var(--site-accent)); text-align: end; line-height: 1.9; }
 [data-delsa-site] [data-part="timeline"] li::before { content: ""; position: absolute; inset-inline-start: 69px; top: 11px; width: 12px; aspect-ratio: 1; border-radius: 50%; background: var(--site-accent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--site-accent) 22%, transparent); }
 [data-delsa-site] [data-part="timeline"] li > div { padding-inline-start: 14px; } [data-delsa-site] [data-part="timeline"] h3 { margin: 0; } [data-delsa-site] [data-part="timeline"] p { margin: .2em 0 0; }
+
+[data-delsa-site] [data-part="product-video"] { display: block; width: 100%; max-height: 560px; margin-top: 14px; border-radius: var(--card-r, 14px); background: #000; }

@@ -1,7 +1,8 @@
 import {NextResponse} from 'next/server';
 import {createClient} from '../../../../../lib/supabase/server';
 import {seal,unseal,serverDatabase} from '../../../../../lib/crm/instagram';
-import {fetchMediaPage,refreshToken,needsRefresh,InstagramError,errorMessages} from '../../../../../lib/builder-instagram';
+import {fetchMediaPage,InstagramError,errorMessages} from '../../../../../lib/builder-instagram';
+import {loadToken,markExpired} from '../../../../../lib/builder-instagram-token';
 import {graphOrigin,isUuid} from '../../../../../lib/builder-instagram-server';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -21,31 +22,23 @@ export async function GET(request){
  const {data:row}=await db.from('builder_instagram_accounts').select('id,username,status').eq('id',id).maybeSingle();
  if(!row)return json({error:'not_found'},404);
  if(row.status!=='connected')return json({error:'instagram_token_invalid',message:errorMessages.instagram_token_invalid},401);
- const svc=serverDatabase();
- const expire=()=>svc.rpc('builder_instagram_mark_expired',{p_owner:user.id,p_id:id}).then(()=>{},()=>{});
- let rec,token;
- try{
-  const r=await svc.rpc('builder_instagram_token',{p_owner:user.id,p_id:id});if(r.error)throw r.error;
-  rec=r.data?.[0];if(!rec)return json({error:'instagram_token_invalid',message:errorMessages.instagram_token_invalid},401);
-  token=unseal(rec.ciphertext);
- }catch{return json({error:'unavailable',message:errorMessages.instagram_unavailable},503)}
- const origin=graphOrigin();
- if(needsRefresh(rec.expires_at)){
-  try{
-   const fresh=await refreshToken({token,origin});
-   const stored=await svc.rpc('builder_instagram_store_token',{p_owner:user.id,p_id:id,p_ciphertext:seal(fresh.token),p_expires:fresh.expires});
-   if(!stored.error&&stored.data)token=fresh.token;
-  }catch(e){
-   // A failed renewal only matters once the token has really expired.
-   if(Date.parse(rec.expires_at)<=Date.now()){await expire();return json({error:'instagram_token_invalid',message:errorMessages.instagram_token_invalid},401)}
-  }
+ const svc=serverDatabase(),origin=graphOrigin();
+ let token,accountId;
+ try{({token,accountId}=await loadToken({svc,userId:user.id,accountRow:id,origin,seal,unseal}))}
+ catch(e){
+  const code=e instanceof InstagramError?e.code:'instagram_unavailable';
+  if(code==='instagram_token_invalid')await markExpired(svc,user.id,id);
+  return json({error:code,message:errorMessages[code]},code==='instagram_unavailable'?503:status[code]||502);
  }
  try{
-  const page=await fetchMediaPage({token,account:rec.account_id,kind,after:q.get('after')||'',origin});
-  return json({...page,account:{id,username:row.username}});
+  const page=await fetchMediaPage({token,account:accountId,kind,after:q.get('after')||'',origin});
+  // Mark what the customer already imported into the chosen site (RLS: only their own sites are visible).
+  const siteId=q.get('site');let imported={};
+  if(isUuid(siteId)&&page.items.length){const {data}=await db.from('builder_instagram_imports').select('media_id,product_id').eq('site_id',siteId).in('media_id',page.items.map(i=>i.id));for(const r of data||[])imported[r.media_id]=r.product_id}
+  return json({...page,items:page.items.map(i=>imported[i.id]?{...i,imported:true,productId:imported[i.id]}:i),account:{id,username:row.username}});
  }catch(e){
   const code=e instanceof InstagramError?e.code:'instagram_unavailable';
-  if(code==='instagram_token_invalid')await expire();
+  if(code==='instagram_token_invalid')await markExpired(svc,user.id,id);
   return json({error:code,message:errorMessages[code]},status[code]||502);
  }
 }
