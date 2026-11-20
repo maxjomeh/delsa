@@ -64,8 +64,8 @@ begin
  -- ---- public (anon): videos only for published products of live sites
  execute 'set local role anon';
  select count(*) into n from public.builder_product_videos;if n<>1 then raise exception 'anon sees the published video (saw %)',n;end if;
- denied=false;begin perform count(*) from public.builder_instagram_imports;exception when others then denied=true;end;
- if not denied then raise exception 'anon has no access to imports';end if;
+ denied=false;begin perform caption from public.builder_instagram_imports;exception when others then denied=true;end;
+ if not denied then raise exception 'anon cannot read captions of imports';end if;
  reset role;
  update public.builder_products set status='draft' where id=pa;
  execute 'set local role anon';select count(*) into n from public.builder_product_videos;if n<>0 then raise exception 'a draft product hides its videos (saw %)',n;end if;reset role;

@@ -23,20 +23,28 @@ async function call(url,options){
 }
 // "Posts to products": connect an Instagram account, browse posts/reels/stories and import the chosen ones as DRAFT products
 // (files are copied into Delsa's storage on the server; the browser only sends the media ids, 3 per request).
-export default function BuilderInstagramImport({onClose,initialResult='',site,onImported}){
+export default function BuilderInstagramImport({onClose,initialResult='',site,onImported,onFresh}){
  const [status,setStatus]=useState(null),[account,setAccount]=useState(''),[tab,setTab]=useState('all');
- const [pages,setPages]=useState({posts:{items:[],next:null,loaded:false},stories:{items:[],next:null,loaded:false}});
+ const [pages,setPages]=useState({posts:{items:[],next:null,loaded:false},stories:{items:[],next:null,loaded:false},new:{items:[],next:null,loaded:false}});
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(instagramResult(initialResult)),[picked,setPicked]=useState(()=>new Map());
  const [phase,setPhase]=useState('pick'),[progress,setProgress]=useState({done:0,total:0,results:[]});
  const [review,setReview]=useState({rows:[],meta:null});
- const gen=useRef(0);
+ const gen=useRef(0),synced=useRef(new Set()),landed=useRef(false);
  const load=useCallback(async()=>{
-  try{const s=await call('/api/builder/instagram');setStatus(s);setAccount(a=>a&&s.accounts.some(x=>x.id===a)?a:(s.accounts.find(x=>x.status==='connected')||s.accounts[0])?.id||'')}
+  try{const s=await call('/api/builder/instagram');setStatus(s);setAccount(a=>a&&s.accounts.some(x=>x.id===a)?a:(s.accounts.find(x=>x.status==='connected')||s.accounts[0])?.id||'');
+   if(s.sync){const total=s.accounts.filter(x=>x.status==='connected').reduce((n,x)=>n+(x.fresh||0),0);onFresh?.(total);if(total>0&&!landed.current){landed.current=true;setTab('new')}}}
   catch(e){setStatus({configured:false,installed:false,accounts:[],failed:true})}
- },[]);
+ },[onFresh]);
  useEffect(()=>{load()},[load]);
  const current=status?.accounts?.find(a=>a.id===account);
- const kind=tab==='stories'?'stories':'posts';
+ // Opening the dialog asks the server to look for new posts (it answers "skipped" when the last check was under 10 minutes ago).
+ useEffect(()=>{
+  if(!status?.sync||current?.status!=='connected'||synced.current.has(current.id))return;
+  synced.current.add(current.id);
+  call('/api/builder/instagram/sync',{method:'POST',body:JSON.stringify({account:current.id})}).then(r=>{if(r.suggested>0||r.changed>0||r.deleted>0)load()}).catch(()=>{});
+ },[status?.sync,current?.id,current?.status,load]);
+ const fresh=current?.fresh||0;
+ const kind=tab==='stories'?'stories':tab==='new'?'new':'posts';
  const fetchPage=useCallback(async(which,after='')=>{
   const mine=++gen.current;setBusy(true);setError('');
   try{
@@ -50,9 +58,15 @@ export default function BuilderInstagramImport({onClose,initialResult='',site,on
   finally{if(mine===gen.current)setBusy(false)}
  },[account,load,site]);
  // A different account or tab starts from a clean list.
- useEffect(()=>{setPages({posts:{items:[],next:null,loaded:false},stories:{items:[],next:null,loaded:false}});setPicked(new Map())},[account]);
+ useEffect(()=>{setPages({posts:{items:[],next:null,loaded:false},stories:{items:[],next:null,loaded:false},new:{items:[],next:null,loaded:false}});setPicked(new Map())},[account]);
  useEffect(()=>{if(current?.status==='connected'&&!pages[kind].loaded&&!busy)fetchPage(kind)},[current?.status,kind,pages,busy,fetchPage]);
  const items=useMemo(()=>{const list=pages[kind].items;return tab==='reels'?list.filter(i=>i.kind==='reel'):list},[pages,kind,tab]);
+ async function dismissPicked(){
+  const ids=[...picked.keys()];if(!ids.length||!current)return;
+  setBusy(true);setError('');
+  try{await call('/api/builder/instagram/sync',{method:'POST',body:JSON.stringify({action:'dismiss',account:current.id,ids})});setPages(p=>({...p,new:{...p.new,items:p.new.items.filter(i=>!ids.includes(i.id))}}));setPicked(new Map());setNotice(['ok','پیشنهادها کنار گذاشته شد.']);await load()}
+  catch{setError('کنار گذاشتن پیشنهادها انجام نشد.')}finally{setBusy(false)}
+ }
  const toggle=item=>item.imported||phase!=='pick'?null:setPicked(m=>{const n=new Map(m);n.has(item.id)?n.delete(item.id):n.set(item.id,item);return n});
  async function connect(){
   setBusy(true);setError('');
@@ -103,7 +117,7 @@ export default function BuilderInstagramImport({onClose,initialResult='',site,on
   }
   const created=new Map(all.filter(r=>r.status==='created'||r.status==='duplicate').map(r=>[r.id,r.productId]));
   setPages(p=>Object.fromEntries(Object.entries(p).map(([k,v])=>[k,{...v,items:v.items.map(i=>created.has(i.id)?{...i,imported:true,productId:created.get(i.id)}:i)}])));
-  setPicked(new Map());setPhase('done');onImported?.();
+  setPicked(new Map());setPhase('done');onImported?.();load();
  }
  const connected=status?.accounts?.filter(a=>a.status==='connected')||[];
  return <BuilderDialog title="وارد کردن از اینستاگرام" onClose={onClose}><div className={ui.root} data-part="ig-import">
@@ -148,7 +162,8 @@ export default function BuilderInstagramImport({onClose,initialResult='',site,on
     <button type="button" className={ui.ghost} onClick={disconnect} disabled={busy||!current}><Unplug size={15}/> قطع اتصال</button>
    </div>
    {current?.status==='connected'&&(phase==='pick'||phase==='done'||phase==='running')&&<>
-    <div className={ui.tabs} role="tablist" aria-label="نوع محتوا">{[['all','همهٔ پست‌ها'],['reels','ریلز'],['stories','استوری‌های فعال']].map(([id,label])=><button key={id} type="button" role="tab" aria-selected={tab===id} onClick={()=>setTab(id)}>{label}</button>)}</div>
+    <div className={ui.tabs} role="tablist" aria-label="نوع محتوا">{[...(status.sync&&(fresh>0||tab==='new')?[['new','پست‌های تازه'+(fresh>0?' ('+num(fresh)+')':'')]]:[]),['all','همهٔ پست‌ها'],['reels','ریلز'],['stories','استوری‌های فعال']].map(([id,label])=><button key={id} type="button" role="tab" aria-selected={tab===id} data-tab={id} onClick={()=>setTab(id)}>{label}</button>)}</div>
+    {tab==='new'&&<p className={ui.notice}>پست‌هایی که بعد از اتصال حساب منتشر شده‌اند. چیزی خودکار ساخته یا منتشر نمی‌شود؛ هر پستی را که می‌خواهید انتخاب و وارد کنید، بقیه را کنار بگذارید.</p>}
     {tab==='stories'&&<p className={ui.notice}>استوری فقط ۲۴ ساعت می‌ماند؛ هنگام وارد کردن، یک نسخه در فضای دلسا ذخیره می‌شود.</p>}
     {error&&<p className={`${ui.notice} ${ui.error}`} role="alert">{error} <button type="button" className={ui.ghost} onClick={()=>fetchPage(kind,pages[kind].next||'')} disabled={busy}>تلاش دوباره</button></p>}
     <ul className={ui.grid} aria-busy={busy} aria-label="محتوای اینستاگرام">
@@ -158,11 +173,12 @@ export default function BuilderInstagramImport({onClose,initialResult='',site,on
      </button></li>)}
      {busy&&!items.length&&Array.from({length:8},(_,i)=><li key={'s'+i}><div className={ui.skeleton}/></li>)}
     </ul>
-    {!busy&&pages[kind].loaded&&!items.length&&!error&&<p className={ui.notice}>{tab==='stories'?'الان استوری فعالی ندارید.':tab==='reels'?'ریلزی در این حساب پیدا نشد.':'پستی پیدا نشد.'}</p>}
+    {!busy&&pages[kind].loaded&&!items.length&&!error&&<p className={ui.notice}>{tab==='new'?'پست تازه‌ای پیدا نشد.':tab==='stories'?'الان استوری فعالی ندارید.':tab==='reels'?'ریلزی در این حساب پیدا نشد.':'پستی پیدا نشد.'}</p>}
     <div className={ui.footer}>
      {pages[kind].next&&<button type="button" className={ui.ghost} onClick={()=>fetchPage(kind,pages[kind].next)} disabled={busy}>{busy?'در حال دریافت…':'بارگذاری بیشتر'}</button>}
      <span className={ui.spacer}/>
      <span aria-live="polite">{picked.size?num(picked.size)+' مورد انتخاب شد':'موردی انتخاب نشده'}</span>
+     {tab==='new'&&<button type="button" className={ui.ghost} data-part="ig-dismiss" disabled={!picked.size||busy||phase!=='pick'} onClick={dismissPicked}>کنار گذاشتن انتخاب‌شده‌ها</button>}
      <button type="button" className={ui.ghost} disabled={!site||!picked.size||busy||phase!=='pick'} onClick={()=>runImport()}>ساخت پیش‌نویس بدون تحلیل</button>
      <button type="button" className={ui.primary} disabled={!site||!picked.size||busy||phase!=='pick'} onClick={runAnalyze}>تحلیل با هوش مصنوعی و پیش‌نمایش</button>
     </div>

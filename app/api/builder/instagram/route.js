@@ -8,15 +8,20 @@ export const runtime='nodejs';
 export const dynamic='force-dynamic';
 const json=(value,status=200)=>NextResponse.json(value,{status,headers:{'Cache-Control':'no-store, private'}});
 
-// GET  -> {configured, installed, accounts:[{id,username,status,expires_at}]}  (tokens never leave the server)
+// GET  -> {configured, installed, sync, accounts:[{id,username,status,expires_at,last_checked_at,fresh}]}  (tokens never leave the server)
 // POST {action:'connect'} -> {url} to Instagram's login; {action:'disconnect', id} -> {ok:true}
 export async function GET(request){
  const db=await createClient();const {data:{user}}=await db.auth.getUser();
  if(!user)return json({error:'unauthorized'},401);
  const configured=builderInstagramConfiguration(new URL(request.url).origin).ready;
- const {data,error}=await db.from('builder_instagram_accounts').select('id,username,status,expires_at,connected_at').neq('status','disconnected').order('connected_at',{ascending:false});
+ let {data,error}=await db.from('builder_instagram_accounts').select('id,username,status,expires_at,connected_at,last_checked_at').neq('status','disconnected').order('connected_at',{ascending:false});
+ // Step 4 (sync) is optional: without its migration the columns/table are missing and the dialog simply has no "new posts" tab.
+ let sync=!error;
+ if(error&&missingObject(error)){({data,error}=await db.from('builder_instagram_accounts').select('id,username,status,expires_at,connected_at').neq('status','disconnected').order('connected_at',{ascending:false}));sync=false}
  if(error)return missingObject(error)?json({configured,installed:false,accounts:[]}):json({error:'unavailable'},503);
- return json({configured,installed:true,accounts:data||[]});
+ const fresh={};
+ if(sync&&data?.length){const r=await db.from('builder_instagram_suggestions').select('account_row').eq('status','new').limit(1000);if(r.error)sync=false;else for(const x of r.data||[])fresh[x.account_row]=(fresh[x.account_row]||0)+1}
+ return json({configured,installed:true,sync,accounts:(data||[]).map(a=>({...a,fresh:fresh[a.id]||0}))});
 }
 export async function POST(request){
  if(request.headers.get('origin')!==new URL(request.url).origin)return json({error:'forbidden'},403);

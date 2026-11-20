@@ -49,3 +49,5 @@
 .fields input,.fields select{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;min-width:0}
 .wide{grid-column:1/-1}.state{margin:0;grid-column:1/-1;font-size:13px}
 .fields details p{margin:6px 0 0;white-space:pre-wrap;color:var(--muted);font-size:13px;line-height:1.9}
+/* On phones the action buttons wrap onto several lines; a sticky bar would hide the grid, so it scrolls with the page. */
+@media(max-width:600px){.footer{position:static;background:none}.footer>button{flex:1 1 100%}}

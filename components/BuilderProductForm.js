@@ -5,13 +5,14 @@ import {productStates,blankVariant,attributeText,parseAttributes,productSlug} fr
 import BuilderTaxonomy from './BuilderTaxonomy';
 import BuilderBookLookup from './BuilderBookLookup';
 import styles from './SiteBuilder.module.css';
-export default function BuilderProductForm({form,setForm,busy,access,submit,industry,industryValues,setIndustryValues,applyBook,attributeInput,setAttributeInput,tagInput,setTagInput,imageInput,setImageInput,uploadImages,variantChange,generateSku,terms,addTerm,deleteTerm,onClose}){
+export default function BuilderProductForm({form,setForm,busy,access,submit,industry,industryValues,setIndustryValues,applyBook,attributeInput,setAttributeInput,tagInput,setTagInput,imageInput,setImageInput,uploadImages,variantChange,generateSku,terms,addTerm,deleteTerm,onClose,instagram,onInstagramLink}){
  const [advanced,setAdvanced]=useState(false);
  const field=(key,value)=>setForm(f=>({...f,[key]:value}));
  return <form className={styles.card} onSubmit={submit}><div className={styles.sectionHeading}><div><h2>{form.id?'ویرایش محصول':'افزودن محصول'}</h2><p>نام، قیمت و موجودی را وارد کنید؛ آدرس محصول خودکار ساخته می‌شود.</p></div></div><fieldset disabled={busy||!access} className={styles.productFieldset}>
  <section className={styles.productSection}><h3>۱. اطلاعات اصلی</h3><div className={styles.formGrid}>
  <label>نام محصول<input autoFocus required minLength={2} maxLength={180} placeholder="مثلاً کفش ورزشی مردانه" value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value,slug:f.autoSlug?productSlug(e.target.value):f.slug}))}/></label>
  <label>وضعیت انتشار<select value={form.status} onChange={e=>field('status',e.target.value)}>{Object.entries(productStates).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
+ {instagram&&<label className={styles.checkLabel} data-part="ig-link-toggle"><input type="checkbox" checked={instagram.show_link!==false} disabled={busy||!access||!instagram.permalink} onChange={e=>onInstagramLink?.(e.target.checked)}/>نمایش دکمهٔ «دیدن این محصول در اینستاگرام» در صفحهٔ محصول</label>}
  <BuilderTaxonomy label="دسته‌بندی" value={form.category} items={terms.filter(t=>t.kind==='category'&&t.active).map(t=>t.name)} onChange={v=>field('category',v)} onAdd={name=>addTerm('category',name)} onDelete={name=>deleteTerm('category',name)} disabled={busy||!access}/>
  <BuilderTaxonomy label="برند" value={form.brand} items={terms.filter(t=>t.kind==='brand'&&t.active).map(t=>t.name)} onChange={v=>field('brand',v)} onAdd={name=>addTerm('brand',name)} onDelete={name=>deleteTerm('brand',name)} disabled={busy||!access}/>
  <label>توضیح کوتاه<textarea maxLength={500} rows={2} placeholder="مهم‌ترین نکته‌های محصول برای خریدار" value={form.summary} onChange={e=>field('summary',e.target.value)}/></label>
