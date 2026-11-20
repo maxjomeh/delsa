@@ -20,12 +20,13 @@ async function call(url,options){
  if(!res.ok)throw Object.assign(new Error(body.error||'unavailable'),{status:res.status,body});
  return body;
 }
-// Step 1 of "posts to products": connect an Instagram account and browse its posts, reels and stories.
-// `onImport(items)` is wired in the next step; without it the selection is shown but nothing is created.
-export default function BuilderInstagramImport({onClose,initialResult='',onImport}){
+// "Posts to products": connect an Instagram account, browse posts/reels/stories and import the chosen ones as DRAFT products
+// (files are copied into Delsa's storage on the server; the browser only sends the media ids, 3 per request).
+export default function BuilderInstagramImport({onClose,initialResult='',site,onImported}){
  const [status,setStatus]=useState(null),[account,setAccount]=useState(''),[tab,setTab]=useState('all');
  const [pages,setPages]=useState({posts:{items:[],next:null,loaded:false},stories:{items:[],next:null,loaded:false}});
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(instagramResult(initialResult)),[picked,setPicked]=useState(()=>new Map());
+ const [phase,setPhase]=useState('pick'),[progress,setProgress]=useState({done:0,total:0,results:[]});
  const gen=useRef(0);
  const load=useCallback(async()=>{
   try{const s=await call('/api/builder/instagram');setStatus(s);setAccount(a=>a&&s.accounts.some(x=>x.id===a)?a:(s.accounts.find(x=>x.status==='connected')||s.accounts[0])?.id||'')}
@@ -37,7 +38,7 @@ export default function BuilderInstagramImport({onClose,initialResult='',onImpor
  const fetchPage=useCallback(async(which,after='')=>{
   const mine=++gen.current;setBusy(true);setError('');
   try{
-   const q=new URLSearchParams({account,kind:which});if(after)q.set('after',after);
+   const q=new URLSearchParams({account,kind:which});if(site)q.set('site',site);if(after)q.set('after',after);
    const data=await call('/api/builder/instagram/media?'+q);
    if(mine!==gen.current)return;
    setPages(p=>({...p,[which]:{items:[...(after?p[which].items:[]),...data.items.filter(i=>!(after&&p[which].items.some(x=>x.id===i.id)))],next:data.next||null,loaded:true}}));
@@ -45,12 +46,12 @@ export default function BuilderInstagramImport({onClose,initialResult='',onImpor
    // Mark the list as attempted so the effect below never retries on its own; the customer retries with the button.
    setPages(p=>({...p,[which]:{...p[which],loaded:true}}));if(e.status===401)load()}
   finally{if(mine===gen.current)setBusy(false)}
- },[account,load]);
+ },[account,load,site]);
  // A different account or tab starts from a clean list.
  useEffect(()=>{setPages({posts:{items:[],next:null,loaded:false},stories:{items:[],next:null,loaded:false}});setPicked(new Map())},[account]);
  useEffect(()=>{if(current?.status==='connected'&&!pages[kind].loaded&&!busy)fetchPage(kind)},[current?.status,kind,pages,busy,fetchPage]);
  const items=useMemo(()=>{const list=pages[kind].items;return tab==='reels'?list.filter(i=>i.kind==='reel'):list},[pages,kind,tab]);
- const toggle=item=>setPicked(m=>{const n=new Map(m);n.has(item.id)?n.delete(item.id):n.set(item.id,item);return n});
+ const toggle=item=>item.imported||phase!=='pick'?null:setPicked(m=>{const n=new Map(m);n.has(item.id)?n.delete(item.id):n.set(item.id,item);return n});
  async function connect(){
   setBusy(true);setError('');
   try{const r=await call('/api/builder/instagram',{method:'POST',body:JSON.stringify({action:'connect'})});window.location.assign(r.url)}
@@ -62,9 +63,24 @@ export default function BuilderInstagramImport({onClose,initialResult='',onImpor
   try{await call('/api/builder/instagram',{method:'POST',body:JSON.stringify({action:'disconnect',id:current.id})});setNotice(['ok','اتصال قطع شد.']);await load()}
   catch(e){setError('قطع اتصال انجام نشد.')}finally{setBusy(false)}
  }
+ async function runImport(){
+  const list=[...picked.values()];if(!list.length||!site||!current)return;
+  setPhase('running');setError('');setProgress({done:0,total:list.length,results:[]});
+  const all=[];
+  for(let i=0;i<list.length;i+=3){
+   const batch=list.slice(i,i+3);let results;
+   try{const r=await call('/api/builder/instagram/import',{method:'POST',body:JSON.stringify({account:current.id,site,ids:batch.map(x=>x.id)})});results=r.results}
+   catch(e){const message=e.body?.message||'ارتباط با سرور برقرار نشد.';results=batch.map(x=>({id:x.id,status:'failed',error:e.body?.error||'failed',message}));if(e.status===401)load();if(e.status===409||e.status===403||e.status===401){all.push(...results);setProgress({done:list.length,total:list.length,results:[...all,...list.slice(i+batch.length).map(x=>({id:x.id,status:'failed',error:'skipped',message:'متوقف شد.'}))]});break}}
+   all.push(...results);setProgress({done:Math.min(list.length,i+batch.length),total:list.length,results:[...all]});
+  }
+  const created=new Map(all.filter(r=>r.status==='created'||r.status==='duplicate').map(r=>[r.id,r.productId]));
+  setPages(p=>Object.fromEntries(Object.entries(p).map(([k,v])=>[k,{...v,items:v.items.map(i=>created.has(i.id)?{...i,imported:true,productId:created.get(i.id)}:i)}])));
+  setPicked(new Map());setPhase('done');onImported?.();
+ }
  const connected=status?.accounts?.filter(a=>a.status==='connected')||[];
  return <BuilderDialog title="وارد کردن از اینستاگرام" onClose={onClose}><div className={ui.root} data-part="ig-import">
   {notice&&<p className={`${ui.notice} ${notice[0]==='error'?ui.error:''}`} role="status">{notice[1]}</p>}
+  {phase!=='pick'&&<div className={ui.progress} role="status" aria-live="polite"><progress value={progress.done} max={progress.total||1} aria-label="پیشرفت"/><strong>{phase==='running'?'در حال ساخت… ':'پایان. '}{num(progress.done)} از {num(progress.total)}</strong><ul>{progress.results.map(r=><li key={r.id} data-status={r.status}>{r.status==='created'?'✓ ساخته شد':r.status==='duplicate'?'• قبلاً وارد شده':'✗ '+(r.message||'ناموفق')}{r.skipped?.length>0&&<small> · بخشی از فایل‌ها ذخیره نشد</small>}</li>)}</ul>{phase==='done'&&<div className={ui.top}><button type="button" className={ui.primary} onClick={onClose}>مشاهدهٔ پیش‌نویس‌ها</button><button type="button" className={ui.ghost} onClick={()=>setPhase('pick')}>انتخاب موارد دیگر</button></div>}</div>}
   {!status&&<p className={ui.notice} role="status"><Loader2 size={16}/> در حال بررسی اتصال…</p>}
   {status&&!status.installed&&!status.failed&&<p className={ui.notice}>این قابلیت هنوز روی سرور فعال نشده است.</p>}
   {status?.failed&&<p className={`${ui.notice} ${ui.error}`}>وضعیت اتصال دریافت نشد؛ بعداً دوباره تلاش کنید.</p>}
@@ -87,8 +103,8 @@ export default function BuilderInstagramImport({onClose,initialResult='',onImpor
     {tab==='stories'&&<p className={ui.notice}>استوری فقط ۲۴ ساعت می‌ماند؛ هنگام وارد کردن، یک نسخه در فضای دلسا ذخیره می‌شود.</p>}
     {error&&<p className={`${ui.notice} ${ui.error}`} role="alert">{error} <button type="button" className={ui.ghost} onClick={()=>fetchPage(kind,pages[kind].next||'')} disabled={busy}>تلاش دوباره</button></p>}
     <ul className={ui.grid} aria-busy={busy} aria-label="محتوای اینستاگرام">
-     {items.map(item=><li key={item.id}><button type="button" className={ui.card} aria-pressed={picked.has(item.id)} onClick={()=>toggle(item)}>
-      <span className={ui.media}>{item.thumbnail?<img src={item.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer"/>:null}<span className={ui.badge}>{kinds[item.kind]}</span><span className={ui.tick} aria-hidden="true">{picked.has(item.id)&&<Check size={14}/>}</span></span>
+     {items.map(item=><li key={item.id}><button type="button" className={ui.card} aria-pressed={picked.has(item.id)} aria-disabled={item.imported||undefined} data-imported={item.imported?'':undefined} onClick={()=>toggle(item)}>
+      <span className={ui.media}>{item.thumbnail?<img src={item.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer"/>:null}<span className={ui.badge}>{kinds[item.kind]}</span>{item.imported&&<span className={ui.done}>وارد شده</span>}<span className={ui.tick} aria-hidden="true">{picked.has(item.id)&&<Check size={14}/>}</span></span>
       <span className={ui.meta}><p>{item.caption||'بدون توضیح'}</p><time dateTime={item.timestamp}>{when(item.timestamp)}</time></span>
      </button></li>)}
      {busy&&!items.length&&Array.from({length:8},(_,i)=><li key={'s'+i}><div className={ui.skeleton}/></li>)}
@@ -98,9 +114,9 @@ export default function BuilderInstagramImport({onClose,initialResult='',onImpor
      {pages[kind].next&&<button type="button" className={ui.ghost} onClick={()=>fetchPage(kind,pages[kind].next)} disabled={busy}>{busy?'در حال دریافت…':'بارگذاری بیشتر'}</button>}
      <span className={ui.spacer}/>
      <span aria-live="polite">{picked.size?num(picked.size)+' مورد انتخاب شد':'موردی انتخاب نشده'}</span>
-     <button type="button" className={ui.primary} disabled={!onImport||!picked.size||busy} title={onImport?undefined:'ساخت محصول از موارد انتخابی در مرحلهٔ بعد فعال می‌شود'} onClick={()=>onImport?.([...picked.values()],current)}>ساخت محصول از موارد انتخابی</button>
+     <button type="button" className={ui.primary} disabled={!site||!picked.size||busy||phase!=='pick'} onClick={runImport}>ساخت پیش‌نویس محصول از موارد انتخابی</button>
     </div>
-    {!onImport&&<p className={ui.notice}>در این مرحله فقط می‌توانید محتوا را ببینید و انتخاب کنید؛ ساخت محصول به‌زودی فعال می‌شود.</p>}
+    {phase==='pick'&&picked.size>0&&<p className={ui.notice}>محصول‌ها به‌صورت <b>پیش‌نویس</b> ساخته می‌شوند؛ تصویر و ویدیو در فضای دلسا ذخیره می‌شود. قیمت و موجودی را بعد از ساخت در فرم محصول وارد کنید.</p>}
    </>}
   </>}
  </div></BuilderDialog>;

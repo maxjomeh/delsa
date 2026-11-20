@@ -25,7 +25,7 @@ apply supabase/tests/local-postgres/shim.sql
 # Base schema and the builder files the catalog depends on, in dependency order.
 for f in supabase/schema.sql supabase/migrations/20260928_store_products.sql supabase/migrations/20260928_customer_details.sql \
          supabase/migrations/20260929144517_customer_dashboard_data.sql supabase/migrations/20260929151028_customer_dashboard_ownership.sql \
-         supabase/apu-workspace.sql supabase/site-builder.sql supabase/builder-commerce.sql supabase/builder-admin-management.sql supabase/book-catalog.sql supabase/builder-instagram.sql; do apply "$f"; done
+         supabase/apu-workspace.sql supabase/site-builder.sql supabase/builder-commerce.sql supabase/builder-admin-management.sql supabase/book-catalog.sql supabase/builder-instagram.sql supabase/builder-instagram-import.sql; do apply "$f"; done
 # Two ordinary accounts and one admin, as the SQL tests expect (they roll their own changes back).
 as_pg "$APP" <<'SQL'
 insert into auth.users(id,email) values
