@@ -255,7 +255,7 @@ html[data-theme=light] .hx-stage-glow{opacity:.7}
 .hx-row{display:grid;grid-template-columns:1.5fr .9fr .9fr 1.25fr;align-items:center;gap:10px;padding:14px 6px;border-bottom:1.5px solid var(--line);font-size:16px;position:relative;color:var(--ink)}
 .hx-row.head{font-size:14px;color:var(--dim);padding-block:10px}
 .hx-row .nm b{display:block;font-weight:600;font-size:16px}
-.hx-row .nm small{color:var(--dim);font-size:13px;font-family:Arial,sans-serif;direction:ltr;display:block;text-align:right}
+.hx-row .nm small{color:var(--dim);font-size:13px;font-family:Arial,sans-serif;direction:ltr;display:block;text-align:start}
 .hx-row .pr{font-weight:700;font-variant-numeric:tabular-nums}
 .hx-row .pr small{display:block;font-size:13px;font-weight:700}
 .hx-row .pr small.up{color:var(--green)}.hx-row .pr small.dn{color:var(--ortxt)}
@@ -309,7 +309,7 @@ html[data-theme=light] .hx-cta{background:radial-gradient(ellipse at 80% 0%,rgba
 .hx-foot-grid a{display:block;padding:6px 0;font-size:17px;color:var(--mute);transition:color .2s;min-height:36px}
 .hx-foot-grid a:hover{color:var(--ortxt)}
 .hx-foot-grid a.hx-brand{display:inline-flex;padding:0;color:var(--ink);font-size:21px}
-.hx-foot-about p{margin-top:14px;font-size:15px;max-width:320px;font-family:Arial,sans-serif;direction:ltr;text-align:right;color:var(--dim)}
+.hx-foot-about p{margin-top:14px;font-size:15px;max-width:320px;font-family:Arial,sans-serif;direction:ltr;text-align:start;color:var(--dim)}
 
 
 /* ---------- Customer avatars (messenger-profile look) ---------- */

@@ -82,4 +82,4 @@
 }
 @media(max-width:380px){.storyStats{grid-template-columns:1fr}.cardEnd{display:none!important}}
 @media(prefers-reduced-motion:reduce){.card,.visible{animation:none!important;opacity:1!important;transform:none!important}.switch{transition:none}}
-.phone{direction:ltr;unicode-bidi:isolate;text-align:right;display:block;white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:.025em;font-family:Arial,system-ui,sans-serif}
+.phone{direction:ltr;unicode-bidi:isolate;text-align:start;display:block;white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:.025em;font-family:Arial,system-ui,sans-serif}

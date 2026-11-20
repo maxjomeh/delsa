@@ -1,16 +1,21 @@
+'use client';
+
 import { BrandIcon } from './BrandIcon';
+import { useI18n } from '../i18n/I18nProvider';
+import { tx } from '../../lib/i18n/config';
 
 const channels: [string, string][] = [
-  ['اینستاگرام', '#e1306c'],
-  ['واتساپ', '#25d366'],
-  ['تلگرام', '#2aabee'],
-  ['بله', '#2fbf9f'],
-  ['ایتا', '#ff8a00'],
-  ['روبیکا', '#8b6cff'],
-  ['سروش', '#3ab0ff'],
+  [tx('اینستاگرام'), '#e1306c'],
+  [tx('واتساپ'), '#25d366'],
+  [tx('تلگرام'), '#2aabee'],
+  [tx('بله'), '#2fbf9f'],
+  [tx('ایتا'), '#ff8a00'],
+  [tx('روبیکا'), '#8b6cff'],
+  [tx('سروش'), '#3ab0ff'],
 ];
 
 export default function Marquee() {
+  const { t } = useI18n();
   // Two identical halves so translateX(-50%) loops seamlessly.
   const half = [...channels, ...channels];
   return (
@@ -20,7 +25,7 @@ export default function Marquee() {
           <div key={k} style={{ display: 'flex', gap: 14 }}>
             {half.map(([name, color], i) => (
               <span className="hx-ch" key={`${k}-${i}`} style={{ ['--c' as string]: color }}>
-                <BrandIcon name={name} size={22} /> {name}
+                <BrandIcon name={name} size={22} /> {t(name)}
               </span>
             ))}
           </div>

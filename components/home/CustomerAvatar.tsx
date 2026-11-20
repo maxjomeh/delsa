@@ -1,4 +1,8 @@
+'use client';
+
 import { BrandIcon } from './BrandIcon';
+import { useI18n } from '../i18n/I18nProvider';
+import { tx } from '../../lib/i18n/config';
 
 /**
  * Illustrated messenger-profile pictures for the demo customers (fictional people, flat vector art — not photos).
@@ -32,10 +36,11 @@ function Hair({ look, layer }: { look: Look; layer: 'back' | 'front' }) {
 }
 
 export default function CustomerAvatar({ name, channel, size = 40 }: { name: string; channel?: string; size?: number }) {
+  const { t } = useI18n();
   const look = LOOKS[name] ?? FALLBACK;
   const badge = Math.round(size * 0.44);
   return (
-    <span className="hx-cav" style={{ ['--av' as string]: `${size}px`, ['--bd' as string]: `${badge}px` }} role="img" aria-label={`تصویر پروفایل ${name}${channel ? ' در ' + channel : ''}`}>
+    <span className="hx-cav" style={{ ['--av' as string]: `${size}px`, ['--bd' as string]: `${badge}px` }} role="img" aria-label={channel ? t('تصویر پروفایل {name} در {channel}', { name: t(name), channel: t(channel) }) : t('تصویر پروفایل {name}', { name: t(name) })}>
       <span className="hx-cav-pic">
         <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
           <rect width="64" height="64" fill={look.bg[0]} />
