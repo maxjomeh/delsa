@@ -2,7 +2,8 @@ const ts=require('typescript'),fs=require('fs'),vm=require('vm'),assert=require(
 const root=path.resolve(__dirname,'../..');
 function load(file,mocks={},globals={}){const module={exports:{}};const code=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{fileName:'test.tsx',compilerOptions:{esModuleInterop:true,target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;vm.runInNewContext(code,{module,exports:module.exports,require:n=>mocks[n]||require(n),console,String,Number,Array,Object,JSON,Set,Map,Math,RegExp,Promise,Error,Date,URL,URLSearchParams,AbortSignal,Buffer,process,encodeURIComponent,decodeURIComponent,Intl,Uint8Array,...globals},{});return module.exports}
 const base=load('lib/builder-instagram.js');
-const imp=load('lib/builder-instagram-import.js',{'./builder-instagram':base});
+const isbnLib=load('lib/book-isbn.js'),indLib=load('lib/builder-industries.js',{'./book-isbn':isbnLib}),aiLib=load('lib/builder-ai.js',{'./builder-industries':indLib});
+const imp=load('lib/builder-instagram-import.js',{'./builder-instagram':base,'./builder-ai':aiLib});
 const cdn='https://scontent.cdninstagram.com/';
 const jpeg=()=>Buffer.concat([Buffer.from([0xff,0xd8,0xff,0xe0]),Buffer.alloc(64,1)]);
 const png=()=>Buffer.concat([Buffer.from('89504e470d0a1a0a','hex'),Buffer.alloc(64)]);
@@ -79,6 +80,23 @@ const mp4=()=>Buffer.concat([Buffer.alloc(4),Buffer.from('ftypisom'),Buffer.allo
  ({deps,log}=mk({recordFails:true}));assert.equal(await code(imp.importMedia({media,site:'s',deps})),'duplicate');assert.deepEqual(log.deleted,['prod-1']);assert(log.removed.length>0);
  // carousel: several pictures and a video
  ({deps,log}=mk());r=await imp.importMedia({media:{id:'3',kind:'carousel',caption:'',children:car.children,thumbnail:cdn+'1.jpg'},site:'s',deps});assert.deepEqual([r.images,r.videos],[3,1]);assert.equal(log.saved[0][0].title,'محصول اینستاگرام');
+
+ // ---- step 3: confirmed fields (price -> published, options -> variants, plan limit -> draft)
+ const over=aiLib.normalizeOverrides({title:'کیف چرم قرمز',summary:'خلاصه',price:'۹۸۰۰۰۰',sale_price:850000,availability:'in_stock',options:[{name:'رنگ',values:['قرمز','مشکی']}],category:'کیف',tags:['چرم','دست‌دوز'],attributes:{}},{industry:'general'});
+ ({deps,log}=mk());r=await imp.importMedia({media,site:'s',deps,options:{over}});
+ let [d0,vs]=log.saved[0];
+ assert.deepEqual([d0.title,d0.status,d0.kind,d0.summary,d0.category,d0.tags],['کیف چرم قرمز','published','variable','خلاصه','کیف',['چرم','دست‌دوز']]);assert.equal(vs.length,2);assert.deepEqual([vs[0].label,vs[0].price,vs[0].sale_price,vs[0].manage_stock],['قرمز',980000,850000,false]);assert.deepEqual([r.productStatus,r.downgraded],['published',false]);
+ // no price -> draft, even with confirmed fields
+ ({deps,log}=mk());r=await imp.importMedia({media,site:'s',deps,options:{over:aiLib.normalizeOverrides({title:'بدون قیمت'},{industry:'general'})}});assert.deepEqual([log.saved[0][0].status,log.saved[0][0].title,r.productStatus],['draft','بدون قیمت','draft']);
+ // empty confirmed title/tags fall back to the caption rules
+ ({deps,log}=mk());await imp.importMedia({media,site:'s',deps,options:{over:aiLib.normalizeOverrides({price:500000},{industry:'general'})}});assert.deepEqual([log.saved[0][0].title,log.saved[0][0].tags],['کیف چرم',['چرم']]);
+ // out of stock confirmed -> tracked stock of zero
+ ({deps,log}=mk());await imp.importMedia({media,site:'s',deps,options:{over:aiLib.normalizeOverrides({price:500000,availability:'out_of_stock'},{industry:'general'})}});assert.deepEqual([log.saved[0][1][0].manage_stock,log.saved[0][1][0].stock],[true,0]);
+ // free plan limit: the published save is refused once, the product is kept as a draft
+ ({deps,log}=mk());let tries=0;const orig=deps.saveProduct;deps.saveProduct=async(d,v)=>{tries++;if(d.status==='published')throw Object.assign(new Error('limit'),{code:'plan_limit'});return orig(d,v)};
+ r=await imp.importMedia({media,site:'s',deps,options:{over}});assert.deepEqual([tries,r.productStatus,r.downgraded,log.saved[0][0].status],[2,'draft',true,'draft']);
+ // a plan-limit error for a draft is not retried forever
+ ({deps,log}=mk());deps.saveProduct=async()=>{throw Object.assign(new Error('limit'),{code:'plan_limit'})};assert.equal(await code(imp.importMedia({media,site:'s',deps})),'plan_limit');assert(log.removed.length>0);
 
  console.log('PASS: Instagram import (caption rules, asset plan, safe downloads, orphan cleanup, full flow)');
 })().catch(e=>{console.error(e);process.exit(1)});

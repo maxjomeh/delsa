@@ -36,3 +36,16 @@
 .progress progress{width:100%;accent-color:var(--orange)}
 .progress ul{list-style:none;margin:0;padding:0;display:grid;gap:4px;max-height:180px;overflow:auto;font-size:13.5px}
 .progress li[data-status=failed]{color:#f87171}.progress li[data-status=created]{color:#4ade80}
+
+.review{display:grid;gap:12px}
+.row{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:10px}
+.row:not([data-include]){opacity:.6}
+.rowHead{display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0}
+.rowHead strong{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.thumb{width:44px;aspect-ratio:4/5;border-radius:8px;overflow:hidden;background:var(--panel2,var(--panel));flex:none}.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.src{font-style:normal;font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px}
+.fields label{display:grid;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+.fields input,.fields select{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;min-width:0}
+.wide{grid-column:1/-1}.state{margin:0;grid-column:1/-1;font-size:13px}
+.fields details p{margin:6px 0 0;white-space:pre-wrap;color:var(--muted);font-size:13px;line-height:1.9}
