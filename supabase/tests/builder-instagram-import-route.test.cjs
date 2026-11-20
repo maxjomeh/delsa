@@ -5,7 +5,7 @@ const cdn='https://scontent.cdninstagram.com/';
 const jpeg=()=>Buffer.concat([Buffer.from([0xff,0xd8,0xff,0xe0]),Buffer.alloc(64,1)]);
 const mp4=()=>Buffer.concat([Buffer.alloc(4),Buffer.from('ftypisom'),Buffer.alloc(64)]);
 const UID='11111111-1111-1111-1111-111111111111',SITE='22222222-2222-2222-2222-222222222222',ACC='33333333-3333-3333-3333-333333333333';
-const state={user:{id:UID},access:true,site:{id:SITE,owner_id:UID},account:{id:ACC,status:'connected'},imports:[],quota:0,expires:new Date(Date.now()+50*86400000).toISOString(),tokenRow:true,saveError:null,recordError:null};
+const state={user:{id:UID},access:true,site:{id:SITE,owner_id:UID,draft:{industry:'general'}},account:{id:ACC,status:'connected'},imports:[],quota:0,expires:new Date(Date.now()+50*86400000).toISOString(),tokenRow:true,saveError:null,recordError:null};
 const calls={rpc:[],uploads:[],removed:[],deleted:[],saved:[],fetches:[]};
 const media={'17900000000001':{id:'17900000000001',caption:'کیف چرم #چرم\nقیمت ۹۸۰ هزار تومان',media_type:'IMAGE',media_url:cdn+'a.jpg',permalink:'https://www.instagram.com/p/A/',timestamp:'2026-11-01T10:00:00+0000'},
  '17900000000002':{id:'17900000000002',caption:'ریلز',media_type:'VIDEO',media_product_type:'REELS',media_url:cdn+'v.mp4',thumbnail_url:cdn+'t.jpg',permalink:'https://www.instagram.com/reel/B/',timestamp:'2026-11-02T10:00:00+0000'},
@@ -22,7 +22,9 @@ const fakeFetch=async(url,opts={})=>{
 };
 const libNet=load('lib/builder-instagram.js',{},{fetch:fakeFetch});
 const tokenLib=load('lib/builder-instagram-token.js',{'./builder-instagram':libNet},{fetch:fakeFetch});
-const importLib=load('lib/builder-instagram-import.js',{'./builder-instagram':libNet},{fetch:fakeFetch});
+const isbnLib=load('lib/book-isbn.js'),indLib=load('lib/builder-industries.js',{'./book-isbn':isbnLib}),aiLib=load('lib/builder-ai.js',{'./builder-industries':indLib});
+const importLib=load('lib/builder-instagram-import.js',{'./builder-instagram':libNet,'./builder-ai':aiLib},{fetch:fakeFetch});
+const accessLib=load('lib/builder-instagram-access.js');
 const json=(body,init={})=>({body,status:init.status||200,headers:init.headers||{}});
 const query=(rows)=>{const q={f:{},select(){return q},eq(k,v){q.f[k]=v;return q},in(k,v){q.f[k]=v;return q},maybeSingle:async()=>({data:rows(q.f)}),then(res,rej){return Promise.resolve({data:rows(q.f)||[],error:null}).then(res,rej)}};return q};
 const userDb={auth:{getUser:async()=>({data:{user:state.user}})},
@@ -37,11 +39,11 @@ const svc={rpc:async(n,a)=>{calls.rpc.push([n,a]);
  from:t=>({delete:()=>({eq:(k,v)=>({eq:(k2,v2)=>{calls.deleted.push([t,v,v2]);return Promise.resolve({})}})})})};
 const server={seal:v=>'enc:'+v,unseal:v=>String(v).replace(/^enc:/,''),serverDatabase:()=>svc};
 const cfg={graphOrigin:()=>'https://graph.instagram.com',isUuid:v=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(v||''))};
-const mocks={'next/server':{NextResponse:{json}},'../../../../../lib/supabase/server':{createClient:async()=>userDb},'../../../../../lib/crm/instagram':server,'../../../../../lib/builder-instagram':libNet,'../../../../../lib/builder-instagram-token':tokenLib,'../../../../../lib/builder-instagram-import':importLib,'../../../../../lib/builder-instagram-server':cfg};
+const mocks={'next/server':{NextResponse:{json}},'../../../../../lib/supabase/server':{createClient:async()=>userDb},'../../../../../lib/crm/instagram':server,'../../../../../lib/builder-instagram':libNet,'../../../../../lib/builder-instagram-token':tokenLib,'../../../../../lib/builder-instagram-import':importLib,'../../../../../lib/builder-instagram-access':accessLib,'../../../../../lib/builder-ai':aiLib,'../../../../../lib/builder-instagram-server':cfg};
 const route=load('app/api/builder/instagram/import/route.js',mocks);
 const O='https://delsaai.ir';
 const req=(body,origin=O)=>({url:O+'/api/builder/instagram/import',headers:{get:h=>h.toLowerCase()==='origin'?origin:null},json:async()=>body});
-const reset=()=>{for(const k of Object.keys(calls))calls[k].length=0;state.user={id:UID};state.access=true;state.site={id:SITE,owner_id:UID};state.account={id:ACC,status:'connected'};state.imports=[];state.quota=0;state.expires=new Date(Date.now()+50*86400000).toISOString();state.tokenRow=true;state.saveError=null;state.recordError=null;state.graphError=null};
+const reset=()=>{for(const k of Object.keys(calls))calls[k].length=0;state.user={id:UID};state.access=true;state.site={id:SITE,owner_id:UID,draft:{industry:'general'}};state.account={id:ACC,status:'connected'};state.imports=[];state.quota=0;state.expires=new Date(Date.now()+50*86400000).toISOString();state.tokenRow=true;state.saveError=null;state.recordError=null;state.graphError=null};
 const post=(ids,over={})=>route.POST(req({account:ACC,site:SITE,ids,...over}));
 
 (async()=>{
@@ -83,5 +85,13 @@ const post=(ids,over={})=>route.POST(req({account:ACC,site:SITE,ids,...over}));
  reset();state.recordError={message:'builder_instagram_duplicate'};res=await post(['17900000000001']);assert.equal(res.body.results[0].status,'duplicate');assert.deepEqual(calls.deleted.map(d=>d[0]),['builder_products'],'the product is removed when it cannot be recorded');
  // Instagram rejects the token: the account is marked expired and the rest of the batch is not attempted
  reset();state.graphError=190;res=await post(['17900000000001','17900000000002']);assert.deepEqual(res.body.results.map(r=>r.status),['failed','failed']);assert(calls.rpc.some(c=>c[0]==='builder_instagram_mark_expired'));assert.equal(calls.saved.length,0);
+
+ // ---- step 3: customer-confirmed fields
+ reset();res=await route.POST(req({account:ACC,site:SITE,ids:['17900000000001','17900000000002'],overrides:{'17900000000001':{title:'کیف قرمز',price:'۹۸۰۰۰۰',options:[{name:'رنگ',values:['قرمز','مشکی']}],category:'کیف',tags:['چرم']},'17900000000002':{include:false}}}));
+ assert.deepEqual(res.body.results.map(r=>[r.id,r.status]),[['17900000000001','created'],['17900000000002','skipped']],'unchecked items are skipped');
+ assert.equal(calls.saved.length,1);const doc=calls.saved[0].p_document;assert.deepEqual([doc.title,doc.status,doc.kind,doc.category],['کیف قرمز','published','variable','کیف']);assert.equal(calls.saved[0].p_variants.length,2);assert.equal(res.body.results[0].productStatus,'published');
+ assert(!calls.fetches.some(u=>u.includes('/17900000000002')),'a skipped item is not even read');
+ reset();state.saveError={message:'builder_free_product_limit'};res=await route.POST(req({account:ACC,site:SITE,ids:['17900000000001'],overrides:{'17900000000001':{price:500000}}}));assert.equal(res.body.results[0].error,'plan_limit','the plan limit is reported (the published save is refused for drafts too in this fake)');
+ reset();res=await route.POST(req({account:ACC,site:SITE,ids:['17900000000001'],overrides:{'17900000000001':{price:'-5',sale_price:'x',tags:'nope',options:'nope',title:'<b>x</b>عنوان'}}}));assert.equal(res.body.results[0].status,'created');assert.deepEqual([calls.saved[0].p_document.status,calls.saved[0].p_document.title.includes('<')],['draft',false],'hostile overrides are sanitised, an invalid price means draft');
  console.log('PASS: Instagram import route (authorisation, quota, duplicates, per-item failures, cleanup, token secrecy)');
 })().catch(e=>{console.error(e);process.exit(1)});
