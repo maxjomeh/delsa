@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import Link from './i18n/Link';
+import { getI18n } from '../lib/i18n/server';
 import { redirect } from 'next/navigation';
 import { createClient } from '../lib/supabase/server';
 import { isSupabaseConfigured } from '../lib/supabase/config';
@@ -14,12 +15,13 @@ function profilePhone(profile) {
 }
 
 export async function UserDashboard({initialTab='overview'}={}) {
-  if (!isSupabaseConfigured()) return redirect('/login?error=setup');
+  const { href } = await getI18n();
+  if (!isSupabaseConfigured()) return redirect(href('/login?error=setup'));
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect(initialTab==='builder'?'/login?next=/dashboard%3Ftab%3Dbuilder':'/login');
+  if (!user) redirect(href(initialTab==='builder'?'/login?next=/dashboard%3Ftab%3Dbuilder':'/login'));
   const { data: profile } = await supabase.from('profiles').select('full_name,phone,email,role').eq('id', user.id).maybeSingle();
-  if (profile?.role === 'admin') redirect(initialTab==='builder'?'/admin?tab=sites':'/admin');
+  if (profile?.role === 'admin') redirect(href(initialTab==='builder'?'/admin?tab=sites':'/admin'));
   const [sources, rules, runs, messages, store, subscriptions, entitlement] = await Promise.all([
     supabase.from('apu_sources').select('*').eq('user_id', user.id).is('deleted_at', null).order('created_at', { ascending: false }),
     supabase.from('apu_rules').select('*').eq('user_id', user.id).is('deleted_at', null).order('created_at', { ascending: false }),
@@ -47,12 +49,13 @@ export async function UserDashboard({initialTab='overview'}={}) {
 }
 
 export async function AdminDashboard({initialTab='overview'}={}) {
-  if (!isSupabaseConfigured()) return redirect('/admin/login?error=setup');
+  const { href } = await getI18n();
+  if (!isSupabaseConfigured()) return redirect(href('/admin/login?error=setup'));
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/admin/login');
+  if (!user) redirect(href('/admin/login'));
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
-  if (profile?.role !== 'admin') redirect('/login');
+  if (profile?.role !== 'admin') redirect(href('/login'));
   const [{ data: users }, { data: products }, { data: subscriptions }] = await Promise.all([
     supabase.from('profiles').select('id,phone,email,full_name,role,created_at').order('created_at', { ascending: false }).limit(500),
     supabase.from('store_products').select('id,name,description,price,image_url,is_published,created_at').order('created_at', { ascending: false }).limit(100),
