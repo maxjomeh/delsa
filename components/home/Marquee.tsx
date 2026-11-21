@@ -2,22 +2,14 @@
 
 import { BrandIcon } from './BrandIcon';
 import { useI18n } from '../i18n/I18nProvider';
-import { tx } from '../../lib/i18n/config';
-
-const channels: [string, string][] = [
-  [tx('اینستاگرام'), '#e1306c'],
-  [tx('واتساپ'), '#25d366'],
-  [tx('تلگرام'), '#2aabee'],
-  [tx('بله'), '#2fbf9f'],
-  [tx('ایتا'), '#ff8a00'],
-  [tx('روبیکا'), '#8b6cff'],
-  [tx('سروش'), '#3ab0ff'],
-];
+import { DEFAULT_LOCALE, MESSENGERS } from '../../lib/i18n/config';
 
 export default function Marquee() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const channels = (MESSENGERS[locale] ?? MESSENGERS[DEFAULT_LOCALE]).marquee;
   // Two identical halves so translateX(-50%) loops seamlessly.
-  const half = [...channels, ...channels];
+  // Short lists are repeated so each half is wider than the viewport.
+  const half = Array.from({ length: Math.max(2, Math.ceil(14 / channels.length)) }, () => channels).flat();
   return (
     <div className="hx-marquee" aria-hidden="true">
       <div className="hx-track">

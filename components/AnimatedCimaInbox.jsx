@@ -6,9 +6,9 @@ import {BrandIcon} from './home/BrandIcon';
 import CustomerAvatar from './home/CustomerAvatar';
 import styles from './AnimatedCimaInbox.module.css';
 import {useI18n} from './i18n/I18nProvider';
-import {tx} from '../lib/i18n/config';
+import {tx,DEFAULT_LOCALE} from '../lib/i18n/config';
 
-const conversations=[
+const baseConversations=[
  {id:'instagram',name:tx('مریم احمدی'),initial:tx('م'),channel:tx('اینستاگرام'),channelKey:'instagram',time:tx('همین الان'),last:tx('شماره سفارش رو فرستادم'),unread:2,
   messages:[
    {from:'customer',text:tx('سلام، سفارش من امروز ارسال می‌شه؟')},
@@ -46,6 +46,12 @@ const conversations=[
   ],status:tx('شناخت نیاز و پیشنهاد محصول'),review:false}
 ];
 
+// The Iranian messengers (Bale, Rubika) only appear in the Persian site; other languages show widely used international ones.
+const INTERNATIONAL_CHANNELS={
+ bale:{channel:tx('مسنجر'),channelKey:'messenger'},
+ rubika:{channel:tx('واتساپ'),channelKey:'whatsapp'}
+};
+
 // Example conversation clocks. AI replies share the same minute as the incoming
 // customer message; a customer may respond several minutes later.
 // These are illustrative clocks, not live message receipts.
@@ -57,7 +63,8 @@ const demoClocks={
  rubika:[990,990,1006,1006]
 };
 export default function AnimatedCimaInbox(){
- const {t,dir,intl}=useI18n();
+ const {t,dir,intl,locale}=useI18n();
+ const conversations=useMemo(()=>locale===DEFAULT_LOCALE?baseConversations:baseConversations.map(c=>({...c,...(INTERNATIONAL_CHANNELS[c.id]||{})})),[locale]);
  const nf=(n,grouping=true)=>new Intl.NumberFormat(intl,{useGrouping:grouping}).format(n);
  const demoClock=(conversationId,index)=>{
   const values=demoClocks[conversationId]||demoClocks.instagram;
@@ -71,7 +78,7 @@ export default function AnimatedCimaInbox(){
  const [switching,setSwitching]=useState(false);
  const [reduced,setReduced]=useState(false);
  const scrollRef=useRef(null);
- const active=useMemo(()=>conversations.find(c=>c.id===activeId)||conversations[0],[activeId]);
+ const active=useMemo(()=>conversations.find(c=>c.id===activeId)||conversations[0],[activeId,conversations]);
  useEffect(()=>{
   const media=window.matchMedia('(prefers-reduced-motion: reduce)');
   const sync=()=>setReduced(media.matches);sync();

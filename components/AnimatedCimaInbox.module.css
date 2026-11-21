@@ -27,11 +27,13 @@
 .bale{color:#164f94;background:#368fe020;border-color:#368fe040}
 .telegram{color:#0b6286;background:#209cc620;border-color:#209cc640}
 .rubika{color:#62299f;background:#9b63d820;border-color:#9b63d840}
+.messenger{color:#0a58b8;background:#0a7cff20;border-color:#0a7cff40}
 :global(html[data-theme=dark]) .instagram{color:#ff8fc8}
 :global(html[data-theme=dark]) .whatsapp{color:#52d68f}
 :global(html[data-theme=dark]) .bale{color:#8fc3ff}
 :global(html[data-theme=dark]) .telegram{color:#6fd3f5}
 :global(html[data-theme=dark]) .rubika{color:#c7a6ff}
+:global(html[data-theme=dark]) .messenger{color:#7db6ff}
 .inboxNote{margin:0;padding:12px 14px;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border-top:1.5px solid var(--line)}
 .chat{min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--panel);transition:opacity .48s ease,transform .48s cubic-bezier(.2,.8,.2,1)}
 .switching .chat{opacity:.12;transform:translateX(-12px)}
