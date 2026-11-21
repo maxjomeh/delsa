@@ -1,4 +1,6 @@
 'use client';
+import {useI18n} from './i18n/I18nProvider';
+import {tx} from '../lib/i18n/config';
 import {useEffect,useMemo,useState} from 'react';
 import {Search,Trash2,UsersRound} from 'lucide-react';
 import {useRouter} from 'next/navigation';
@@ -13,6 +15,7 @@ function formatPhone(user){
  return phone||'—';
 }
 export default function AdminUsersManager({users,products,subscriptions,apuChanges={},onSubscriptionsChanged}){
+ const {t,intl}=useI18n();
  const router=useRouter(),[query,setQuery]=useState(''),[marked,setMarked]=useState([]),[expanded,setExpanded]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[now,setNow]=useState(Date.now());
  useEffect(()=>{const handle=setInterval(()=>setNow(Date.now()),60000);return()=>clearInterval(handle)},[]);
  useEffect(()=>setMarked(old=>old.filter(id=>users.some(u=>u.id===id&&u.role!=='admin'&&!protectedCustomerIds.has(id)))),[users]);
@@ -21,9 +24,9 @@ export default function AdminUsersManager({users,products,subscriptions,apuChang
  async function remove(ids){
   if(busy||!ids.length)return;
   const accounts=users.filter(u=>ids.includes(u.id));
-  if(accounts.length!==ids.length||accounts.some(u=>u.role==='admin'||protectedCustomerIds.has(u.id))){setError('این حساب محافظت شده است و نمی‌توان آن را حذف کرد.');return;}
-  const label=accounts.length===1?'«'+(accounts[0].full_name||'مشتری')+'»':accounts.length.toLocaleString('fa-IR')+' مشتری';
-  if(!window.confirm('حساب '+label+' از دسترسی خارج و از فهرست پنهان شود؟ اطلاعات وابسته برای حفاظت از داده‌ها آرشیو می‌شوند.'))return;
+  if(accounts.length!==ids.length||accounts.some(u=>u.role==='admin'||protectedCustomerIds.has(u.id))){setError(t('این حساب محافظت شده است و نمی‌توان آن را حذف کرد.'));return;}
+  const label=accounts.length===1?'«'+(accounts[0].full_name||t('مشتری'))+'»':t('{n} مشتری',{n:accounts.length.toLocaleString(intl)});
+  if(!window.confirm(t('حساب {label} از دسترسی خارج و از فهرست پنهان شود؟ اطلاعات وابسته برای حفاظت از داده‌ها آرشیو می‌شوند.',{label})))return;
   setBusy(true);setError('');setNotice('');
   let completed=0;const failures=[];
   try{
@@ -31,41 +34,41 @@ export default function AdminUsersManager({users,products,subscriptions,apuChang
     try{
      const response=await fetch('/api/admin/customer-details',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'delete-customer',customerId:account.id,confirm:'DELETE_CUSTOMER'})});
      const result=await response.json();
-     if(!response.ok)throw Error(result.error||'حذف انجام نشد');
+     if(!response.ok)throw Error(result.error||t('حذف انجام نشد'));
      completed++;
     }catch(e){failures.push(account.full_name+': '+e.message)}
    }
-   if(completed)setNotice(completed.toLocaleString('fa-IR')+' حساب غیرفعال و از فهرست خارج شد.');
+   if(completed)setNotice(t('{n} حساب غیرفعال و از فهرست خارج شد.',{n:completed.toLocaleString(intl)}));
    if(failures.length)setError(failures.join(' | '));
    setMarked([]);router.refresh();
   }finally{setBusy(false)}
  }
  return <div className="admin-user-manager">
   <div className="admin-cleanup-bar">
-   <label className="admin-cleanup-filter"><Search size={16}/><input value={query} type="search" onChange={e=>setQuery(e.target.value)} placeholder="جست‌وجوی نام یا موبایل"/></label>
-   <label><input type="checkbox" checked={deletable.length>0&&deletable.every(u=>marked.includes(u.id))} onChange={e=>setMarked(e.target.checked?deletable.map(u=>u.id):[])}/> انتخاب همه مشتریان نمایش‌داده‌شده</label>
-   <span>{marked.length.toLocaleString('fa-IR')} انتخاب</span>
-   <button className="admin-cleanup-danger" type="button" disabled={busy||!marked.length} onClick={()=>remove(marked)}><Trash2 size={15}/> حذف انتخاب‌شده‌ها</button>
+   <label className="admin-cleanup-filter"><Search size={16}/><input value={query} type="search" onChange={e=>setQuery(e.target.value)} placeholder={t('جست‌وجوی نام یا موبایل')}/></label>
+   <label><input type="checkbox" checked={deletable.length>0&&deletable.every(u=>marked.includes(u.id))} onChange={e=>setMarked(e.target.checked?deletable.map(u=>u.id):[])}/> {t('انتخاب همه مشتریان نمایش‌داده‌شده')}</label>
+   <span>{marked.length.toLocaleString(intl)} {t('انتخاب')}</span>
+   <button className="admin-cleanup-danger" type="button" disabled={busy||!marked.length} onClick={()=>remove(marked)}><Trash2 size={15}/> {t('حذف انتخاب‌شده‌ها')}</button>
   </div>
   {error&&<p className="admin-form-error" role="alert">{error}</p>}
   {notice&&<p className="admin-form-success" role="status">{notice}</p>}
   <div className="users-table">
-   <div className="users-row users-head"><span>کاربر</span><span>شماره</span><span>نقش</span><span>اشتراک فعال</span><span>عملیات</span></div>
+   <div className="users-row users-head"><span>{t('کاربر')}</span><span>{t('شماره')}</span><span>{t('نقش')}</span><span>{t('اشتراک فعال')}</span><span>{t('عملیات')}</span></div>
    {filtered.map(u=>{
     const protectedUser=u.role==='admin'||protectedCustomerIds.has(u.id),selected=marked.includes(u.id);
     const active=subscriptions.filter(a=>a.customer_id===u.id&&new Date(a.expires_at).getTime()>now);
     return <div className="admin-user-entry" key={u.id}>
      <div className="users-row">
-      <span className="admin-cleanup-identity"><input disabled={protectedUser||busy} type="checkbox" checked={selected} aria-label={'انتخاب '+u.full_name} onChange={e=>setMarked(old=>e.target.checked?[...old,u.id]:old.filter(id=>id!==u.id))}/><UsersRound size={16}/><b>{u.full_name||'بدون نام'}</b>{apuChanges[u.id]>0&&<small className="apu-new">{apuChanges[u.id]} تغییر جدید</small>}</span>
+      <span className="admin-cleanup-identity"><input disabled={protectedUser||busy} type="checkbox" checked={selected} aria-label={t('انتخاب {name}',{name:u.full_name})} onChange={e=>setMarked(old=>e.target.checked?[...old,u.id]:old.filter(id=>id!==u.id))}/><UsersRound size={16}/><b>{u.full_name||t('بدون نام')}</b>{apuChanges[u.id]>0&&<small className="apu-new">{apuChanges[u.id]} {t('تغییر جدید')}</small>}</span>
       <span dir="ltr">{formatPhone(u)}</span>
-      <span className={u.role==='admin'?'role-admin':'role-user'}>{u.role==='admin'?'مدیر':protectedUser?'محافظت‌شده':'مشتری'}</span>
-      <span className="users-subscriptions">{active.length?active.map(a=><small key={a.id}>{products.find(p=>p.id===a.product_id)?.name||'محصول'} · {daysRemainingIran(a.expires_at,now).toLocaleString('fa-IR')} روز</small>):'—'}</span>
-      <span className="admin-cleanup-row-actions"><button type="button" onClick={()=>setExpanded(expanded===u.id?null:u.id)}>{expanded===u.id?'بستن':'جزئیات'}</button><button type="button" className="admin-cleanup-danger" disabled={protectedUser||busy} onClick={()=>remove([u.id])} aria-label={'حذف '+u.full_name}><Trash2 size={15}/></button></span>
+      <span className={u.role==='admin'?'role-admin':'role-user'}>{u.role==='admin'?t('مدیر'):protectedUser?t('محافظت‌شده'):t('مشتری')}</span>
+      <span className="users-subscriptions">{active.length?active.map(a=><small key={a.id}>{products.find(p=>p.id===a.product_id)?.name||t('محصول')} · {daysRemainingIran(a.expires_at,now).toLocaleString(intl)} {t('روز')}</small>):'—'}</span>
+      <span className="admin-cleanup-row-actions"><button type="button" onClick={()=>setExpanded(expanded===u.id?null:u.id)}>{expanded===u.id?t('بستن'):t('جزئیات')}</button><button type="button" className="admin-cleanup-danger" disabled={protectedUser||busy} onClick={()=>remove([u.id])} aria-label={t('حذف {name}',{name:u.full_name})}><Trash2 size={15}/></button></span>
      </div>
      {expanded===u.id&&<CustomerDetails customer={u} products={products} onSubscriptionsChanged={rows=>onSubscriptionsChanged?.(u.id,rows)} onChanged={()=>router.refresh()}/>}
     </div>;
    })}
-   {!filtered.length&&<p className="empty-users">کاربری پیدا نشد.</p>}
+   {!filtered.length&&<p className="empty-users">{t('کاربری پیدا نشد.')}</p>}
   </div>
  </div>;
 }

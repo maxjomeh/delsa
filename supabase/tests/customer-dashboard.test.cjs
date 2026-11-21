@@ -6,20 +6,22 @@ function load(path,mocks){const src=ts.transpileModule(fs.readFileSync(root+path
 const icons=new Proxy({},{get:(_,key)=>key==='__esModule'?false:()=>React.createElement('svg')});
 const fakeReact={...React,useEffect:()=>{},useState:v=>[typeof v==='function'?v():v,()=>{}],useMemo:f=>f(),Activity:({mode,children})=>mode==='hidden'?null:children};
 const sub=code=>({id:code,product_id:code,starts_at:'2026-01-01',expires_at:'2099-01-01',store_products:{name:code==='apu'?'سیستم APU':'سایت ساز',service_code:code}});
-const Overview=load('components/CustomerServiceOverview.js',{'react':fakeReact,'lucide-react':icons}).default;
+// i18n: the components read the language from context; tests run in Persian (identity).
+const I18N={'./i18n/I18nProvider':{useI18n:()=>({t:(x,v)=>v?String(x).replace(/\{(\w+)\}/g,(m,n)=>v[n]):x,intl:'fa-IR',locale:'fa',dir:'rtl'})},'./i18n/Link':({children,...p})=>React.createElement('a',p,children),'./i18n/PersianIsland':({children})=>children,'../lib/i18n/config':{tx:x=>x}};
+const Overview=load('components/CustomerServiceOverview.js',{...I18N,'react':fakeReact,'lucide-react':icons}).default;
 const overview=subs=>renderToStaticMarkup(React.createElement(Overview,{mode:'overview',subscriptions:subs,hasApu:subs.some(s=>s.product_id==='apu'),runs:[],sources:[],rules:[],db:{},userId:'test',onOpen:()=>{}}));
 assert(!overview([sub('site_builder')]).includes('منابع فعال APU'));
 assert(overview([sub('site_builder')]).includes('ورود به سایت‌ساز'));
 assert(overview([sub('apu')]).includes('منابع فعال APU'));
 assert(!overview([sub('apu')]).includes('ورود به سایت‌ساز'));
 assert(overview([]).includes('هنوز اشتراک فعالی نداری'));
-const Dashboard=load('components/CustomerDashboard.js',{'../lib/site-builder':{FREE_BUILDER_ENABLED:true},'react':fakeReact,'next/link':({children,...p})=>React.createElement('a',p,children),'next/dynamic':()=>()=>null,'./ChatMessage':()=>null,'./ApuWorkspace':()=>null,'./CustomerServiceOverview':Overview,'../lib/supabase/client':{createClient:()=>({})},'../lib/subscription-days':{daysRemainingIran:()=>1},'lucide-react':icons}).default;
+const Dashboard=load('components/CustomerDashboard.js',{...I18N,'../lib/site-builder':{FREE_BUILDER_ENABLED:true},'react':fakeReact,'next/link':({children,...p})=>React.createElement('a',p,children),'next/dynamic':()=>()=>null,'./ChatMessage':()=>null,'./ApuWorkspace':()=>null,'./CustomerServiceOverview':Overview,'../lib/supabase/client':{createClient:()=>({})},'../lib/subscription-days':{daysRemainingIran:()=>1},'lucide-react':icons}).default;
 const dash=subs=>renderToStaticMarkup(React.createElement(Dashboard,{userId:'test',name:'مشتری',hasApu:subs.some(s=>s.product_id==='apu'),subscriptions:subs,initialSources:[],initialRules:[],initialRuns:[],initialMessages:[]}));
 assert(!dash([sub('site_builder')]).includes('سیستم APU'));
 assert(dash([sub('apu')]).includes('سیستم APU'));
 assert(!dash([sub('apu')]).includes('مدیریت منابع'));
 
-const StoreList=load('components/StoreProductsAdmin.js',{'react':fakeReact,'lucide-react':icons}).StoreProductsList;
+const StoreList=load('components/StoreProductsAdmin.js',{...I18N,'react':fakeReact,'lucide-react':icons}).StoreProductsList;
 const productList=published=>renderToStaticMarkup(React.createElement(StoreList,{products:[{id:'p',name:'محصول',is_published:published}]}));
 assert(productList(true).includes('منتشرشده'));
 assert(productList(true).includes('بایگانی'));

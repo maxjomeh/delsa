@@ -1,4 +1,6 @@
-import Link from 'next/link';
+import Link from './i18n/Link';
+import { getI18n, loadMessages } from '../lib/i18n/server';
+import { I18nProvider } from './i18n/I18nProvider';
 import { redirect } from 'next/navigation';
 import { createClient } from '../lib/supabase/server';
 import { isSupabaseConfigured } from '../lib/supabase/config';
@@ -14,12 +16,15 @@ function profilePhone(profile) {
 }
 
 export async function UserDashboard({initialTab='overview'}={}) {
-  if (!isSupabaseConfigured()) return redirect('/login?error=setup');
+  const { t, href, locale } = await getI18n();
+  // The panels ship the platform dictionary plus their own ("panel") dictionary.
+  const dictionary = { ...(await loadMessages(locale)), ...(await loadMessages(locale, 'panel')) };
+  if (!isSupabaseConfigured()) return redirect(href('/login?error=setup'));
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect(initialTab==='builder'?'/login?next=/dashboard%3Ftab%3Dbuilder':'/login');
+  if (!user) redirect(href(initialTab==='builder'?'/login?next=/dashboard%3Ftab%3Dbuilder':'/login'));
   const { data: profile } = await supabase.from('profiles').select('full_name,phone,email,role').eq('id', user.id).maybeSingle();
-  if (profile?.role === 'admin') redirect(initialTab==='builder'?'/admin?tab=sites':'/admin');
+  if (profile?.role === 'admin') redirect(href(initialTab==='builder'?'/admin?tab=sites':'/admin'));
   const [sources, rules, runs, messages, store, subscriptions, entitlement] = await Promise.all([
     supabase.from('apu_sources').select('*').eq('user_id', user.id).is('deleted_at', null).order('created_at', { ascending: false }),
     supabase.from('apu_rules').select('*').eq('user_id', user.id).is('deleted_at', null).order('created_at', { ascending: false }),
@@ -30,11 +35,11 @@ export async function UserDashboard({initialTab='overview'}={}) {
     supabase.rpc('has_active_apu'),
   ]);
   const loadError = [sources, rules, runs, messages, store, subscriptions].some((result) => result.error);
-  return <CustomerDashboard
+  return <I18nProvider locale={locale} messages={dictionary}><CustomerDashboard
     userId={user.id}
     initialTab={initialTab}
     hasApu={Boolean(entitlement.data)}
-    name={profile?.full_name || 'خوش آمدی'}
+    name={profile?.full_name || t('خوش آمدی')}
     phone={profilePhone({ phone: profile?.phone || user.phone, email: profile?.email || user.email })}
     initialSources={sources.data || []}
     initialRules={rules.data || []}
@@ -43,20 +48,23 @@ export async function UserDashboard({initialTab='overview'}={}) {
     store={store.data}
     subscriptions={subscriptions.data || []}
     loadError={loadError}
-  />;
+  /></I18nProvider>;
 }
 
 export async function AdminDashboard({initialTab='overview'}={}) {
-  if (!isSupabaseConfigured()) return redirect('/admin/login?error=setup');
+  const { t, href, locale } = await getI18n();
+  // The panels ship the platform dictionary plus their own ("panel") dictionary.
+  const dictionary = { ...(await loadMessages(locale)), ...(await loadMessages(locale, 'panel')) };
+  if (!isSupabaseConfigured()) return redirect(href('/admin/login?error=setup'));
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/admin/login');
+  if (!user) redirect(href('/admin/login'));
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
-  if (profile?.role !== 'admin') redirect('/login');
+  if (profile?.role !== 'admin') redirect(href('/login'));
   const [{ data: users }, { data: products }, { data: subscriptions }] = await Promise.all([
     supabase.from('profiles').select('id,phone,email,full_name,role,created_at').is('archived_at',null).order('created_at', { ascending: false }).limit(500),
     supabase.from('store_products').select('id,name,description,price,image_url,is_published,created_at').order('created_at', { ascending: false }).limit(100),
     supabase.from('customer_subscriptions').select('id,customer_id,product_id,plan,expires_at').limit(5000),
   ]);
-  return <main className="panel-shell"><header className="panel-top"><Link href="/" className="brand"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link><div className="panel-user"><span><ShieldCheck size={15}/> مدیر سامانه</span><form action="/auth/signout" method="post"><button className="icon-button" aria-label="خروج"><LogOut size={17}/></button></form></div></header><AdminDashboardClient userId={user.id} initialTab={initialTab} users={users || []} products={products || []} subscriptions={subscriptions || []}/></main>;
+  return <I18nProvider locale={locale} messages={dictionary}><main className="panel-shell"><header className="panel-top"><Link href="/" className="brand"><img className="brand-mark" src="/delsa-mark.svg" alt=""/><span className="brand-word">DELSA</span></Link><div className="panel-user"><span><ShieldCheck size={15}/> {t('مدیر سامانه')}</span><form action="/auth/signout" method="post"><button className="icon-button" aria-label={t('خروج')}><LogOut size={17}/></button></form></div></header><AdminDashboardClient userId={user.id} initialTab={initialTab} users={users || []} products={products || []} subscriptions={subscriptions || []}/></main></I18nProvider>;
 }

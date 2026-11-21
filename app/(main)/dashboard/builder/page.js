@@ -1,2 +1,3 @@
 import {redirect} from 'next/navigation';
-export default function CustomerBuilder(){redirect('/dashboard?tab=builder')}
+import {getI18n} from '../../../../lib/i18n/server';
+export default async function CustomerBuilder(){const {href}=await getI18n();redirect(href('/dashboard?tab=builder'))}
