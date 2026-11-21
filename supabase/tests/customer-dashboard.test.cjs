@@ -7,7 +7,7 @@ const icons=new Proxy({},{get:(_,key)=>key==='__esModule'?false:()=>React.create
 const fakeReact={...React,useEffect:()=>{},useState:v=>[typeof v==='function'?v():v,()=>{}],useMemo:f=>f(),Activity:({mode,children})=>mode==='hidden'?null:children};
 const sub=code=>({id:code,product_id:code,starts_at:'2026-01-01',expires_at:'2099-01-01',store_products:{name:code==='apu'?'سیستم APU':'سایت ساز',service_code:code}});
 // i18n: the components read the language from context; tests run in Persian (identity).
-const I18N={'./i18n/I18nProvider':{useI18n:()=>({t:(x,v)=>v?String(x).replace(/\{(\w+)\}/g,(m,n)=>v[n]):x,intl:'fa-IR',locale:'fa',dir:'rtl'})},'./i18n/Link':({children,...p})=>React.createElement('a',p,children),'./i18n/PersianIsland':({children})=>children,'../lib/i18n/config':{tx:x=>x}};
+const I18N={'./i18n/I18nProvider':{useI18n:()=>({t:(x,v)=>v?String(x).replace(/\{(\w+)\}/g,(m,n)=>v[n]):x,intl:'fa-IR',locale:'fa',dir:'rtl'})},'./i18n/Link':({children,...p})=>React.createElement('a',p,children),'./i18n/PersianIsland':({children})=>children,'./i18n/BuilderI18n':({children})=>children,'../lib/i18n/config':{tx:x=>x}};
 const Overview=load('components/CustomerServiceOverview.js',{...I18N,'react':fakeReact,'lucide-react':icons}).default;
 const overview=subs=>renderToStaticMarkup(React.createElement(Overview,{mode:'overview',subscriptions:subs,hasApu:subs.some(s=>s.product_id==='apu'),runs:[],sources:[],rules:[],db:{},userId:'test',onOpen:()=>{}}));
 assert(!overview([sub('site_builder')]).includes('منابع فعال APU'));

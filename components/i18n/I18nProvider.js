@@ -6,6 +6,7 @@ function build(locale, messages, scope = 'app') {
   return {
     locale,
     scope,
+    messages,
     dir: LOCALE_INFO[locale].dir,
     intl: LOCALE_INFO[locale].intl,
     // Site content is mostly user-written, so unknown strings are expected there: no warnings.

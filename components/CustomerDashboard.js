@@ -2,6 +2,7 @@
 
 import {useI18n} from './i18n/I18nProvider';
 import PersianIsland from './i18n/PersianIsland';
+import BuilderI18n from './i18n/BuilderI18n';
 import {tx} from '../lib/i18n/config';
 import {FREE_BUILDER_ENABLED} from '../lib/site-builder';
 import Link from './i18n/Link';
@@ -143,7 +144,7 @@ export default function CustomerDashboard({ userId, initialTab='overview', hasAp
       <div className={tab==='crm' ? 'customer-main customer-main--crm' : 'customer-main'}>
         {notice && <div className="customer-notice" role="status">{notice}<button onClick={() => setNotice('')} aria-label={t('بستن')}><X size={17}/></button></div>}
         {tab!=='builder'&&<div className="customer-heading"><div><span className="customer-eyebrow">{['apu','sources','rules'].includes(tab)?'DELSA · APU':t('DELSA · فضای کاری')}</span><h1>{tab === 'overview' ? t('سلام {name}،',{name:name?.split(' ')[0] || t('خوش آمدی')}) : t(currentNav?.[1])}</h1><p>{tab === 'overview' ? t('محصولات، اشتراک‌ها و فعالیت سرویس‌های خودت را از یک جا مدیریت کن.') : tab === 'account' ? t('محصولات فعال، زمان اشتراک و اطلاعات فروشگاهت را ببین.') : tab === 'apu' ? t('فاکتور، فایل، عکس و پیام صوتی را برای سیستم APU ارسال کن.') : tab === 'sources' ? t('منابع قیمت و اشتراک‌های ریالی یا دلاری را تعریف کن.') : tab === 'rules' ? t('محدودیت‌ها و منطق اختصاصی قیمت‌گذاری خودت را ثبت کن.') : tab === 'reports' ? t('فعالیت و گزارش‌های واقعی هر یک از سرویس‌های خودت را ببین.') : t('پیامت را برای تیم پشتیبانی بفرست و پاسخ را همین‌جا پیگیری کن.')}</p></div>{(tab === 'sources' || tab === 'rules') && <button className="customer-primary" onClick={() => {if(tab==='sources'){setEditingSource(null);setSource({name:'',url:'',pricing_model:'source_price',currency:'IRR',subscription_amount:''});setSourceForm(!sourceForm)}else{setEditingRule(null);setRule({name:'',rule_type:'maximum_change_percent',value:''});setRuleForm(!ruleForm)}}}><Plus size={18}/>{tab === 'sources' ? t('افزودن منبع') : t('افزودن قانون')}</button>}</div>}
-        <Activity mode={tab==='builder'?'visible':'hidden'}><PersianIsland><InlineSiteBuilder userId={userId}/></PersianIsland></Activity>
+        <Activity mode={tab==='builder'?'visible':'hidden'}><BuilderI18n><InlineSiteBuilder userId={userId}/></BuilderI18n></Activity>
 
         {(tab==='overview'||tab==='reports')&&<CustomerServiceOverview mode={tab} subscriptions={activeSubscriptions} hasApu={apuAccess} runs={runs} sources={sources} rules={rules} db={db} userId={userId} onOpen={id=>{setTab(id);if(['apu','sources','rules'].includes(id))setApuOpen(true)}}/>}
 
