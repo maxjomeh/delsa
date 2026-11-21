@@ -1,8 +1,11 @@
 'use client';
+import {useI18n} from '../i18n/I18nProvider';
+import {tx} from '../../lib/i18n/config';
 import {useEffect,useState} from 'react';
 import styles from './SimaWorkspace.module.css';
 
 export default function ZernioConnection(){
+ const {t,intl}=useI18n();
  const [data,setData]=useState(null);
  const [loading,setLoading]=useState(true);
  const [busy,setBusy]=useState(false);
@@ -14,12 +17,12 @@ export default function ZernioConnection(){
   try{
    const response=await fetch('/api/crm/zernio',{cache:'no-store'});
    const result=await response.json();
-   if(!response.ok)throw new Error(result.error||'دریافت اطلاعات اتصال ممکن نیست.');
+   if(!response.ok)throw new Error(result.error||t('دریافت اطلاعات اتصال ممکن نیست.'));
    setData(result);
    setError('');
    return result;
   }catch(e){
-   setError(e.message||'دریافت اطلاعات اتصال ممکن نیست.');
+   setError(t(e.message)||t('دریافت اطلاعات اتصال ممکن نیست.'));
    return null;
   }finally{setLoading(false);}
  }
@@ -33,9 +36,9 @@ export default function ZernioConnection(){
    const result=await reload();
    if(!active||!returning)return;
    const connected=result?.accounts?.some(a=>a.platform==='instagram'&&a.connected);
-   if(connected)setNotice('اتصال اینستاگرام تأیید شد؛ پیج در فهرست حساب‌های کسب‌وکار شما نمایش داده می‌شود.');
-   else if(params.has('error'))setNotice('اتصال تکمیل نشد؛ می‌توانید دوباره تلاش کنید.');
-   else setNotice('از صفحهٔ تأیید بازگشتید. اگر پیج هنوز دیده نمی‌شود، کمی بعد وضعیت را به‌روزرسانی کنید.');
+   if(connected)setNotice(t('اتصال اینستاگرام تأیید شد؛ پیج در فهرست حساب‌های کسب‌وکار شما نمایش داده می‌شود.'));
+   else if(params.has('error'))setNotice(t('اتصال تکمیل نشد؛ می‌توانید دوباره تلاش کنید.'));
+   else setNotice(t('از صفحهٔ تأیید بازگشتید. اگر پیج هنوز دیده نمی‌شود، کمی بعد وضعیت را به‌روزرسانی کنید.'));
   }
   load();
   return()=>{active=false;};
@@ -54,12 +57,12 @@ export default function ZernioConnection(){
     body:JSON.stringify({action:'connect',platform:'instagram'})
    });
    const result=await response.json();
-   if(!response.ok)throw new Error(result.error||'شروع اتصال انجام نشد.');
+   if(!response.ok)throw new Error(result.error||t('شروع اتصال انجام نشد.'));
    const url=new URL(result.url);
-   if(url.protocol!=='https:'||url.username||url.password)throw new Error('لینک احراز هویت معتبر نیست.');
+   if(url.protocol!=='https:'||url.username||url.password)throw new Error(t('لینک احراز هویت معتبر نیست.'));
    window.location.assign(url.toString());
   }catch(e){
-   setError(e.message||'شروع اتصال انجام نشد.');
+   setError(t(e.message)||t('شروع اتصال انجام نشد.'));
    setBusy(false);
   }
  }
@@ -67,25 +70,25 @@ export default function ZernioConnection(){
  const ready=data?.enabled===true&&data?.entitled===true;
  const instagram=data?.accounts?.filter(a=>a.platform==='instagram')||[];
  return <div className={styles.panel}>
-  <h3>اتصال اینستاگرام کسب‌وکار</h3>
-  <p>پیج کاری خود را مستقیماً از همین داشبورد وصل کنید. با تأیید شما در صفحهٔ رسمی اینستاگرام، حساب فقط به فضای کسب‌وکار شما در سیما مرتبط می‌شود. رمز اینستاگرام را از شما نمی‌گیریم.</p>
-  {loading&&<p role="status">در حال بررسی وضعیت اتصال…</p>}
+  <h3>{t('اتصال اینستاگرام کسب‌وکار')}</h3>
+  <p>{t('پیج کاری خود را مستقیماً از همین داشبورد وصل کنید. با تأیید شما در صفحهٔ رسمی اینستاگرام، حساب فقط به فضای کسب‌وکار شما در سیما مرتبط می‌شود. رمز اینستاگرام را از شما نمی‌گیریم.')}</p>
+  {loading&&<p role="status">{t('در حال بررسی وضعیت اتصال…')}</p>}
   {error&&<p className={styles.error} role="alert">{error}</p>}
   {notice&&<p role="status">{notice}</p>}
-  {data&&!data.enabled&&<div className={styles.connection}><strong>اتصال موقتاً غیرفعال است</strong><span>مدیر دلسا در حال آماده‌سازی سرویس اتصال است.</span></div>}
-  {data&&!data.entitled&&<p role="status">برای استفاده از اتصال اینستاگرام، اشتراک فعال سیما لازم است.</p>}
+  {data&&!data.enabled&&<div className={styles.connection}><strong>{t('اتصال موقتاً غیرفعال است')}</strong><span>{t('مدیر دلسا در حال آماده‌سازی سرویس اتصال است.')}</span></div>}
+  {data&&!data.entitled&&<p role="status">{t('برای استفاده از اتصال اینستاگرام، اشتراک فعال سیما لازم است.')}</p>}
   {ready&&<>
    <div className={styles.actions}>
     <button type="button" onClick={connectInstagram} disabled={busy||loading}>
-     {busy?'در حال انتقال به اینستاگرام…':'اتصال اینستاگرام'}
+     {busy?t('در حال انتقال به اینستاگرام…'):t('اتصال اینستاگرام')}
     </button>
-    <button type="button" disabled={busy||loading} onClick={()=>reload()}>به‌روزرسانی وضعیت</button>
+    <button type="button" disabled={busy||loading} onClick={()=>reload()}>{t('به‌روزرسانی وضعیت')}</button>
    </div>
    <div className={styles.records}>
-    {instagram.map(a=><article key={a.id}><div><strong dir="ltr">@{a.username||'Instagram'}</strong><small>{a.connected?'متصل به سیما':a.needsReconnect?'نیاز به اتصال مجدد':'اتصال غیرفعال'}</small></div></article>)}
-    {!instagram.length&&<p>هنوز پیجی به کسب‌وکار شما وصل نشده است. با دکمهٔ «اتصال اینستاگرام» شروع کنید.</p>}
+    {instagram.map(a=><article key={a.id}><div><strong dir="ltr">@{a.username||'Instagram'}</strong><small>{a.connected?t('متصل به سیما'):a.needsReconnect?t('نیاز به اتصال مجدد'):t('اتصال غیرفعال')}</small></div></article>)}
+    {!instagram.length&&<p>{t('هنوز پیجی به کسب‌وکار شما وصل نشده است. با دکمهٔ «اتصال اینستاگرام» شروع کنید.')}</p>}
    </div>
   </>}
-  <small>اتصال برای پیج‌های حرفه‌ای Business یا Creator پشتیبانی می‌شود. این مرحله دریافت مجوز و اتصال حساب است؛ پیام‌های دریافتی Zernio برای پروندهٔ همان کسب‌وکار وارد سیما می‌شوند. ارسال پاسخ فقط با تأیید انسان از بخش «نیازمند پاسخ شما» انجام می‌شود؛ پاسخ خودکار AI غیرفعال است. اگر همین پیج را قبلاً از روش قدیمی متصل کرده‌اید، پیش از اتصال دوباره وضعیت آن را با پشتیبانی دلسا بررسی کنید.</small>
+  <small>{t('اتصال برای پیج‌های حرفه‌ای Business یا Creator پشتیبانی می‌شود. این مرحله دریافت مجوز و اتصال حساب است؛ پیام‌های دریافتی Zernio برای پروندهٔ همان کسب‌وکار وارد سیما می‌شوند. ارسال پاسخ فقط با تأیید انسان از بخش «نیازمند پاسخ شما» انجام می‌شود؛ پاسخ خودکار AI غیرفعال است. اگر همین پیج را قبلاً از روش قدیمی متصل کرده‌اید، پیش از اتصال دوباره وضعیت آن را با پشتیبانی دلسا بررسی کنید.')}</small>
  </div>;
 }

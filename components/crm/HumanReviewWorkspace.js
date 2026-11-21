@@ -1,21 +1,25 @@
 'use client';
+import {useI18n} from '../i18n/I18nProvider';
+import {tx} from '../../lib/i18n/config';
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {AlertCircle,CheckCircle2,Clock3,FileText,MessagesSquare,RefreshCcw,Save,Send,ShieldAlert,UserRound,BrainCircuit,BookOpen} from 'lucide-react';
 import styles from './HumanReviewWorkspace.module.css';
 import {socialProfile} from '../../lib/crm/social-profile.mjs';
 import {outboxStatusText} from '../../lib/crm/cima-outbox-status.mjs';
 
-const pretty=n=>Number(n||0).toLocaleString('fa-IR');
-const stamp=value=>value?new Date(value).toLocaleString('fa-IR',{timeZone:'Asia/Tehran'}):'زمان نامشخص';
-const reasons={MODEL_NOT_VALIDATED:'مدل پاسخ‌گویی هنوز روی داده‌های مستقل ارزیابی و تأیید نشده است',OWNER_REVIEW_REQUIRED:'این گفتگو طبق سیاست کسب‌وکار نیازمند بررسی صاحب کسب‌وکار است'};
-const channels={instagram:'اینستاگرام',whatsapp:'واتساپ',telegram:'تلگرام',bale:'بله',eitaa:'ایتا',rubika:'روبیکا',soroush:'سروش'};
+const reasons={MODEL_NOT_VALIDATED:tx('مدل پاسخ‌گویی هنوز روی داده‌های مستقل ارزیابی و تأیید نشده است'),OWNER_REVIEW_REQUIRED:tx('این گفتگو طبق سیاست کسب‌وکار نیازمند بررسی صاحب کسب‌وکار است')};
+const channels={instagram:tx('اینستاگرام'),whatsapp:tx('واتساپ'),telegram:tx('تلگرام'),bale:tx('بله'),eitaa:tx('ایتا'),rubika:tx('روبیکا'),soroush:tx('سروش')};
 function Avatar({customer}){
+ const {t,intl}=useI18n();
  const url=socialProfile(customer).avatar;
  const [failed,setFailed]=useState(false);
  useEffect(()=>setFailed(false),[url]);
- return <span className={styles.avatar}>{url&&!failed?<img loading="lazy" src={url} alt="" referrerPolicy="no-referrer" onError={()=>setFailed(true)}/>:customer?.name?.slice(0,1)||'م'}</span>;
+ return <span className={styles.avatar}>{url&&!failed?<img loading="lazy" src={url} alt="" referrerPolicy="no-referrer" onError={()=>setFailed(true)}/>:customer?.name?.slice(0,1)||t('م')}</span>;
 }
 export default function HumanReviewWorkspace(){
+ const {t,intl}=useI18n();
+ const pretty=n=>Number(n||0).toLocaleString(intl),
+  stamp=value=>value?new Date(value).toLocaleString(intl,{timeZone:'Asia/Tehran'}):t('زمان نامشخص');
  const [cases,setCases]=useState([]),[state,setState]=useState('all'),[query,setQuery]=useState(''),[offset,setOffset]=useState(0);
  const [hasMore,setHasMore]=useState(false),[selectedId,setSelectedId]=useState('');
  const [messages,setMessages]=useState([]),[selectedVersion,setSelectedVersion]=useState(null);
@@ -31,9 +35,9 @@ export default function HumanReviewWorkspace(){
   try{
    const response=await fetch('/api/crm/reviews?'+params,{cache:'no-store'});
    const body=await response.json();
-   if(!response.ok)throw Error(body.error||'دریافت صف ناموفق بود');
+   if(!response.ok)throw Error(body.error||t('دریافت صف ناموفق بود'));
    setCases(body.cases||[]);setHasMore(!!body.hasMore);
-  }catch(e){setError('دریافت صف بررسی انجام نشد. '+e.message);}
+  }catch(e){setError(t('دریافت صف بررسی انجام نشد. ')+e.message);}
   finally{setLoading(false);}
  },[state,offset]);
  useEffect(()=>{setLoading(true);load();const timer=setInterval(load,20000);return()=>clearInterval(timer);},[load]);
@@ -57,7 +61,7 @@ export default function HumanReviewWorkspace(){
    .then(async r=>{const j=await r.json();if(!r.ok)throw Error(j.error);return j;})
    .then(j=>{if(!active)return;setMessages(j.messages||[]);setSelectedVersion(j.review.conversation_version);
      setDraft(selected.draft_text||'');setDirty(false);})
-   .catch(()=>{if(active)setError('بارگذاری مکالمهٔ انتخاب‌شده انجام نشد.');})
+   .catch(()=>{if(active)setError(t('بارگذاری مکالمهٔ انتخاب‌شده انجام نشد.'));})
    .finally(()=>{if(active)setHistoryLoading(false);});
   return()=>{active=false;};
  },[selected?.id]);
@@ -66,33 +70,33 @@ export default function HumanReviewWorkspace(){
   setFeedbackBusy(true);setError('');
   try{
    const r=await fetch('/api/crm/copilot/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({caseId:selected.id,candidateId:candidate.id,verdict,correctedText:verdict==='incorrect'?draft:''})});
-   const j=await r.json();if(!r.ok)throw Error(j.error||'ثبت بازخورد ناموفق بود.');
-   setFeedbackVerdict(verdict);setNotice('بازخورد برای ارزیابی ثبت شد؛ هنوز باعث تغییر خودکار مدل نشده است.');
-  }catch(e){setError(e.message||'ثبت بازخورد انجام نشد.');}finally{setFeedbackBusy(false);}
+   const j=await r.json();if(!r.ok)throw Error(j.error||t('ثبت بازخورد ناموفق بود.'));
+   setFeedbackVerdict(verdict);setNotice(t('بازخورد برای ارزیابی ثبت شد؛ هنوز باعث تغییر خودکار مدل نشده است.'));
+  }catch(e){setError(t(e.message)||t('ثبت بازخورد انجام نشد.'));}finally{setFeedbackBusy(false);}
  }
  async function suggestReply(){
   if(!selected||suggestBusy||stale||selectedVersion===null)return;
   setSuggestBusy(true);setNotice('');setError('');
   try{
    const r=await fetch('/api/crm/copilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'suggest',caseId:selected.id,version:selectedVersion})});
-   const j=await r.json();if(!r.ok)throw Error(j.error==='conversation_changed_refresh'?'مکالمه تغییر کرده است؛ صفحه را تازه‌سازی کن.':j.error||'تحلیل انجام نشد.');
+   const j=await r.json();if(!r.ok)throw Error(j.error==='conversation_changed_refresh'?t('مکالمه تغییر کرده است؛ صفحه را تازه‌سازی کن.'):j.error||t('تحلیل انجام نشد.'));
    setCandidate(j.candidate||null);setFeedbackVerdict(null);
-   setNotice(j.message||'تحلیل ثبت شد؛ ارسال پیام همچنان نیازمند اقدام شماست.');
-  }catch(e){setError(e.message||'تحلیل انجام نشد.');}finally{setSuggestBusy(false);}
+   setNotice(t(j.message)||t('تحلیل ثبت شد؛ ارسال پیام همچنان نیازمند اقدام شماست.'));
+  }catch(e){setError(t(e.message)||t('تحلیل انجام نشد.'));}finally{setSuggestBusy(false);}
  }
  async function sendReply(){
   if(!canSend||!selected)return;
-  if(!window.confirm('این پیام همین الان واقعاً از حساب اینستاگرام متصل برای مشتری ارسال می‌شود. تأیید می‌کنید؟'))return;
+  if(!window.confirm(t('این پیام همین الان واقعاً از حساب اینستاگرام متصل برای مشتری ارسال می‌شود. تأیید می‌کنید؟')))return;
   setSending(true);setError('');setNotice('');
   try{
    const res=await fetch('/api/crm/reviews/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'send',id:selected.id,version:selectedVersion,text:draft})});
    const json=await res.json();
    if(json.outboxId)setLastSend({id:json.outboxId,conversation_version:selectedVersion,status:json.status||'unknown',attempt_count:json.status==='pending'?0:1});
-   if(json.status==='accepted'){setDirty(false);setNotice('Zernio ارسال را پذیرفت. تحویل و خوانده‌شدن هنوز تأیید نشده است.');await load();}
-   else if(json.status==='unknown'||res.status===202){setError('نتیجهٔ ارسال نامشخص است. دوباره ارسال نکنید؛ ابتدا وضعیت گفتگو را در اینستاگرام بررسی کنید.');}
-   else if(json.status==='rejected'){setError('سرویس ارسال را رد کرد. برای جلوگیری از تکرار، ارسال این نوبت قفل شد.');}
-   else{const explanations={send_blocked:'درخواست در صف باقی ماند؛ دوباره فقط با کلیک مدیر قابل ادامه است. اگر مشکل تکرار شد، وضعیت اتصال سرویس را بررسی کنید.',reply_window_closed:'از آخرین پیام مشتری بیش از ۲۳ ساعت گذشته است.',contact_opted_out:'ارتباط با این مشتری ممنوع است.',conversation_stale:'مکالمه تغییر کرده؛ تاریخچه را تازه‌سازی کنید.',duplicate_send_blocked:'برای همین نوبت قبلاً تلاش ارسال ثبت شده است.',business_already_replied:'پاسخ جدیدتری قبلاً ثبت شده است.',conversation_unverified:'شناسهٔ اصلی گفتگو قابل تأیید نیست.',instagram_sender_not_connected:'اتصال اینستاگرام نیازمند بررسی است.'};setError(explanations[json.error]||'ارسال انجام نشد. وضعیت اتصال یا مکالمه را بررسی کنید.');}
-  }catch{setError('وضعیت درخواست نامشخص است. قبل از تلاش جدید، تاریخچه و وضعیت ارسال را بررسی کنید.');}
+   if(json.status==='accepted'){setDirty(false);setNotice(t('Zernio ارسال را پذیرفت. تحویل و خوانده‌شدن هنوز تأیید نشده است.'));await load();}
+   else if(json.status==='unknown'||res.status===202){setError(t('نتیجهٔ ارسال نامشخص است. دوباره ارسال نکنید؛ ابتدا وضعیت گفتگو را در اینستاگرام بررسی کنید.'));}
+   else if(json.status==='rejected'){setError(t('سرویس ارسال را رد کرد. برای جلوگیری از تکرار، ارسال این نوبت قفل شد.'));}
+   else{const explanations={send_blocked:t('درخواست در صف باقی ماند؛ دوباره فقط با کلیک مدیر قابل ادامه است. اگر مشکل تکرار شد، وضعیت اتصال سرویس را بررسی کنید.'),reply_window_closed:t('از آخرین پیام مشتری بیش از ۲۳ ساعت گذشته است.'),contact_opted_out:t('ارتباط با این مشتری ممنوع است.'),conversation_stale:t('مکالمه تغییر کرده؛ تاریخچه را تازه‌سازی کنید.'),duplicate_send_blocked:t('برای همین نوبت قبلاً تلاش ارسال ثبت شده است.'),business_already_replied:t('پاسخ جدیدتری قبلاً ثبت شده است.'),conversation_unverified:t('شناسهٔ اصلی گفتگو قابل تأیید نیست.'),instagram_sender_not_connected:t('اتصال اینستاگرام نیازمند بررسی است.')};setError(explanations[json.error]||t('ارسال انجام نشد. وضعیت اتصال یا مکالمه را بررسی کنید.'));}
+  }catch{setError(t('وضعیت درخواست نامشخص است. قبل از تلاش جدید، تاریخچه و وضعیت ارسال را بررسی کنید.'));}
   finally{setSending(false);}
  }
  async function saveDraft(){
@@ -101,81 +105,81 @@ export default function HumanReviewWorkspace(){
   try{
    const response=await fetch('/api/crm/reviews',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save_draft',id:selected.id,version:selectedVersion,text:draft})});
    const j=await response.json();
-   if(!response.ok)throw Error(j.error==='stale_conversation_refresh_required'?'مشتری پیام جدیدی فرستاده است؛ متن پیشنویس را نگه دار و تاریخچه را بازبینی کن.':j.error||'ثبت انجام نشد.');
-   setDirty(false);setNotice('پیش‌نویس ذخیره شد. هیچ پیامی به مشتری ارسال نشده است.');
+   if(!response.ok)throw Error(j.error==='stale_conversation_refresh_required'?t('مشتری پیام جدیدی فرستاده است؛ متن پیشنویس را نگه دار و تاریخچه را بازبینی کن.'):j.error||t('ثبت انجام نشد.'));
+   setDirty(false);setNotice(t('پیش‌نویس ذخیره شد. هیچ پیامی به مشتری ارسال نشده است.'));
    await load();
-  }catch(e){setError(e.message||'ثبت پیش‌نویس انجام نشد.');}
+  }catch(e){setError(t(e.message)||t('ثبت پیش‌نویس انجام نشد.'));}
   finally{setSaving(false);}
  }
- return <section className={styles.shell} aria-label="صف نظارت انسانی سیما">
+ return <section className={styles.shell} aria-label={t('صف نظارت انسانی سیما')}>
   <header className={styles.head}>
-   <div><span className={styles.eyebrow}><ShieldAlert size={15}/> CIMA HUMAN-IN-THE-LOOP</span><h3>نیازمند پاسخ شما</h3><p>پیام‌های واقعی با پاسخ نامطمئن، برای بررسی و پاسخ‌نویسی انسانی. سیما هیچ پاسخ خودکاری ارسال نمی‌کند؛ ارسال انسانی فقط با تأیید شما انجام می‌شود.</p></div>
-   <button type="button" className={styles.refresh} onClick={()=>{setLoading(true);load();}}><RefreshCcw size={16}/> تازه‌سازی</button>
+   <div><span className={styles.eyebrow}><ShieldAlert size={15}/> CIMA HUMAN-IN-THE-LOOP</span><h3>{t('نیازمند پاسخ شما')}</h3><p>{t('پیام‌های واقعی با پاسخ نامطمئن، برای بررسی و پاسخ‌نویسی انسانی. سیما هیچ پاسخ خودکاری ارسال نمی‌کند؛ ارسال انسانی فقط با تأیید شما انجام می‌شود.')}</p></div>
+   <button type="button" className={styles.refresh} onClick={()=>{setLoading(true);load();}}><RefreshCcw size={16}/> {t('تازه‌سازی')}</button>
   </header>
-  <div className={styles.noticeBar}><AlertCircle size={17}/><span>این بخش در حالت نظارت انسانی است. <strong>ارسال واقعی اینستاگرام</strong> صرفاً پس از تأیید شما، از حساب معتبر و در بازهٔ ۲۳ساعتهٔ پاسخ فعال است. هیچ پاسخ خودکار AI ارسال نمی‌شود.</span></div>
+  <div className={styles.noticeBar}><AlertCircle size={17}/><span>{t('این بخش در حالت نظارت انسانی است.')} <strong>{t('ارسال واقعی اینستاگرام')}</strong> {t('صرفاً پس از تأیید شما، از حساب معتبر و در بازهٔ ۲۳ساعتهٔ پاسخ فعال است. هیچ پاسخ خودکار AI ارسال نمی‌شود.')}</span></div>
   <div className={styles.toolbar}>
-    <div className={styles.metric}><strong>{pretty(cases.length)}</strong><small>پرونده در صفحهٔ فعلی</small></div>
-    <label>جست‌وجو در صفحه<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="نام، شماره، پیام…"/></label>
-    <label>وضعیت<select value={state} onChange={e=>{setState(e.target.value);setOffset(0);setSelectedId('');}}>
-     <option value="all">همه</option><option value="awaiting_human">در انتظار بررسی</option><option value="drafting">پیش‌نویس ذخیره‌شده</option><option value="resolved">رسیدگی‌شده</option>
+    <div className={styles.metric}><strong>{pretty(cases.length)}</strong><small>{t('پرونده در صفحهٔ فعلی')}</small></div>
+    <label>{t('جست‌وجو در صفحه')}<input value={query} onChange={e=>setQuery(e.target.value)} placeholder={t('نام، شماره، پیام…')}/></label>
+    <label>{t('وضعیت')}<select value={state} onChange={e=>{setState(e.target.value);setOffset(0);setSelectedId('');}}>
+     <option value="all">{t('همه')}</option><option value="awaiting_human">{t('در انتظار بررسی')}</option><option value="drafting">{t('پیش‌نویس ذخیره‌شده')}</option><option value="resolved">{t('رسیدگی‌شده')}</option>
     </select></label>
   </div>
   {error&&<p role="alert" className={styles.error}>{error}</p>}
   {notice&&<p role="status" className={styles.success}>{notice}</p>}
   <div className={styles.layout}>
-    <aside className={styles.list} aria-label="فهرست درخواست‌های بررسی">
+    <aside className={styles.list} aria-label={t('فهرست درخواست‌های بررسی')}>
       {visible.map(row=><button type="button" key={row.id} onClick={()=>{setSelectedId(row.id);setNotice('');setError('');}} className={styles.entry+(selected?.id===row.id?' '+styles.current:'')} aria-current={selected?.id===row.id?'true':undefined}>
         <Avatar customer={row.customer}/>
-        <span className={styles.entryText}><strong>{row.customer?.name||'مخاطب ناشناس'}</strong><small>{channels[row.channel]||row.channel} · {stamp(row.last_occurred_at)}</small><span>{row.lastMessage?.body||'متن پیام در دسترس نیست'}</span><em>{row.state==='drafting'?'پیش‌نویس ذخیره‌شده':'نیازمند بررسی'}</em></span>
+        <span className={styles.entryText}><strong>{row.customer?.name||t('مخاطب ناشناس')}</strong><small>{t(channels[row.channel])||row.channel} · {stamp(row.last_occurred_at)}</small><span>{row.lastMessage?.body||t('متن پیام در دسترس نیست')}</span><em>{row.state==='drafting'?t('پیش‌نویس ذخیره‌شده'):t('نیازمند بررسی')}</em></span>
       </button>)}
-      {!loading&&!visible.length&&<p className={styles.empty}>موردی با این فیلتر ثبت نشده است.</p>}
-      {loading&&<p className={styles.empty}>در حال دریافت…</p>}
-      <div className={styles.paging}><button disabled={loading||offset===0} onClick={()=>setOffset(v=>Math.max(0,v-40))}>قبلی</button><span>{pretty(Math.floor(offset/40)+1)}</span><button disabled={loading||!hasMore} onClick={()=>setOffset(v=>v+40)}>بعدی</button></div>
+      {!loading&&!visible.length&&<p className={styles.empty}>{t('موردی با این فیلتر ثبت نشده است.')}</p>}
+      {loading&&<p className={styles.empty}>{t('در حال دریافت…')}</p>}
+      <div className={styles.paging}><button disabled={loading||offset===0} onClick={()=>setOffset(v=>Math.max(0,v-40))}>{t('قبلی')}</button><span>{pretty(Math.floor(offset/40)+1)}</span><button disabled={loading||!hasMore} onClick={()=>setOffset(v=>v+40)}>{t('بعدی')}</button></div>
     </aside>
-    <section className={styles.center} aria-label="مکالمه و پیش‌نویس">
-     {!selected?<p className={styles.empty}>یک مکالمه را از فهرست انتخاب کنید.</p>:<>
-      <div className={styles.customerTitle}><MessagesSquare size={18}/><div><strong>{selected.customer?.name||'مخاطب'}</strong><small>{channels[selected.channel]||selected.channel} · نسخهٔ مکالمه {pretty(selected.conversation_version)}</small></div></div>
-      <div className={styles.history} role="log" aria-label="تاریخچهٔ آخرین پیام‌ها">
-       {historyLoading?<p className={styles.empty}>در حال بارگذاری تاریخچه…</p>:messages.map(m=><article key={m.id} className={styles.message+(m.direction==='outbound'?' '+styles.sent:'')}><small>{m.direction==='outbound'?'ارسالی ثبت‌شده':'پیام دریافتی'} · {stamp(m.occurred_at)}</small><p>{m.body}</p></article>)}
-       {!historyLoading&&!messages.length&&<p className={styles.empty}>پیام ثبت‌شده‌ای برای نمایش پیدا نشد.</p>}
+    <section className={styles.center} aria-label={t('مکالمه و پیش‌نویس')}>
+     {!selected?<p className={styles.empty}>{t('یک مکالمه را از فهرست انتخاب کنید.')}</p>:<>
+      <div className={styles.customerTitle}><MessagesSquare size={18}/><div><strong>{selected.customer?.name||t('مخاطب')}</strong><small>{t(channels[selected.channel])||selected.channel} {t('· نسخهٔ مکالمه')} {pretty(selected.conversation_version)}</small></div></div>
+      <div className={styles.history} role="log" aria-label={t('تاریخچهٔ آخرین پیام‌ها')}>
+       {historyLoading?<p className={styles.empty}>{t('در حال بارگذاری تاریخچه…')}</p>:messages.map(m=><article key={m.id} className={styles.message+(m.direction==='outbound'?' '+styles.sent:'')}><small>{m.direction==='outbound'?t('ارسالی ثبت‌شده'):t('پیام دریافتی')} · {stamp(m.occurred_at)}</small><p>{m.body}</p></article>)}
+       {!historyLoading&&!messages.length&&<p className={styles.empty}>{t('پیام ثبت‌شده‌ای برای نمایش پیدا نشد.')}</p>}
       </div>
-      <div className={styles.composer}><label htmlFor="cima-human-draft">پیش‌نویس پاسخ انسانی</label>
-       {stale&&<p className={styles.error}><AlertCircle size={15}/> مکالمه در حین نوشتن به‌روز شده است؛ پیش از ذخیره متن را بررسی و صفحه را تازه‌سازی کن.</p>}
-       <textarea id="cima-human-draft" value={draft} onChange={e=>{setDraft(e.target.value);setDirty(true);}} maxLength={4000} rows={5} placeholder="پاسخ را بنویسید. ذخیرهٔ پیش‌نویس ارسال نمی‌کند؛ ارسال واقعی دکمهٔ جدا دارد…"/>
-       {!withinWindow&&<small className={styles.sendWarning}>مهلت پاسخ عادی به این پیام تمام شده؛ برای ارسال جدید باید مشتری دوباره پیام بدهد.</small>}
-       {selected.customer?.do_not_contact&&<small className={styles.sendWarning}>این مشتری اجازهٔ تماس ندارد؛ ارسال مسدود است.</small>}
-       {sendEligibility?.reasons?.length>0&&<div className={styles.sendWarning} role="status">دلیل غیرفعال‌بودن ارسال: {sendEligibility.reasons.map(r=>({reply_window_closed:'مهلت پاسخ عادی اینستاگرام تمام شده',channel_not_enabled:'ارسال برای این کانال هنوز فعال نیست',conversation_not_open:'این گفتگو قبلاً رسیدگی شده یا بسته است',contact_opted_out:'مشتری اجازهٔ تماس ندارد',channel_not_configured:'تنظیمات اتصال Zernio در این محیط کامل نیست',already_attempted:'برای همین نوبت مکالمه قبلاً تلاش ارسال ثبت شده است'})[r]||r).join(' · ')}</div>}
-       {lastSend?.status==='pending'&&lastSend?.attempt_count===0&&<small className={styles.sendWarning}>{withinWindow?'درخواست قبلی بدون تلاش ارسال در صف مانده است؛ ادامهٔ آن فقط پس از کنترل دوبارهٔ شرایط و تأیید شما مجاز است.':'درخواست قبلی ارسال نشده و مهلت پاسخ به آن تمام شده است؛ ارسال دوباره مجاز نیست.'}</small>}
-       {lastSend&&<div className={styles.sendReceipt}>وضعیت درخواست: <strong>{outboxStatusText(lastSend)}</strong></div>}
-       <div className={styles.actionRow}><small>{dirty?'تغییرات هنوز ذخیره نشده‌اند.':'ذخیرهٔ پیش‌نویس جدا از ارسال واقعی است.'}</small><div className={styles.sendActions}><button type="button" onClick={saveDraft} disabled={saving||sending||stale||selectedVersion===null}><Save size={16}/>{saving?'در حال ذخیره…':'ذخیره پیش‌نویس'}</button><button type="button" className={styles.sendButton} onClick={sendReply} disabled={!canSend}><Send size={16}/>{sending?'در حال ارسال…':'ارسال واقعی به اینستاگرام'}</button></div></div>
+      <div className={styles.composer}><label htmlFor="cima-human-draft">{t('پیش‌نویس پاسخ انسانی')}</label>
+       {stale&&<p className={styles.error}><AlertCircle size={15}/> {t('مکالمه در حین نوشتن به‌روز شده است؛ پیش از ذخیره متن را بررسی و صفحه را تازه‌سازی کن.')}</p>}
+       <textarea id="cima-human-draft" value={draft} onChange={e=>{setDraft(e.target.value);setDirty(true);}} maxLength={4000} rows={5} placeholder={t('پاسخ را بنویسید. ذخیرهٔ پیش‌نویس ارسال نمی‌کند؛ ارسال واقعی دکمهٔ جدا دارد…')}/>
+       {!withinWindow&&<small className={styles.sendWarning}>{t('مهلت پاسخ عادی به این پیام تمام شده؛ برای ارسال جدید باید مشتری دوباره پیام بدهد.')}</small>}
+       {selected.customer?.do_not_contact&&<small className={styles.sendWarning}>{t('این مشتری اجازهٔ تماس ندارد؛ ارسال مسدود است.')}</small>}
+       {sendEligibility?.reasons?.length>0&&<div className={styles.sendWarning} role="status">{t('دلیل غیرفعال‌بودن ارسال:')} {sendEligibility.reasons.map(r=>({reply_window_closed:t('مهلت پاسخ عادی اینستاگرام تمام شده'),channel_not_enabled:t('ارسال برای این کانال هنوز فعال نیست'),conversation_not_open:t('این گفتگو قبلاً رسیدگی شده یا بسته است'),contact_opted_out:t('مشتری اجازهٔ تماس ندارد'),channel_not_configured:t('تنظیمات اتصال Zernio در این محیط کامل نیست'),already_attempted:t('برای همین نوبت مکالمه قبلاً تلاش ارسال ثبت شده است')})[r]||r).join(' · ')}</div>}
+       {lastSend?.status==='pending'&&lastSend?.attempt_count===0&&<small className={styles.sendWarning}>{withinWindow?t('درخواست قبلی بدون تلاش ارسال در صف مانده است؛ ادامهٔ آن فقط پس از کنترل دوبارهٔ شرایط و تأیید شما مجاز است.'):t('درخواست قبلی ارسال نشده و مهلت پاسخ به آن تمام شده است؛ ارسال دوباره مجاز نیست.')}</small>}
+       {lastSend&&<div className={styles.sendReceipt}>{t('وضعیت درخواست:')} <strong>{outboxStatusText(lastSend,t)}</strong></div>}
+       <div className={styles.actionRow}><small>{dirty?t('تغییرات هنوز ذخیره نشده‌اند.'):t('ذخیرهٔ پیش‌نویس جدا از ارسال واقعی است.')}</small><div className={styles.sendActions}><button type="button" onClick={saveDraft} disabled={saving||sending||stale||selectedVersion===null}><Save size={16}/>{saving?t('در حال ذخیره…'):t('ذخیره پیش‌نویس')}</button><button type="button" className={styles.sendButton} onClick={sendReply} disabled={!canSend}><Send size={16}/>{sending?t('در حال ارسال…'):t('ارسال واقعی به اینستاگرام')}</button></div></div>
       </div>
      </>}
     </section>
-    <aside className={styles.insights} aria-label="دلایل ارجاع و شواهد">
-     <div className={styles.panelHeading}><ShieldAlert size={18}/><strong>دلیل ارجاع</strong></div>
+    <aside className={styles.insights} aria-label={t('دلایل ارجاع و شواهد')}>
+     <div className={styles.panelHeading}><ShieldAlert size={18}/><strong>{t('دلیل ارجاع')}</strong></div>
      {selected?<><div className={styles.copilot}>
-       <div className={styles.copilotTop}><BrainCircuit size={18}/><strong>پیشنهاد پاسخ مستند سیما</strong></div>
-       <p>مدل زبانی: {modelEnabled?'آماده برای پیش‌نویسِ تحت نظارت':'فعلاً متصل نیست'} · امتیاز اطمینان: هنوز کالیبره نشده</p>
-       <button type="button" onClick={suggestReply} disabled={suggestBusy||stale||selectedVersion===null}>{suggestBusy?'در حال بررسی…':'بررسی ریسک و تولید پیشنهاد'}</button>
+       <div className={styles.copilotTop}><BrainCircuit size={18}/><strong>{t('پیشنهاد پاسخ مستند سیما')}</strong></div>
+       <p>{t('مدل زبانی:')} {modelEnabled?t('آماده برای پیش‌نویسِ تحت نظارت'):t('فعلاً متصل نیست')} {t('· امتیاز اطمینان: هنوز کالیبره نشده')}</p>
+       <button type="button" onClick={suggestReply} disabled={suggestBusy||stale||selectedVersion===null}>{suggestBusy?t('در حال بررسی…'):t('بررسی ریسک و تولید پیشنهاد')}</button>
        {candidate&&candidate.conversation_version===selectedVersion&&<div className={styles.candidate}>
-        <small>ریسک: {candidate.risk_level==='high'?'بالا':candidate.risk_level==='medium'?'متوسط':'کم'} · {candidate.kind==='llm_grounded'?'پیشنهاد مدل — نیازمند راستی‌آزمایی':candidate.kind==='approved_faq'?'متن از منبع تأییدشده':candidate.kind==='blocked'?'ممنوعیت پاسخ قطعی':'کمبود دانش معتبر'}</small>
-        {candidate.suggestion?<><p>{candidate.suggestion}</p><button type="button" onClick={()=>{setDraft(candidate.suggestion);setDirty(true);setNotice('پیشنهاد وارد پیش‌نویس شد؛ قبل از ارسال بررسی و ویرایش کن.');}}>استفاده در پیش‌نویس، بدون ارسال</button></>:<p>پاسخ مطمئن قابل پیشنهاد نیست؛ خودت پاسخ را بنویس و منابع را بررسی کن.</p>}
-        {Array.isArray(candidate.cited_entries)&&candidate.cited_entries.length>0&&<div className={styles.citations}><BookOpen size={14}/>{candidate.cited_entries.map(e=><span key={e.id}>{e.title} · نسخهٔ {e.revision}</span>)}</div>}
-        {Array.isArray(candidate.reason_codes)&&candidate.reason_codes.length>0&&<small>دلایل: {candidate.reason_codes.join(' · ')}</small>}
-        <div className={styles.feedback}>{feedbackVerdict?<small>بازخورد ثبت‌شده: {feedbackVerdict==='useful'?'مفید بود':feedbackVerdict==='incorrect'?'نیازمند اصلاح':'کمبود دانش'} </small>:<><small>این نتیجه برای یادگیری آینده چطور بود؟</small><button disabled={feedbackBusy} type="button" onClick={()=>giveFeedback('useful')}>مفید</button><button disabled={feedbackBusy} type="button" onClick={()=>giveFeedback('incorrect')}>نادرست</button><button disabled={feedbackBusy} type="button" onClick={()=>giveFeedback('missing_knowledge')}>نیازمند دانش</button></>}</div>
+        <small>{t('ریسک:')} {candidate.risk_level==='high'?t('بالا'):candidate.risk_level==='medium'?t('متوسط'):t('کم')} · {candidate.kind==='llm_grounded'?t('پیشنهاد مدل — نیازمند راستی‌آزمایی'):candidate.kind==='approved_faq'?t('متن از منبع تأییدشده'):candidate.kind==='blocked'?t('ممنوعیت پاسخ قطعی'):t('کمبود دانش معتبر')}</small>
+        {candidate.suggestion?<><p>{candidate.suggestion}</p><button type="button" onClick={()=>{setDraft(candidate.suggestion);setDirty(true);setNotice(t('پیشنهاد وارد پیش‌نویس شد؛ قبل از ارسال بررسی و ویرایش کن.'));}}>{t('استفاده در پیش‌نویس، بدون ارسال')}</button></>:<p>{t('پاسخ مطمئن قابل پیشنهاد نیست؛ خودت پاسخ را بنویس و منابع را بررسی کن.')}</p>}
+        {Array.isArray(candidate.cited_entries)&&candidate.cited_entries.length>0&&<div className={styles.citations}><BookOpen size={14}/>{candidate.cited_entries.map(e=><span key={e.id}>{e.title} {t('· نسخهٔ')} {e.revision}</span>)}</div>}
+        {Array.isArray(candidate.reason_codes)&&candidate.reason_codes.length>0&&<small>{t('دلایل:')} {candidate.reason_codes.join(' · ')}</small>}
+        <div className={styles.feedback}>{feedbackVerdict?<small>{t('بازخورد ثبت‌شده:')} {feedbackVerdict==='useful'?t('مفید بود'):feedbackVerdict==='incorrect'?t('نیازمند اصلاح'):t('کمبود دانش')} </small>:<><small>{t('این نتیجه برای یادگیری آینده چطور بود؟')}</small><button disabled={feedbackBusy} type="button" onClick={()=>giveFeedback('useful')}>{t('مفید')}</button><button disabled={feedbackBusy} type="button" onClick={()=>giveFeedback('incorrect')}>{t('نادرست')}</button><button disabled={feedbackBusy} type="button" onClick={()=>giveFeedback('missing_knowledge')}>{t('نیازمند دانش')}</button></>}</div>
        </div>}
-      </div>{memory&&<div className={styles.memory}><strong>حافظهٔ مستند مشتری</strong>
-       <small>شمارهٔ پروفایل: {memory.customer?.phone||'ثبت‌نشده'} · اعتبارسنجی: {memory.customer?.phoneVerification==='unknown'?'تأیید نشده':'تأییدشده'}</small>
-       {(memory.verifiedFacts||[]).slice(0,12).map((fact,i)=><div key={fact.key+'-'+i}><span>{fact.label}</span><b>{typeof fact.value==='string'?fact.value:JSON.stringify(fact.value)}</b>{fact.sourceQuote&&<small>شاهد: «{fact.sourceQuote}»</small>}</div>)}
-       {!memory.verifiedFacts?.length&&<p>هنوز دادهٔ تأییدشدهٔ مستند برای این مشتری وجود ندارد.</p>}
-       {!!memory.pendingFacts?.length&&<><strong>اطلاعات پیشنهادی — هنوز تأیید نشده</strong>{memory.pendingFacts.slice(0,8).map((fact,i)=><div key={'pending-'+fact.key+'-'+i}><span>{fact.label}</span><b>{typeof fact.value==='string'?fact.value:JSON.stringify(fact.value)}</b>{fact.sourceQuote&&<small>متن شاهد: «{fact.sourceQuote}»</small>}</div>)}</>}
+      </div>{memory&&<div className={styles.memory}><strong>{t('حافظهٔ مستند مشتری')}</strong>
+       <small>{t('شمارهٔ پروفایل:')} {memory.customer?.phone||t('ثبت‌نشده')} {t('· اعتبارسنجی:')} {memory.customer?.phoneVerification==='unknown'?t('تأیید نشده'):t('تأییدشده')}</small>
+       {(memory.verifiedFacts||[]).slice(0,12).map((fact,i)=><div key={fact.key+'-'+i}><span>{fact.label}</span><b>{typeof fact.value==='string'?fact.value:JSON.stringify(fact.value)}</b>{fact.sourceQuote&&<small>{t('شاهد: «')}{fact.sourceQuote}»</small>}</div>)}
+       {!memory.verifiedFacts?.length&&<p>{t('هنوز دادهٔ تأییدشدهٔ مستند برای این مشتری وجود ندارد.')}</p>}
+       {!!memory.pendingFacts?.length&&<><strong>{t('اطلاعات پیشنهادی — هنوز تأیید نشده')}</strong>{memory.pendingFacts.slice(0,8).map((fact,i)=><div key={'pending-'+fact.key+'-'+i}><span>{fact.label}</span><b>{typeof fact.value==='string'?fact.value:JSON.stringify(fact.value)}</b>{fact.sourceQuote&&<small>{t('متن شاهد: «')}{fact.sourceQuote}»</small>}</div>)}</>}
        <small>{memory.note}</small>
-      </div>}<div className={styles.risk}><AlertCircle size={18}/><div><strong>نیازمند تأیید انسان</strong><p>{reasons[selected.reason_code]||'اطلاعات لازم برای ارسال مطمئن کامل نیست.'}</p></div></div>
-      <div className={styles.fact}><UserRound size={17}/><div><span>شناسهٔ مشتری</span><strong>{selected.customer?.instagram?'@'+selected.customer.instagram:selected.customer?.name||'نامشخص'}</strong></div></div>
-      <div className={styles.fact}><Clock3 size={17}/><div><span>آخرین پیام ثبت‌شده</span><strong>{stamp(selected.last_occurred_at)}</strong></div></div>
-      <div className={styles.fact}><FileText size={17}/><div><span>ارزیابی هوش مصنوعی</span><strong>هنوز کالیبره نشده</strong></div></div>
-      <p className={styles.explain}><CheckCircle2 size={16}/> متن و زمان پیام‌ها از رکوردهای CRM خوانده شده‌اند. هیچ امتیاز یا پاسخِ ساختگی به‌عنوان تحلیل AI نمایش داده نمی‌شود.</p>
-     </>:<p className={styles.empty}>برای دیدن اطلاعات بررسی، یک پرونده را انتخاب کن.</p>}
+      </div>}<div className={styles.risk}><AlertCircle size={18}/><div><strong>{t('نیازمند تأیید انسان')}</strong><p>{t(reasons[selected.reason_code])||t('اطلاعات لازم برای ارسال مطمئن کامل نیست.')}</p></div></div>
+      <div className={styles.fact}><UserRound size={17}/><div><span>{t('شناسهٔ مشتری')}</span><strong>{selected.customer?.instagram?'@'+selected.customer.instagram:selected.customer?.name||t('نامشخص')}</strong></div></div>
+      <div className={styles.fact}><Clock3 size={17}/><div><span>{t('آخرین پیام ثبت‌شده')}</span><strong>{stamp(selected.last_occurred_at)}</strong></div></div>
+      <div className={styles.fact}><FileText size={17}/><div><span>{t('ارزیابی هوش مصنوعی')}</span><strong>{t('هنوز کالیبره نشده')}</strong></div></div>
+      <p className={styles.explain}><CheckCircle2 size={16}/> {t('متن و زمان پیام‌ها از رکوردهای CRM خوانده شده‌اند. هیچ امتیاز یا پاسخِ ساختگی به‌عنوان تحلیل AI نمایش داده نمی‌شود.')}</p>
+     </>:<p className={styles.empty}>{t('برای دیدن اطلاعات بررسی، یک پرونده را انتخاب کن.')}</p>}
     </aside>
   </div>
  </section>;
