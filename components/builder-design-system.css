@@ -19,7 +19,7 @@
   --ds-gutter: clamp(16px, 4.5vw, 56px);
 
   /* Typography (Persian needs generous leading) */
-  --ds-text-xs: .75rem; --ds-text-sm: .875rem; --ds-text-base: 1rem; --ds-text-lg: 1.125rem;
+  --ds-text-xs: .8125rem; --ds-text-sm: .875rem; --ds-text-base: 1rem; --ds-text-lg: 1.125rem;
   --ds-text-xl: clamp(1.5rem, 3vw, 2.25rem);
   --ds-text-display: clamp(2.25rem, 5vw, 4.5rem);
   --ds-leading-tight: 1.35; --ds-leading-heading: 1.6; --ds-leading-body: 2;
@@ -153,6 +153,37 @@
 [data-delsa-site] [data-part="editions"] h3 { margin: 0 0 var(--ds-space-3); font-size: var(--ds-text-lg); }
 [data-delsa-site] [data-part="editions-scroll"] { overflow-x: auto; max-width: 100%; }
 [data-delsa-site] [data-part="editions"] table { width: 100%; border-collapse: collapse; font-size: var(--ds-text-sm); }
-[data-delsa-site] [data-part="editions"] th, [data-delsa-site] [data-part="editions"] td { padding: var(--ds-space-2) var(--ds-space-3); text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+[data-delsa-site] [data-part="editions"] th, [data-delsa-site] [data-part="editions"] td { padding: var(--ds-space-2) var(--ds-space-3); text-align:start; border-bottom: 1px solid var(--line); white-space: nowrap; }
 [data-delsa-site] [data-part="editions"] th { color: var(--muted); font-weight: var(--ds-weight-medium); }
 [data-delsa-site] [data-part="editions"] tr[aria-current="true"] { background: color-mix(in srgb, var(--site-accent) 10%, transparent); }
+
+/*
+ * Contrast and interaction layer (shared by every template).
+ * --site-accent-text: the customer's accent mixed with the template's own ink, so accent-coloured TEXT keeps
+ * readable contrast on both the light and the dark palette of any accent the customer picks.
+ * --site-on-accent (set in BuilderSiteView): white or near-black, whichever reads better on the accent.
+ */
+[data-delsa-site] {
+  --site-accent-text: color-mix(in srgb, var(--site-accent, #7c3aed) 56%, var(--ink, #1a1612));
+}
+[data-delsa-site] :is(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--site-accent-text);
+  outline-offset: 3px;
+}
+@media (hover: hover) {
+  [data-delsa-site] :is(a, button)[class*="siteButton"] {
+    transition: translate .25s cubic-bezier(.2, .8, .2, 1), filter .25s, box-shadow .25s;
+  }
+  [data-delsa-site] :is(a, button)[class*="siteButton"]:hover {
+    translate: 0 -2px;
+    filter: brightness(1.07);
+  }
+}
+@media (max-width: 700px) {
+  /* comfortable touch targets */
+  [data-delsa-site] :is(a, button)[class*="siteButton"] { min-height: 46px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-delsa-site] :is(a, button)[class*="siteButton"] { transition: none; }
+  [data-delsa-site] :is(a, button)[class*="siteButton"]:hover { translate: none; filter: none; }
+}

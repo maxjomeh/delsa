@@ -1,0 +1,190 @@
+/*
+ * Visual polish shared by every site-builder template (same visual language as the delsa homepage):
+ * ambient colour glow, glass header, glowing buttons, layered cards, animated details.
+ *
+ * Everything hangs off [data-delsa-site] and uses only the template palette (--bg/--panel/--ink/--muted/--line)
+ * and the customer's accent (--site-accent / --site-accent-text / --site-accent-fill), so it follows the chosen
+ * colour, the light/dark theme and each template's own identity. Motion rules only apply where the page runs
+ * with data-motion (never inside the editor) and are switched off by prefers-reduced-motion.
+ */
+
+/* ---------- hero: ambient glow + floating artwork ---------- */
+@keyframes dp-drift { 0%, 100% { translate: 0 0; scale: 1; } 50% { translate: 3% -4%; scale: 1.08; } }
+@keyframes dp-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+@keyframes dp-pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--site-accent) 55%, transparent); } 70% { box-shadow: 0 0 0 7px transparent; } }
+@keyframes dp-shine { from { translate: -140% 0; } to { translate: 140% 0; } }
+@keyframes dp-progress { from { scale: 0 1; } to { scale: 1 1; } }
+
+[data-delsa-site] [data-block="hero"] { position: relative; isolation: isolate; overflow: clip; }
+[data-delsa-site] [data-block="hero"]::before,
+[data-delsa-site] [data-block="hero"]::after { content: ""; position: absolute; z-index: -1; pointer-events: none; border-radius: 50%; }
+[data-delsa-site] [data-block="hero"]::before {
+  width: min(62vw, 720px); aspect-ratio: 1; inset-block-start: -28%; inset-inline-start: -14%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--site-accent) 30%, transparent), transparent);
+  opacity: .75; filter: blur(8px);
+}
+[data-delsa-site] [data-block="hero"]::after {
+  width: min(48vw, 560px); aspect-ratio: 1; inset-block-end: -30%; inset-inline-end: -10%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--site-accent) 20%, var(--ink) 8%), transparent);
+  opacity: .5; filter: blur(10px);
+}
+[data-delsa-site][data-motion] [data-block="hero"]::before { animation: dp-drift 16s ease-in-out infinite; }
+[data-delsa-site][data-motion] [data-block="hero"]::after { animation: dp-drift 20s ease-in-out infinite reverse; }
+
+/* a soft halo behind the illustration, so it never looks pasted on */
+[data-delsa-site] [data-ds="hero-visual"] { position: relative; isolation: isolate; }
+[data-delsa-site] [data-ds="hero-visual"]::before {
+  content: ""; position: absolute; z-index: -1; inset: 8% 6%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--site-accent) 34%, transparent), transparent 72%);
+  filter: blur(18px);
+}
+[data-delsa-site][data-motion] [data-ds="hero-visual"] > * { animation: dp-float 7s ease-in-out infinite; }
+
+/* hero badge: a live pill */
+[data-delsa-site] [data-block="hero"] [class*="siteBadge"] {
+  display: inline-flex; align-items: center; gap: .55em;
+  background: color-mix(in srgb, currentColor 9%, transparent);
+  border-color: color-mix(in srgb, var(--site-accent) 40%, var(--line));
+}
+[data-delsa-site] [data-block="hero"] [class*="siteBadge"]::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--site-accent); flex: none;
+}
+[data-delsa-site][data-motion] [data-block="hero"] [class*="siteBadge"]::before { animation: dp-pulse 2.4s ease-out infinite; }
+
+/* ---------- header: glass, sticky, scroll progress ---------- */
+/* :where() keeps this at the lowest specificity: templates with their own header colours keep them */
+:where([data-delsa-site][data-motion] [data-part="header"]) {
+  position: sticky; top: 0; z-index: 30;
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5); backdrop-filter: blur(16px) saturate(1.5);
+}
+[data-delsa-site] [data-part="nav"] a, [data-delsa-site] [data-part="nav"] button { position: relative; }
+[data-delsa-site] [data-part="nav"] a::after, [data-delsa-site] [data-part="nav"] button::after {
+  content: ""; position: absolute; inset-inline: 0; bottom: -4px; height: 2px; border-radius: 2px;
+  background: var(--site-accent); scale: 0 1; transition: scale .28s cubic-bezier(.22, 1, .36, 1);
+}
+[data-delsa-site] [data-part="nav"] :is(a, button):hover::after,
+[data-delsa-site] [data-part="nav"] [aria-current="page"]::after { scale: 1 1; }
+[data-delsa-site] [data-part="brand"] [class*="brandSymbol"] { transition: rotate .6s cubic-bezier(.22, 1, .36, 1); }
+[data-delsa-site] [data-part="brand"]:hover [class*="brandSymbol"] { rotate: 90deg; }
+@supports (animation-timeline: scroll()) {
+  [data-delsa-site][data-motion] [data-part="header"]::after {
+    content: ""; position: absolute; inset-inline: 0; bottom: -1px; height: 3px; pointer-events: none;
+    background: linear-gradient(90deg, var(--site-accent), color-mix(in srgb, var(--site-accent) 40%, #fff));
+    transform-origin: right center; animation: dp-progress linear both; animation-timeline: scroll(root block);
+  }
+}
+
+/* ---------- buttons: glow + shine ---------- */
+[data-delsa-site] :is(a, button)[class*="siteButton"] {
+  position: relative; overflow: hidden; isolation: isolate;
+  box-shadow: 0 12px 28px -10px color-mix(in srgb, var(--site-accent) 70%, transparent), inset 0 1px 0 rgb(255 255 255 / .22);
+}
+[data-delsa-site] :is(a, button)[class*="siteButton"]::after {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 45%; z-index: -1; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / .35), transparent); translate: -140% 0; skew: -18deg;
+}
+@media (hover: hover) {
+  [data-delsa-site][data-motion] :is(a, button)[class*="siteButton"]:hover::after { animation: dp-shine .8s ease; }
+  [data-delsa-site] :is(a, button)[class*="siteButton"]:hover { box-shadow: 0 18px 36px -12px color-mix(in srgb, var(--site-accent) 80%, transparent), inset 0 1px 0 rgb(255 255 255 / .28); }
+}
+
+/* ---------- section titles ---------- */
+/* low specificity: template-specific eyebrows (editorial spotlight, etc.) keep their own look */
+:where([data-delsa-site] [data-block]:not([data-block="hero"]) [class*="sectionEyebrow"]) {
+  display: inline-flex; align-items: center; gap: .55em; width: fit-content; max-width: 100%;
+  padding: .2rem .8rem; border-radius: 999px;
+  background: color-mix(in srgb, var(--site-accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--site-accent) 26%, var(--line));
+}
+[data-delsa-site] [data-block]:not([data-block="hero"]) [class*="sectionEyebrow"]:where(:not([data-block="bookSpotlight"] *))::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--site-accent); flex: none;
+}
+[data-delsa-site] [data-block="features"] > h2,
+[data-delsa-site] [data-block="text"] > h2,
+[data-delsa-site] [data-block="products"] > h2 { letter-spacing: -.01em; }
+
+/* ---------- feature cards: layered, with a glowing number badge ---------- */
+[data-delsa-site]:not([data-template="studio"]) [data-part="feature-grid"] { gap: clamp(12px, 2vw, 22px); }
+[data-delsa-site] [data-part="feature-grid"] > [data-ds="card"] {
+  position: relative; overflow: clip; isolation: isolate;
+  background: linear-gradient(150deg, var(--panel), color-mix(in srgb, var(--site-accent) 8%, var(--panel)));
+  border: 1px solid color-mix(in srgb, var(--site-accent) 18%, var(--line));
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
+}
+[data-delsa-site] [data-part="feature-grid"] > [data-ds="card"]::before {
+  content: ""; position: absolute; z-index: -1; inset-block-start: -38%; inset-inline-end: -12%; width: 52%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--site-accent) 22%, transparent), transparent);
+  transition: scale .5s cubic-bezier(.22, 1, .36, 1), opacity .5s; opacity: .55;
+}
+[data-delsa-site] [data-part="feature-grid"] > [data-ds="card"] > span:first-child {
+  display: inline-grid; place-items: center; min-width: 2.6rem; height: 2.6rem; padding-inline: .5rem; border-radius: 14px;
+  background: color-mix(in srgb, var(--site-accent) 14%, var(--panel2, var(--panel)));
+  border: 1px solid color-mix(in srgb, var(--site-accent) 30%, var(--line));
+  color: var(--site-accent-text);
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-delsa-site] [data-part="feature-grid"] > [data-ds="card"]:hover::before { scale: 1.45; opacity: 1; }
+  [data-delsa-site] [data-part="feature-grid"] > [data-ds="card"]:hover > i { translate: -4px -4px; }
+}
+[data-delsa-site] [data-part="feature-grid"] > [data-ds="card"] > i { transition: translate .3s cubic-bezier(.22, 1, .36, 1); }
+
+/* ---------- storefront product cards ---------- */
+[data-delsa-site] [data-part="card"] {
+  border-radius: var(--ds-radius-md); overflow: clip;
+  transition: translate .3s cubic-bezier(.22, 1, .36, 1), box-shadow .3s, border-color .3s;
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-delsa-site][data-motion] [data-part="card"]:hover {
+    translate: 0 -6px; border-color: color-mix(in srgb, var(--site-accent) 55%, var(--line));
+    box-shadow: 0 22px 44px -22px color-mix(in srgb, var(--site-accent) 55%, transparent), var(--ds-shadow-2);
+  }
+  [data-delsa-site][data-motion] [data-part="card"]:hover [data-part="card-media"] img { scale: 1.06; }
+}
+[data-delsa-site] [data-part="card-media"] { overflow: hidden; }
+[data-delsa-site] [data-part="card-media"] img { transition: scale .7s cubic-bezier(.22, 1, .36, 1); }
+
+/* ---------- contact / closing section ---------- */
+[data-delsa-site] [data-block="contact"] { position: relative; isolation: isolate; overflow: clip; }
+[data-delsa-site] [data-block="contact"]::before {
+  content: ""; position: absolute; z-index: -1; pointer-events: none; width: min(55vw, 560px); aspect-ratio: 1; border-radius: 50%;
+  inset-block-start: -55%; inset-inline-start: -8%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--site-accent) 34%, transparent), transparent);
+}
+[data-delsa-site][data-motion] [data-block="contact"]::before { animation: dp-drift 18s ease-in-out infinite; }
+
+/* ---------- editorial divider + footer ---------- */
+[data-delsa-site] [data-part="footer"] { position: relative; }
+[data-delsa-site] [data-part="footer"]::before {
+  content: ""; position: absolute; inset-inline: 0; top: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--site-accent) 70%, transparent), transparent);
+}
+
+/* ---------- per-template character ---------- */
+/* studio: hard-edged, brutalist offset shadows instead of soft glow */
+[data-delsa-site][data-template="studio"] [data-part="feature-grid"] > [data-ds="card"] { border-radius: 0; box-shadow: none; }
+@media (hover: hover) and (pointer: fine) {
+  [data-delsa-site][data-template="studio"] [data-part="feature-grid"] > [data-ds="card"]:hover { box-shadow: 8px 8px 0 var(--site-accent); }
+}
+[data-delsa-site][data-template="studio"] :is(a, button)[class*="siteButton"] { box-shadow: 5px 5px 0 var(--site-accent-fill, var(--site-accent)); }
+/* editorial: calm paper, fine rules, no glow badges */
+[data-delsa-site][data-template="editorial"] [data-block="hero"]::before,
+[data-delsa-site][data-template="editorial"] [data-block="hero"]::after { opacity: .35; }
+[data-delsa-site][data-template="editorial"] [data-part="feature-grid"] > [data-ds="card"] { border-radius: 2px; }
+/* cinematic: deeper, moodier glow on the dark stage */
+[data-delsa-site][data-template="cinematic"] [data-block="hero"]::before { opacity: 1; filter: blur(2px); }
+[data-delsa-site][data-template="cinematic"] [data-part="feature-grid"] > [data-ds="card"] { background: linear-gradient(150deg, var(--panel), color-mix(in srgb, var(--site-accent) 14%, var(--panel))); }
+
+@media (max-width: 700px) {
+  [data-delsa-site] [data-block="hero"]::before { width: 110vw; inset-inline-start: -40%; }
+  [data-delsa-site] [data-block="hero"]::after { width: 90vw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-delsa-site] [data-block="hero"]::before, [data-delsa-site] [data-block="hero"]::after,
+  [data-delsa-site] [data-block="contact"]::before, [data-delsa-site] [data-ds="hero-visual"] > *,
+  [data-delsa-site] [data-part="header"]::after { animation: none !important; }
+}
+@media print {
+  [data-delsa-site] [data-block]::before, [data-delsa-site] [data-block]::after { display: none !important; }
+}

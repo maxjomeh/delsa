@@ -1,13 +1,18 @@
 'use client';
 
-import Link from 'next/link';
+import Link from '../i18n/Link';
+import { useI18n } from '../i18n/I18nProvider';
 import { useRef } from 'react';
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react';
 import { ArrowUpLeft, Check, CreditCard, Flag, Layers3, MessageCircle, ShieldCheck } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import AnimatedCimaInbox from '../AnimatedCimaInbox';
+import { BrandName } from './BrandIcon';
 
-const line1 = ['از', 'اولین', 'پیام'];
-const line2 = ['تا', 'فروش', 'موفق.'];
+gsap.registerPlugin(ScrollTrigger, useGSAP);
+
 
 const wordVariants = {
   hidden: { y: '115%', opacity: 0 },
@@ -15,6 +20,10 @@ const wordVariants = {
 };
 
 export default function Hero() {
+  const { t } = useI18n();
+  // Split per word so each word can animate in; works for every language.
+  const line1 = t('از اولین پیام').split(' ');
+  const line2 = t('تا فروش موفق.').split(' ');
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const mx = useMotionValue(0);
@@ -26,6 +35,21 @@ export default function Hero() {
   const ay = useSpring(useTransform(my, [-0.5, 0.5], [-14, 14]), spring);
   const bx = useSpring(useTransform(mx, [-0.5, 0.5], [26, -26]), spring);
   const by = useSpring(useTransform(my, [-0.5, 0.5], [18, -18]), spring);
+
+  // GSAP ScrollTrigger parallax: background, copy and device drift at different speeds as the hero scrolls away.
+  useGSAP(() => {
+    const mm = gsap.matchMedia();
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      const tl = gsap.timeline({ scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom top', scrub: 0.5 } });
+      tl.to('.hx-aurora', { yPercent: 18, ease: 'none' }, 0)
+        .to('.hx-blob.b', { x: -90, ease: 'none' }, 0)
+        .to('.hx-copy', { y: -50, ease: 'none' }, 0);
+    });
+    // The device drifts only in the two-column desktop layout; on phones it must stay put (the names rail is sticky).
+    mm.add('(prefers-reduced-motion: no-preference) and (min-width: 1101px)', () => {
+      gsap.to('.hx-par-stage', { y: -80, ease: 'none', scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom top', scrub: 0.5 } });
+    });
+  }, { scope: ref });
 
   function onMove(e: React.PointerEvent<HTMLElement>) {
     if (reduce || e.pointerType === 'touch') return;
@@ -62,8 +86,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <i /> DELSA / CIMA · CRM هوشمند
-          </motion.span>
+            <i /> {t('DELSA / CIMA · CRM هوشمند')} </motion.span>
 
           <motion.h1
             id="hx-title"
@@ -93,9 +116,7 @@ export default function Hero() {
             initial={reduce ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.7 }}
-          >
-            مکالمه‌های مشتری را به فروش تبدیل کن؛ از پاسخ‌گویی و انتخاب محصول تا ثبت سفارش و پیگیری، در یک پنل یکپارچه.
-          </motion.p>
+          > {t('مکالمه‌های مشتری را به فروش تبدیل کن؛ از پاسخ‌گویی و انتخاب محصول تا ثبت سفارش و پیگیری، در یک پنل یکپارچه.')} </motion.p>
 
           <motion.div
             className="hx-actions"
@@ -103,11 +124,9 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.85 }}
           >
-            <Link href="/signup" className="hx-btn hx-btn-primary">
-              شروع با CIMA <ArrowUpLeft size={18} />
+            <Link href="/signup" className="hx-btn hx-btn-primary"> {t('شروع با CIMA')} <ArrowUpLeft size={18} />
             </Link>
-            <button type="button" className="hx-btn" onClick={() => window.dispatchEvent(new Event('delsa:open-chat'))}>
-              دریافت مشاوره <MessageCircle size={17} />
+            <button type="button" className="hx-btn" onClick={() => window.dispatchEvent(new Event('delsa:open-chat'))}> {t('دریافت مشاوره')} <MessageCircle size={17} />
             </button>
           </motion.div>
 
@@ -117,12 +136,13 @@ export default function Hero() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 1.05 }}
           >
-            <span><MessageCircle size={16} /> مدیریت پیام‌ها</span>
-            <span><Layers3 size={16} /> سبد خرید و سفارش</span>
-            <span><ShieldCheck size={16} /> نظارت انسانی</span>
+            <span><MessageCircle size={16} /> {t('مدیریت پیام‌ها')}</span>
+            <span><Layers3 size={16} /> {t('سبد خرید و سفارش')}</span>
+            <span><ShieldCheck size={16} /> {t('نظارت انسانی')}</span>
           </motion.div>
         </div>
 
+        <div className="hx-par-stage">
         <motion.div
           className="hx-stage"
           initial={reduce ? false : { opacity: 0, y: 50, scale: 0.94 }}
@@ -131,25 +151,26 @@ export default function Hero() {
         >
           <div className="hx-stage-glow" aria-hidden="true" />
           <motion.div className="hx-tilt" style={reduce ? undefined : { rotateX, rotateY }}>
-            <div className="hx-device" aria-label="نمونهٔ نمایشی صندوق ورودی CIMA">
+            <div className="hx-device" aria-label={t('نمونهٔ نمایشی صندوق ورودی CIMA')}>
               <AnimatedCimaInbox />
             </div>
           </motion.div>
 
           <motion.div className="hx-chip a" style={reduce ? undefined : { x: ax, y: ay }} aria-hidden="true">
             <span className="ic"><Check size={18} /></span>
-            <span><b>سفارش ۴۸۳۱ ثبت شد</b><small>از گفت‌وگوی اینستاگرام</small></span>
+            <span><b>{t('سفارش ۴۸۳۱ ثبت شد')}</b><small>{t('از گفت‌وگوی')} <BrandName name={t('اینستاگرام')} size={15} /></small></span>
           </motion.div>
           <motion.div className="hx-chip b" style={reduce ? undefined : { x: bx, y: by }} aria-hidden="true">
             <span className="ic"><Flag size={17} /></span>
-            <span><b>نیازمند بررسی انسانی</b><small>تأیید پیش از پاسخ نهایی</small></span>
+            <span><b>{t('نیازمند بررسی انسانی')}</b><small>{t('تأیید پیش از پاسخ نهایی')}</small></span>
           </motion.div>
           <motion.div className="hx-chip c" style={reduce ? undefined : { x: ax, y: by }} aria-hidden="true">
             <span className="ic"><CreditCard size={17} /></span>
-            <span><b>فیش به سفارش وصل شد</b><small>پیگیری پرداخت</small></span>
+            <span><b>{t('فیش به سفارش وصل شد')}</b><small>{t('پیگیری پرداخت')}</small></span>
           </motion.div>
-          <p className="hx-demo-note">نمونهٔ نمایشی از رابط CIMA؛ مکالمه‌ها واقعی نیستند.</p>
+          <p className="hx-demo-note">{t('نمونهٔ نمایشی از رابط CIMA؛ مکالمه‌ها واقعی نیستند.')}</p>
         </motion.div>
+        </div>
       </div>
 
       <div className="hx-scroll" aria-hidden="true"><i /></div>

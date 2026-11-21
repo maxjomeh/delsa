@@ -1,7 +1,7 @@
 const ts=require('typescript'),fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
 const root=path.resolve(__dirname,'../..');
 function load(file,mocks={}){const module={exports:{}};const code=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{fileName:'test.tsx',compilerOptions:{esModuleInterop:true,target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.React}}).outputText;vm.runInNewContext(code,{module,exports:module.exports,require:n=>mocks[n]||require(n),React:require('react'),globalThis:{crypto:require('crypto').webcrypto},console});return module.exports}
-const design=load('lib/builder-design.js'),ind=load('lib/builder-industries.js',{'./book-isbn':load('lib/book-isbn.js')}),site=load('lib/site-builder.js',{'./builder-design':design,'./builder-industries':ind});
+const design=load('lib/builder-design.js'),ind=load('lib/builder-industries.js',{'./book-isbn':load('lib/book-isbn.js')}),fonts=load('lib/builder-fonts.js'),surfaces=load('lib/builder-surfaces.js'),tpl=load('lib/builder-templates.js'),site=load('lib/site-builder.js',{'./builder-design':design,'./builder-industries':ind,'./builder-templates':tpl,'./builder-fonts':fonts,'./builder-surfaces':surfaces});
 
 // Registry is internally consistent and only references existing templates and block types.
 assert.deepEqual(ind.validateRegistry(site.templates.map(t=>t.id),Object.keys(site.blockLabels)),[]);
@@ -56,4 +56,25 @@ const f=ind.filterOptions('books',products);
 assert.deepEqual(f.map(x=>x.key),['author','language']);assert.deepEqual(f.find(x=>x.key==='language').options,['فارسی','انگلیسی']);
 assert.deepEqual(ind.filterOptions('books',[{attributes:{author:'الف'}}]),[],'single-value filters are hidden');
 assert.deepEqual(ind.filterOptions('general',products),[]);
+
+// ---- template catalog v2: unique ids, every recipe/font/industry reference is valid, legacy sites keep rendering
+assert.equal(tpl.templates.length,12);assert.equal(new Set(tpl.allTemplates.map(t=>t.id)).size,24,'ids are unique across current and legacy templates');
+for(const t of tpl.templates){
+ assert(t.recipe.includes('products')&&t.recipe[0]==='hero'&&t.recipe.at(-1)==='contact',t.id+' recipe');
+ for(const type of t.recipe)assert(site.blockLabels[type],t.id+' unknown block '+type);
+ for(const f of Object.values(t.fonts))assert(fonts.fontById(f),t.id+' unknown font '+f);
+ assert(/^#[0-9a-f]{6}$/i.test(t.color)&&t.tagline&&t.signature.includes(' · ')&&t.copy.hero,t.id+' metadata');
+}
+assert.equal(tpl.isV2('zarrin'),true);assert.equal(tpl.isV2('studio'),false);
+for(const legacy of tpl.legacyTemplates)assert.equal(site.normalizeDocument({template:legacy.id}).template,legacy.id,'legacy '+legacy.id+' stays valid');
+assert.equal(site.normalizeDocument({template:'nope'}).template,'studio','unknown template keeps the historical fallback');
+assert.equal(site.starter('studio','x').template,'studio','legacy starter still works');assert.equal(site.starter('nope','x').template,tpl.DEFAULT_TEMPLATE);
+// fonts and surface styles are validated against their registries
+assert.deepEqual(JSON.parse(JSON.stringify(site.normalizeDocument({template:'zarrin',fonts:{display:'amiri',body:'<script>'},surface:'glass'}).fonts)),{display:'amiri',body:''});
+assert.equal(site.normalizeDocument({template:'zarrin',surface:'glass'}).surface,'glass');assert.equal(site.normalizeDocument({template:'zarrin',surface:'x'}).surface,'');assert.equal(site.normalizeDocument({}).surface,'');
+assert.deepEqual(surfaces.surfaces.map(s=>s.id),['','glass','clay','skeuo','neu']);
+assert.deepEqual(JSON.parse(JSON.stringify(fonts.fontVars({display:'lalezar',body:''}))),{'--ff-display':'"Lalezar","Vazirmatn",system-ui,sans-serif'});assert.deepEqual(fonts.fontVars(undefined),{});
+assert(fonts.fonts.every(f=>f.id&&f.label&&f.family&&['fa','latin'].includes(f.script)&&fonts.fontTones[f.tone]),'font registry entries are complete');assert(fonts.fonts.filter(f=>f.script==='fa').length>=18,'enough Persian-capable fonts');
+assert.equal(new Set(fonts.fonts.map(f=>f.id)).size,fonts.fonts.length);
+for(const t of tpl.templates)for(const i of ind.industries){const d=site.normalizeDocument(site.starter(t.id,'آزمون',i.id));assert.equal(d.template,t.id);assert(d.pages[0].blocks.length>=5);}
 console.log('PASS: industry registry, document independence, starter blocks, attribute validation and storefront helpers');

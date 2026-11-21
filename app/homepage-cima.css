@@ -1,7 +1,7 @@
 /* CIMA homepage — responsive composition and typography, isolated from legacy APU hero rules. */
 .delsa-cima-hero{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 24% 45%,color-mix(in srgb,var(--orange) 11%,var(--bg)),transparent 68%),var(--bg);color:var(--ink);padding:clamp(130px,11vw,172px) 0 76px;min-height:min(880px,100svh)}
 .delsa-cima-hero-layout{width:100%;display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);align-items:center;gap:clamp(32px,5vw,70px);direction:rtl}
-.delsa-cima-copy{min-width:0;max-width:530px;text-align:right}
+.delsa-cima-copy{min-width:0;max-width:530px;text-align:start}
 .delsa-cima-kicker{display:inline-flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:99px;font-size:12px;font-weight:600;line-height:1.6}
 .delsa-cima-live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 4px color-mix(in srgb,var(--orange) 15%,transparent)}
 .delsa-cima-copy h1{font-size:clamp(39px,4.6vw,67px);line-height:1.48;font-weight:850;letter-spacing:-.035em;max-width:100%;margin:22px 0 20px;color:var(--ink);text-wrap:balance}

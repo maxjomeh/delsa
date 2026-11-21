@@ -23,7 +23,7 @@
 .dev-telemetry-grid small{display:block;color:var(--dev-dim);font-size:10px}
 .dev-telemetry-grid strong{display:block;font-size:17px;margin-top:3px}
 .dev-products{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px;margin-top:20px}
-.dev-product{text-align:right;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px;min-width:0;color:var(--ink);display:flex;flex-direction:column;gap:7px}
+.dev-product{text-align:start;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px;min-width:0;color:var(--ink);display:flex;flex-direction:column;gap:7px}
 .dev-product.is-selected{border-color:#ee6734;box-shadow:0 0 0 2px #ee67341e;background:linear-gradient(140deg,#ee673415,transparent),var(--panel)}
 .dev-product-head b{display:block;font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.dev-product-head small{font-size:10px;color:var(--dev-dim)}
 .dev-product>strong{font-size:22px;line-height:1.15;font-variant-numeric:tabular-nums}.dev-product>strong.dev-unknown{font-size:14px;color:var(--dev-dim)}
@@ -42,10 +42,10 @@
 .dev-toolbar input{min-width:170px;max-width:300px;flex:1;font-size:12px}
 .dev-phases{display:grid;gap:10px}
 .dev-phase{border:1px solid var(--line);border-radius:13px;background:var(--panel);overflow:hidden}
-.dev-phase-head{display:flex;align-items:center;width:100%;gap:12px;min-width:0;padding:13px 14px;text-align:right;background:none;color:var(--ink);border:0}
+.dev-phase-head{display:flex;align-items:center;width:100%;gap:12px;min-width:0;padding:13px 14px;text-align:start;background:none;color:var(--ink);border:0}
 .dev-phase-count{display:grid;place-items:center;flex:0 0 37px;width:37px;height:37px;border-radius:10px;background:#ee673422;color:var(--dev-accent);font-size:13px;font-weight:800}
 .dev-phase-name{flex:1;min-width:0}.dev-phase-name strong{display:block;font-size:13px}.dev-phase-name small{display:block;font-size:10px;color:var(--dev-dim)}
-.dev-phase-status{width:120px;display:grid;gap:4px;flex:0 0 120px;text-align:left}.dev-phase-status strong{font-size:15px}
+.dev-phase-status{width:120px;display:grid;gap:4px;flex:0 0 120px;text-align:end}.dev-phase-status strong{font-size:15px}
 .dev-phase-body{border-top:1px solid var(--line);overflow-x:auto}
 .dev-legend,.dev-feature{display:grid;grid-template-columns:minmax(210px,2.2fr) minmax(65px,.55fr) minmax(65px,.55fr) minmax(95px,.7fr) minmax(120px,1.15fr);min-width:580px;align-items:center;gap:7px;padding:10px 14px}
 .dev-legend{background:var(--bg);font-size:10px;color:var(--dev-dim)}.dev-feature{border-top:1px solid var(--line);font-size:12px}
