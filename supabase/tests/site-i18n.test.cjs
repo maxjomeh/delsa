@@ -41,4 +41,12 @@ for(const lang of ['en','ar','tr'])for(const tpl of site.templates)for(const ind
 const fa=site.starter('zarrin','x','general');assert.equal(fa.lang,'fa');assert.equal(fa.pages[0].title,'خانه');
 // Template metadata (name, description, tagline, signature) exists in every language.
 for(const lang of ['en','ar','tr'])for(const tpl of site.templates)for(const k of ['name','description','tagline','signature'])assert(tpl[k] in dict[lang],`${lang}: missing ${tpl.id}.${k}`);
+// Elements added in the editor start with default copy in the site's language (newBlock), for every element type.
+for(const lang of ['en','ar','tr']){
+ const tr=s=>Object.prototype.hasOwnProperty.call(dict[lang],s)?dict[lang][s]:s;
+ for(const type of Object.keys(site.blockLabels)){
+  const b=site.newBlock(type,tr);
+  for(const s of [b.title,b.text,b.button,...b.items])assert(!leftover[lang].test(String(s)),`${lang}/newBlock(${type}): untranslated "${s}"`);
+ }
+}
 console.log('PASS: 12 templates x 5 industries x 3 languages have fully translated starter content and metadata');
