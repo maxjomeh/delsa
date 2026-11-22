@@ -144,7 +144,7 @@ test('API route is authenticated, entitlement-gated, tenant-scoped and strictly 
  const route=read('../app/api/crm/topics/backtest/route.js').split('\n').filter(line=>!line.trim().startsWith('//')).join('\n');
  assert.match(route,/auth\.auth\.getUser\(\)/);assert.match(route,/has_active_crm/);
  assert.match(route,/status:\s*401|,401\)/);assert.match(route,/,403\)/);
- assert.equal((route.match(/\.eq\('tenant_id',user\.id\)/g)||[]).length,2,'both queries are scoped to the caller');
+ assert.match(route,/loadInteractions\(db,user\.id\)/);assert.match(route,/loadKnowledge\(db,user\.id\)/);   // both loaders are tenant-scoped (see topic-store tests)
  assert.doesNotMatch(route,/\.(insert|update|delete|upsert|rpc\('(?!has_active_crm))/);
  assert.doesNotMatch(route,/zernio|outbox|send/i);
  assert.match(route,/export async function GET/);assert.doesNotMatch(route,/export async function (POST|PUT|PATCH|DELETE)/);

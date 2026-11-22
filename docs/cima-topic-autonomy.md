@@ -1,8 +1,9 @@
-# CIMA — topic-level learning and automatic answers (phases 1–2)
+# CIMA — topic-level learning and automatic answers (phases 1–3)
 
-Status: phase 1 (decision engine + schema) and phase 2 (topic discovery + historical replay) are in. **Nothing here sends a
-message or calls a provider. Phase 2 only reads; it writes nothing.** Phase 2 has been run on synthetic conversations
-only, never on real customer data.
+Status: phase 1 (decision engine + schema), phase 2 (topic discovery + historical replay) and phase 3 (persistence, owner
+screen, shadow evidence) are in. **Nothing here sends a message or calls a provider, and nothing can turn automatic sending on:
+the tenant switch is deliberately not exposed anywhere.** Everything has been run on synthetic conversations only, never on
+real customer data or a real database.
 
 ## Product intent (owner decisions, 2026-11-22)
 
@@ -84,6 +85,8 @@ turning automatic replies off or pausing **instantly demotes every automatic top
 
 - `node --test tests/cima-topic-autonomy.test.mjs` — 19 tests (phase 1)
 - `node --test tests/cima-backtest.test.mjs` — 15 tests (phase 2: discovery, pairing, replay, knowledge suggestion, CLI, route containment); mutation-checked (scoring risky questions, bootstrapping risky knowledge, dropping never-auto each fail a test)
+- `node --test tests/cima-topic-store.test.mjs tests/cima-topic-routes.test.mjs` — 15 tests (phase 3: tenant scoping of every query, idempotent replay, shadow-vs-backtest labelling, stage walk with the tenant switch, database refusal handling, route containment); mutation-checked (dropping a tenant filter, scoring proposed topics, losing idempotency, accepting any field each fail a test)
+- `supabase/tests/cima-topic-runtime.sql` — activation stamp, bounded profile, once-per-interaction outcomes; removing the constraint or the trigger makes it fail
 - (phase 1 detail) the engine, gate, shadow comparison, schema shape and purity checks (engine, gate, shadow comparison, schema shape, purity).
   Mutation-checked: removing the threshold check, the floor clamp, or the required-field gate each fails a test.
 - `supabase/tests/cima-topic-autonomy.sql` — transactional DB tests (rolled back). Run against a real Postgres 16:
@@ -132,12 +135,46 @@ tenant's last 4,000 interactions and approved knowledge, writes nothing, flags t
   engine absorbs, not something it can detect.
 - The route and the CLI are unit/integration-tested; the route has **not** been exercised against a real database.
 
-## Not in this change (next phases)
+## Phase 3 — persistence, owner screen and shadow evidence
 
-3. Persist discovered topics and replay outcomes (needs the migration applied), topic review/rename UI, required-field setup.
-   Wire shadow mode into the copilot: draft silently, record the outcome when the human replies.
-4. Automatic sender through the existing human-send outbox (idempotency, receipts, UNKNOWN state, window check),
-   tenant master switch UI and kill switch, per-topic dashboard.
+**The owner's flow** (Sima → مدیریت → «موضوع‌ها و پاسخ خودکار»):
+
+1. *Discover* — CIMA proposes topics from past questions (`proposed`; existing topics and the owner's edits are never overwritten).
+2. *Rename*, and choose the **required information** for the topic from the tenant's own enabled custom fields. Without any, the
+   topic stays in `learning` however much evidence exists (the "complete information" rule).
+3. *Set a floor* (default 90%): CIMA may raise the threshold above it, never below.
+4. *Activate* — only now does the topic start collecting evidence.
+5. *Run replay* — historical question/answer pairs are replayed with the stored topic profiles; outcomes are saved and stages
+   re-evaluated (`learning → shadow → suggest`; `auto` needs the tenant switch, which does not exist yet).
+6. Review **knowledge suggestions** drawn from the owner's own consistent replies and turn any into a *draft* FAQ.
+
+**Shadow semantics.** Outcomes for replies made *before* a topic was activated are stored as `backtest`; replies made *after* it
+(real-time) as `shadow`. The database stamps `activated_at` and a unique key `(tenant, topic, source, interaction)` makes every
+replay idempotent. Shadow evidence is computed when a replay runs, from the *current* approved knowledge — not the knowledge
+as it was at the time of each reply (revisions are not reconstructed). There is no scheduled run yet: the owner presses
+«اجرای بازپخش»; a cron can call the same function later.
+
+**API** `/api/crm/topics`: `GET` (topics, confidence, required fields, available fields) and `POST` actions `discover`, `replay`,
+`rename`, `activate`, `retire`, `set_fields`, `set_floor`. Authenticated, CRM-entitled, same-origin, bounded body, ids validated;
+every query goes through `lib/crm/topic-store.mjs`, which scopes each one to the tenant. It never touches the autonomy switch
+and never modifies CRM records.
+
+**Migration order:** `20261122_cima_topic_autonomy.sql`, then `20261123_cima_topic_runtime.sql` (additive, idempotent, verified on
+Postgres 16 including negative controls). **Until both are applied the screen shows "topic list unavailable"** — it fails closed.
+
+**Known limits:**
+
+- The store is tested against an in-memory fake that mirrors unique keys and the activation trigger and records every query
+  to prove tenant scoping; it has **not** run against PostgREST/Supabase. The database guards themselves are tested on real Postgres.
+- Setting required fields is delete-then-insert (not one transaction); if the insert fails the previous set is lost and the
+  topic simply returns to needing fields, which is the safe direction.
+- Pairing, retrieval and label limits from phase 2 still apply.
+
+## Not in this change (next phase)
+
+4. Automatic sender through the existing human-send outbox (idempotency, receipts, UNKNOWN state, window check), the tenant
+   master switch UI + kill switch, runtime "verified field" check per customer, scheduled replay, per-topic dashboard,
+   and improved knowledge retrieval so coverage is not artificially low.
 
 The `sima_response_candidates.confidence is null` database check is intentionally left as is until phase 4: per-topic
 confidence lives in this engine, not on individual drafts.
