@@ -1,4 +1,4 @@
-# CIMA — topic-level learning and automatic answers (phases 1–5)
+# CIMA — topic-level learning and automatic answers (phases 1–6)
 
 Status: phases 1–3 (decision engine, discovery/replay, owner screen + shadow evidence) and **phase 4 (automatic sending)** are in.
 
@@ -283,6 +283,10 @@ rebuilt from the repository.
 
 The `sima_response_candidates.confidence is null` database check is intentionally left as is: per-topic confidence lives in this
 engine, not on individual drafts.
+
+## Phase 6 — real-data readiness kit (read-only)
+
+A read-only SQL export (`supabase/exports/cima-readiness-export.sql`: hashed ids, masked text, one tenant, bounded size) plus `scripts/cima-readiness.mjs` (audit of the export for personal data, then a Persian Markdown/JSON report of discovered topics, coverage, projected stage and prioritised actions). Nothing is sent, connected or written. See `docs/cima-readiness-kit.md`.
 
 ## Operations
 
