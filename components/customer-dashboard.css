@@ -136,3 +136,15 @@ html .customer-shell .customer-hero>div:nth-child(2)>span{display:none}
 html .customer-shell :is(.support-online,.support-message time){font-size:13px}
 html .customer-shell :is(.support-empty,.support-message p,.support-welcome p){font-size:15px}
 html .customer-shell .support-welcome strong{font-size:16px}
+/* Mobile (primary device): the main menu becomes a thumb-reachable bottom bar */
+@media(max-width:640px){
+ html .customer-shell .customer-sidebar nav{position:fixed;inset-inline:0;bottom:0;z-index:80;flex:none;display:flex;gap:2px;overflow-x:auto;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:var(--glass);backdrop-filter:blur(16px);border-top:1.5px solid var(--line)}
+ html .customer-shell .customer-sidebar nav button{flex:1 0 74px;flex-direction:column;justify-content:center;gap:3px;min-height:58px;padding:6px 4px;font-size:12px;white-space:nowrap;border-radius:14px}
+ html .customer-shell .customer-sidebar nav button .nav-new{display:none}
+ html .customer-shell .customer-content{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+ /* keep floating helpers (theme, language, support chat) above the bar */
+ body:has(.customer-shell) :is(.theme-toggle,.visitor-chat-launch){bottom:calc(78px + env(safe-area-inset-bottom))}
+ body:has(.customer-shell) .lang-switch{bottom:calc(132px + env(safe-area-inset-bottom))}
+ body:has(.customer-shell) .visitor-chat-popup{bottom:calc(132px + env(safe-area-inset-bottom))}
+}
+@media(max-width:640px){html .customer-shell .customer-topbar{display:none}html .customer-shell .customer-main{padding-top:16px}}

@@ -21,7 +21,7 @@ const channels=['manual','instagram','whatsapp','telegram','bale','eitaa','rubik
 const channelNames={manual:'ثبت دستی',instagram:'اینستاگرام',whatsapp:'واتساپ',telegram:'تلگرام',bale:'بله',eitaa:'ایتا',rubika:'روبیکا',soroush:'سروش',website:'وب‌سایت',phone:'تماس'};
 const date=v=>new Date(v).toLocaleString('fa-IR',{timeZone:'Asia/Tehran'}),num=v=>Number(v||0).toLocaleString('fa-IR');
 const initialSettings={industry:'retail',business_name:'',followup_hours:24,max_attempts:2,automation_enabled:true};
-export default function SimaWorkspace({userId}){
+export default function SimaWorkspace({userId,request=null}){
 const db=useMemo(()=>createClient(),[]),[section,setSection]=useState('overview'),[data,setData]=useState({customers:[],interactions:[],leads:[],orders:[],tasks:[],reports:[]}),[settings,setSettings]=useState(initialSettings),[draftSettings,setDraftSettings]=useState(initialSettings),[search,setSearch]=useState(''),[filter,setFilter]=useState(''),[form,setForm]=useState(null),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState(''),[fields,setFields]=useState([]),[informationStates,setInformationStates]=useState([]),[informationQueue,setInformationQueue]=useState([]),[informationEditing,setInformationEditing]=useState(false);
 const [health,setHealth]=useState(null);
 useEffect(()=>{let active=true;fetch('/api/crm/health',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(x=>{if(active)setHealth(x)}).catch(()=>{});return()=>{active=false;};},[]);
@@ -68,6 +68,8 @@ const load=useCallback(async()=>{
 },[db,userId,form,section]);
 useEffect(()=>{let alive=true;const refresh=()=>{if(alive&&document.visibilityState==='visible'&&!form&&!informationEditing&&section!=='settings')load();};refresh();const timer=setInterval(refresh,90000);window.addEventListener('focus',refresh);return()=>{alive=false;clearInterval(timer);window.removeEventListener('focus',refresh);};},[load,form,section,informationEditing]);
 useEffect(()=>{if(section==='customers'&&form){document.getElementById('sima-customer-editor')?.scrollIntoView({behavior:'smooth',block:'start'});}},[section,Boolean(form)]);
+// Deep links from the dashboard ("Today" board): open a specific section on request.
+useEffect(()=>{if(request?.section&&sections[request.section])navigate(request.section);},[request?.nonce]);
 function navigate(k){setSection(k);setInformationEditing(false);if(k==='settings')setDraftSettings(settings);setForm(null);setSearch('');setFilter('');setError('');setNotice('');}
 const customer=id=>data.customers.find(c=>c.id===id)?.name||'مشتری',industry=industries[settings.industry]||industries.retail;
 function open(record=null){setError('');setNotice('');setForm(record||{customer_id:data.customers[0]?.id||'',status:section==='customers'?'new':section==='orders'?'pending':'scheduled',stage:'new',channel:'manual',direction:'inbound',kind:'message',custom_fields:{},items:[]});}

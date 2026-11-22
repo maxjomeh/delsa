@@ -1,0 +1,40 @@
+/* Mobile-first. Tokens come from .customer-shell (same palette as the homepage). */
+.board{display:grid;gap:16px;min-width:0;color:var(--ink)}
+.head h1{margin:0;font-size:clamp(26px,3vw,34px);font-weight:800;letter-spacing:-.02em}
+.head p{margin:2px 0 0;color:var(--muted);font-size:15px}
+.loading,.warn{margin:0;padding:14px 18px;border:1.5px solid var(--line);border-radius:16px;background:var(--panel);color:var(--muted);font-size:15px}
+.warn{border-color:var(--line2);color:var(--accentText,var(--orange))}
+.counters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.counters button{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:12px;align-items:center;min-height:92px;padding:16px;text-align:start;border:1.5px solid var(--line);border-radius:20px;background:var(--panel);box-shadow:var(--cardsh);color:var(--ink);transition:transform .2s,border-color .2s}
+.counters button:hover{transform:translateY(-2px);border-color:var(--orange)}
+.counters svg{grid-row:1/3;color:var(--orange)}
+.counters strong{font-size:clamp(24px,5vw,32px);line-height:1.2;font-weight:800}
+.counters span{color:var(--muted);font-size:14px;font-weight:600;line-height:1.5}
+.counters button.hot{border-color:var(--orange);background:linear-gradient(135deg,var(--soft),var(--panel))}
+.columns{display:grid;gap:16px;align-items:start}
+.side{display:grid;gap:16px;min-width:0}
+.card{min-width:0;padding:18px;border:1.5px solid var(--line);border-radius:20px;background:var(--panel);box-shadow:var(--cardsh)}
+.cardHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.cardHead h2{margin:0;font-size:18px;font-weight:800}
+.cardHead button{display:inline-flex;align-items:center;gap:2px;min-height:40px;padding:0 10px;border:0;background:transparent;color:var(--accentText,var(--orange));font-size:14px;font-weight:700}
+.list{display:grid;margin:0;padding:0;list-style:none}
+.list>li{border-top:1px solid var(--line)}
+.list>li:first-child{border-top:0}
+.row{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:10px 4px;border:0;background:transparent;color:inherit;text-align:start}
+.row:hover{background:var(--soft)}
+.avatar{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:14px;background:var(--soft);color:var(--accentText,var(--orange));font-weight:800}
+.body{display:grid;gap:2px;min-width:0;flex:1}
+.body strong{font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.body small{color:var(--muted);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta{flex:none;color:var(--muted);font-size:13px}
+.task{display:flex;align-items:center;gap:10px;min-height:64px;padding:10px 4px}
+.done{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:none;min-height:44px;padding:0 14px;border:1.5px solid var(--line2);border-radius:13px;background:transparent;color:var(--ink);font-size:14px;font-weight:700}
+.done:hover:not(:disabled){border-color:var(--orange);background:var(--soft)}
+.empty{margin:4px 0 0;color:var(--muted);font-size:15px}
+.more{margin:8px 0 0;color:var(--muted);font-size:14px}
+@media(min-width:900px){
+ .counters{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .columns{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+ .card{padding:22px 24px}
+}
+@media(prefers-reduced-motion:reduce){.counters button{transition:none}.counters button:hover{transform:none}}

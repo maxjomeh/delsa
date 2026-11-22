@@ -13,11 +13,16 @@ assert(overview([sub('site_builder')]).includes('ورود به سایت‌ساز
 assert(overview([sub('apu')]).includes('منابع فعال APU'));
 assert(!overview([sub('apu')]).includes('ورود به سایت‌ساز'));
 assert(overview([]).includes('هنوز اشتراک فعالی نداری'));
-const Dashboard=load('components/CustomerDashboard.js',{'../lib/site-builder':{FREE_BUILDER_ENABLED:true},'react':fakeReact,'next/link':({children,...p})=>React.createElement('a',p,children),'next/dynamic':()=>()=>null,'./ChatMessage':()=>null,'./ApuWorkspace':()=>null,'./CustomerServiceOverview':Overview,'../lib/supabase/client':{createClient:()=>({})},'../lib/subscription-days':{daysRemainingIran:()=>1},'lucide-react':icons}).default;
+const Dashboard=load('components/CustomerDashboard.js',{'../lib/site-builder':{FREE_BUILDER_ENABLED:true},'react':fakeReact,'next/link':({children,...p})=>React.createElement('a',p,children),'next/dynamic':()=>()=>null,'./ChatMessage':()=>null,'./TodayBoard':()=>React.createElement('i',null,'TODAY_BOARD'),'./ApuWorkspace':()=>null,'./CustomerServiceOverview':Overview,'../lib/supabase/client':{createClient:()=>({})},'../lib/subscription-days':{daysRemainingIran:()=>1},'lucide-react':icons}).default;
 const dash=subs=>renderToStaticMarkup(React.createElement(Dashboard,{userId:'test',name:'مشتری',hasApu:subs.some(s=>s.product_id==='apu'),subscriptions:subs,initialSources:[],initialRules:[],initialRuns:[],initialMessages:[]}));
 assert(!dash([sub('site_builder')]).includes('سیستم APU'));
 assert(dash([sub('apu')]).includes('سیستم APU'));
 assert(!dash([sub('apu')]).includes('مدیریت منابع'));
+// CRM subscribers land on "Today" (work waiting) instead of the service catalogue; others keep the catalogue.
+assert(dash([sub('crm')]).includes('TODAY_BOARD'));
+assert(!dash([sub('crm')]).includes('فضای کاری سرویس‌های تو'));
+assert(!dash([sub('apu')]).includes('TODAY_BOARD'));
+assert(dash([sub('apu')]).includes('فضای کاری سرویس‌های تو'));
 
 const StoreList=load('components/StoreProductsAdmin.js',{'react':fakeReact,'lucide-react':icons}).StoreProductsList;
 const productList=published=>renderToStaticMarkup(React.createElement(StoreList,{products:[{id:'p',name:'محصول',is_published:published}]}));
