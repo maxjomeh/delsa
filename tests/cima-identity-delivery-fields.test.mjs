@@ -40,8 +40,10 @@ test('CRM UI consolidates nav and exposes reviewed learning and customer table',
  const work=file('components/crm/SimaWorkspace.js');
  const ui=file('components/crm/InformationWorkspace.js');
  const adapt=file('components/crm/AdaptiveInformationPanels.js');
- assert.match(work,/primarySections/);
- assert.match(work,/secondarySections/);
+ const grouped=[...work.matchAll(/\{id:'\w+',label:'[^']*',icon:\w+,items:\[([^\]]+)\]/g)].flatMap(m=>m[1].match(/'(\w+)'/g).map(x=>x.replace(/'/g,'')));
+ const known=[...work.match(/const sections=\{([^}]+)\}/)[1].matchAll(/(\w+):'/g)].map(m=>m[1]);
+ assert.equal([...work.matchAll(/\{id:'\w+',label:/g)].length,5,'navigation has five groups');
+ assert.deepEqual([...grouped].sort(),[...known].sort(),'every CRM section is reachable from exactly one group');
  assert.match(work,/uniqueDisplayMessages\(all\)/);
  assert.match(ui,/CustomerFieldMatrix/);
  assert.match(ui,/LearningSuggestionPanel/);
