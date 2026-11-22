@@ -1,7 +1,8 @@
-# CIMA — topic-level learning and automatic answers (phase 1: foundation)
+# CIMA — topic-level learning and automatic answers (phases 1–2)
 
-Status: foundation only. **Nothing in this change sends a message, calls a provider, or reads/writes customer data.**
-It adds the decision engine, the database schema and the tests that every later phase must pass through.
+Status: phase 1 (decision engine + schema) and phase 2 (topic discovery + historical replay) are in. **Nothing here sends a
+message or calls a provider. Phase 2 only reads; it writes nothing.** Phase 2 has been run on synthetic conversations
+only, never on real customer data.
 
 ## Product intent (owner decisions, 2026-11-22)
 
@@ -81,15 +82,60 @@ turning automatic replies off or pausing **instantly demotes every automatic top
 
 ## Verification
 
-- `node --test tests/cima-topic-autonomy.test.mjs` — 19 tests (engine, gate, shadow comparison, schema shape, purity).
+- `node --test tests/cima-topic-autonomy.test.mjs` — 19 tests (phase 1)
+- `node --test tests/cima-backtest.test.mjs` — 15 tests (phase 2: discovery, pairing, replay, knowledge suggestion, CLI, route containment); mutation-checked (scoring risky questions, bootstrapping risky knowledge, dropping never-auto each fail a test)
+- (phase 1 detail) the engine, gate, shadow comparison, schema shape and purity checks (engine, gate, shadow comparison, schema shape, purity).
   Mutation-checked: removing the threshold check, the floor clamp, or the required-field gate each fails a test.
 - `supabase/tests/cima-topic-autonomy.sql` — transactional DB tests (rolled back). Run against a real Postgres 16:
   the migration applies cleanly, is idempotent, and all assertions pass; with the guard trigger removed the test fails.
 
+## Phase 2 — topic discovery and historical replay (read-only)
+
+**Discovery** (`lib/crm/topic-discovery.mjs`) proposes topics from what customers actually ask. Inbound questions are
+clustered on character trigrams of their words, because Persian suffixes and clitics (ساعت / ساعتی / ساعت‌هاشون) make short
+questions share few whole words. Generic question words (چنده، هست، داره…) are ignored so unrelated topics do not glue
+together; a second pass merges clusters whose centroids are clearly similar. A topic needs ≥ 5 questions from ≥ 3 different
+customers. Each proposal is `proposed`, has an automatic label the owner must rename (`labelIsAuto`), **no required
+fields** (so the completeness gate stays closed until the owner defines them), and a risk class computed from its own
+questions: if ≥ 30% hit a block rule (price, stock, complaint…) it is `high` and `neverAuto`.
+
+**Replay** (`lib/crm/backtest.mjs`) pairs each past customer question (a run of consecutive inbound messages) with the
+next human reply on the same channel within 24 h, assigns it to a topic, and asks: would CIMA's grounded draft from
+*approved* knowledge have matched what the human actually said?
+
+- risky questions are **counted but never scored** toward automation;
+- no approved knowledge for a question is a **coverage gap (`uncovered`), not a failure** — it tells the owner what FAQ to write;
+- a draft with a number the human did not say is a rejection (shared with shadow mode);
+- scored outcomes use source `backtest`, feed `topicConfidence`, and count as shadow evidence.
+
+**Knowledge suggestions:** for topics where the owner's own past replies are consistent (medoid, ≥ 5 replies,
+consistency ≥ 0.5) the most representative reply is offered as a **draft** FAQ. Never for risky topics; replies with
+figures (hours, quantities) are flagged `containsNumbers` so the owner confirms they are still current. Always `draft`.
+
+**Use it:**
+
+```
+node scripts/cima-backtest.mjs --input export.json [--output report.json] [--min-occurrences 5] [--now ISO]
+# export.json: {"interactions":[{id,customer_id,channel,direction,kind,body,occurred_at}], "knowledge":[{id,title,question,answer,status,revision}]}
+```
+
+`GET /api/crm/topics/backtest` runs the same replay for the signed-in CRM tenant (auth + `has_active_crm`, reads only that
+tenant's last 4,000 interactions and approved knowledge, writes nothing, flags truncation).
+
+**Known limits (be honest with the numbers):**
+
+- On synthetic data with approved knowledge matching the owner's reply, only 2 of 8 hour-questions were covered: the
+  existing knowledge retrieval (`rankKnowledge`) is token-overlap and conservative. Coverage will be low until FAQ
+  entries cover paraphrases. The report shows this gap instead of hiding it; improving retrieval is a separate, deliberate change.
+- Auto labels are rough (e.g. a stray function word). The owner renames topics before activating them.
+- Pairing assumes the next outbound message answers the question; a human reply to something else is noise the confidence
+  engine absorbs, not something it can detect.
+- The route and the CLI are unit/integration-tested; the route has **not** been exercised against a real database.
+
 ## Not in this change (next phases)
 
-2. Topic discovery from inbound questions + historical **backtest runner** (needs read access to the CRM database).
-3. Shadow mode wired into the copilot: draft silently, record the outcome when the human replies.
+3. Persist discovered topics and replay outcomes (needs the migration applied), topic review/rename UI, required-field setup.
+   Wire shadow mode into the copilot: draft silently, record the outcome when the human replies.
 4. Automatic sender through the existing human-send outbox (idempotency, receipts, UNKNOWN state, window check),
    tenant master switch UI and kill switch, per-topic dashboard.
 
