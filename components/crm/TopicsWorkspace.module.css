@@ -57,3 +57,7 @@
 .suggest p{margin:0;color:var(--muted);font-size:15px}
 .suggest small{color:var(--muted);font-size:13px}
 @media(min-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:22px}}
+
+.readiness{margin:0;padding:10px 14px;border:1.5px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--ink);font-size:15px;line-height:1.8}
+.readiness[data-reason=CONFIDENCE_HOLDS],.readiness[data-reason=CONFIDENCE_AT_THRESHOLD]{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--panel2))}
+.readiness[data-reason=CONFIDENCE_BELOW_THRESHOLD],.readiness[data-reason=CONFIDENCE_COLLAPSED],.readiness[data-reason=REPEATED_WRONG_AUTOMATIC_ANSWERS]{border-color:#c0392b88;background:#c0392b14}

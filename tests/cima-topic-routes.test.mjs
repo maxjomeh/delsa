@@ -11,7 +11,7 @@ test('topics API: authenticated, CRM-entitled, same-origin for writes, bounded b
  assert.match(route,/status:401/);assert.match(route,/status:403/);
  assert.match(route,/request\.headers\.get\('origin'\)!==new URL\(request\.url\)\.origin/);
  assert.match(route,/content-length[^;]*>20000/);
- for(const action of ['discover','replay','set_fields','rename','activate','retire','set_floor'])assert.match(route,new RegExp(`'${action}'`),action);
+ for(const action of ['discover','replay','set_fields','rename','activate','retire','set_floor','reset_threshold'])assert.match(route,new RegExp(`'${action}'`),action);
  assert.match(route,/error:'invalid_action'/);
  assert.match(route,/uuid\(body\?\.id\)/,'ids are validated before any query');
  assert.match(route,/export async function GET/);assert.match(route,/export async function POST/);

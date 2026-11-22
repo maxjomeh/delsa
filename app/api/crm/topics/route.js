@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import {createClient} from '../../../../lib/supabase/server';
 import {serverDatabase} from '../../../../lib/crm/instagram';
-import {describeTopics,loadAutonomy,updateTopic,setRequiredFields,discover,replay} from '../../../../lib/crm/topic-store.mjs';
+import {describeTopics,loadAutonomy,loadKnowledge,updateTopic,setRequiredFields,discover,replay} from '../../../../lib/crm/topic-store.mjs';
 // Owner-facing topic management for CIMA. Reads and writes topic CONFIGURATION and learning evidence for the signed-in
 // CRM tenant only. It never sends a message and never switches automatic replies on: that switch does not exist yet.
 export const runtime='nodejs';
@@ -22,9 +22,10 @@ export async function GET(){
  const ctx=await context();
  if(ctx.status!==200)return reply({error:ctx.error},ctx.status);
  const db=serverDatabase();
- const [topics,autonomy,fields]=await Promise.all([
-  describeTopics(db,ctx.id),loadAutonomy(db,ctx.id),
+ const [knowledge,autonomy,fields]=await Promise.all([
+  loadKnowledge(db,ctx.id),loadAutonomy(db,ctx.id),
   db.from('crm_field_definitions').select('key,label').eq('tenant_id',ctx.id).eq('enabled',true).order('priority',{ascending:false}).limit(200)]);
+ const topics=await describeTopics(db,ctx.id,{knowledge:knowledge.ok?knowledge.rows:[],autonomy});
  if(!topics.ok||fields.error)return reply({error:'topics_unavailable'},503);
  return reply({topics:topics.topics,fields:fields.data||[],autoEnabled:autonomy.autoEnabled,floor:autonomy.floor,
   note:'Automatic sending is not available yet: topics can learn and be measured, but CIMA does not send anything on its own.'});
@@ -40,7 +41,7 @@ export async function POST(request){
  if(action==='replay'){const r=await replay(db,ctx.id);return r.ok?reply(r):failure(r);}
  if(!uuid(body?.id))return reply({error:'invalid_body'},400);
  if(action==='set_fields'){const r=await setRequiredFields(db,ctx.id,body.id,body.fields);return r.ok?reply(r):failure(r);}
- if(['rename','activate','retire','set_floor'].includes(action)){
+ if(['rename','activate','retire','set_floor','reset_threshold'].includes(action)){
   const r=await updateTopic(db,ctx.id,body.id,action,action==='rename'?body.label:body.floor);
   if(!r.ok)return failure(r);
   const {profile,...topic}=r.topic;return reply({ok:true,topic});

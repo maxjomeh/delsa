@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {discover,listTopics,describeTopics,updateTopic,setRequiredFields,replay,evaluateTopic,loadAutonomy,toEngine,loadInteractions} from '../lib/crm/topic-store.mjs';
+import {discover,listTopics,describeTopics,updateTopic,setRequiredFields,replay,evaluateTopic,loadAutonomy,loadKnowledge,toEngine,loadInteractions} from '../lib/crm/topic-store.mjs';
 import {fakeDb} from './helpers/fake-db.mjs';
 import {NOW,HOURS_Q,HOURS_REPLY,conversations,standard,knowledge} from './helpers/conversations.mjs';
 
@@ -205,4 +205,50 @@ test('describeTopics gives the UI each topic with its measured confidence, requi
  assert.ok(db.calls.filter(c=>c.table==='sima_topic_outcomes'&&c.op==='select').every(c=>c.filters.includes(`eq:tenant_id=${JSON.stringify(T1)}`)));
  const empty=await describeTopics(fakeDb({}),T1);
  assert.deepEqual(empty.topics,[]);
+});
+
+test('readiness says WHY a topic has not advanced, in the order a person can fix it, without writing anything',async()=>{
+ const rows=own(conversations(Array.from({length:40},()=>['ساعت کاری شما چیه؟',HOURS_REPLY])),T1);
+ const db=fakeDb(seed({crm_interactions:rows}));
+ const read=async(autonomy={autoEnabled:false})=>{const knowledge=(await loadKnowledge(db,T1)).rows;return (await describeTopics(db,T1,{now:NOW,knowledge,autonomy})).topics[0];};
+ await discover(db,T1);
+ const id=db.rows('sima_topics')[0].id;
+ assert.equal((await read()).readiness.reason,'NOT_ACTIVE');
+ await updateTopic(db,T1,id,'activate');
+ let t=await read();
+ assert.equal(t.readiness.reason,'NEEDS_KNOWLEDGE_AND_FIELDS');assert.equal(t.knowledgeApproved,1);assert.deepEqual(t.requiredFields,[]);
+ db.tables.set('sima_knowledge_entries',[]);
+ t=await read();assert.equal(t.knowledgeApproved,0,'no related approved knowledge');
+ db.tables.set('sima_knowledge_entries',kb());
+ await setRequiredFields(db,T1,id,['opening_hours']);
+ t=await read();assert.equal(t.readiness.reason,'READY_FOR_SHADOW');assert.equal(t.readiness.nextStage,'shadow');
+ const before=JSON.stringify(db.rows('sima_topics'));
+ await replay(db,T1,{now:NOW});                       // moves it learning -> shadow -> suggest
+ t=await read();assert.equal(t.stage,'suggest');assert.equal(t.readiness.reason,'AUTO_REPLY_DISABLED');
+ t=await read({autoEnabled:true});assert.equal(t.readiness.reason,'CONFIDENCE_AT_THRESHOLD');assert.equal(t.readiness.nextStage,'auto');
+ const mid=JSON.stringify(db.rows('sima_topics'));
+ await read({autoEnabled:true});await read();
+ assert.equal(JSON.stringify(db.rows('sima_topics')),mid,'describing never writes');
+ assert.notEqual(before,mid);
+ // a never-auto topic is always explained as such
+ db.rows('sima_topics')[0].never_auto=true;
+ assert.equal((await read({autoEnabled:true})).readiness.reason,'NEVER_AUTO_TOPIC');
+});
+
+test('the owner can reset a raised threshold to the floor; nothing else lowers it; another tenant cannot',async()=>{
+ const db=fakeDb(seed());
+ await discover(db,T1);
+ const t=db.rows('sima_topics')[0];
+ assert.equal((await updateTopic(db,T1,t.id,'reset_threshold')).error,'invalid_transition','already at the floor');
+ t.confidence_threshold='0.960';t.confidence_floor='0.900';
+ assert.equal((await updateTopic(db,T2,t.id,'reset_threshold')).error,'not_found');
+ assert.equal(Number(db.rows('sima_topics')[0].confidence_threshold),0.96,'untouched by another tenant');
+ const r=await updateTopic(db,T1,t.id,'reset_threshold');
+ assert.equal(r.ok,true);assert.equal(Number(r.topic.confidence_threshold),0.9);assert.equal(Number(r.topic.confidence_floor),0.9);
+ assert.equal((await updateTopic(db,T1,t.id,'reset_threshold')).error,'invalid_transition','and only once: nothing left to reset');
+ // evaluation never lowers it on its own
+ t.confidence_threshold='0.960';
+ const row=(await listTopics(db,T1)).topics[0];
+ await evaluateTopic(db,T1,row,{knowledge:[],autonomy:{autoEnabled:true},now:NOW});
+ assert.equal(Number(db.rows('sima_topics')[0].confidence_threshold),0.96);
 });

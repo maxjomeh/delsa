@@ -1,4 +1,4 @@
-# CIMA — topic-level learning and automatic answers (phases 1–4)
+# CIMA — topic-level learning and automatic answers (phases 1–5)
 
 Status: phases 1–3 (decision engine, discovery/replay, owner screen + shadow evidence) and **phase 4 (automatic sending)** are in.
 
@@ -101,6 +101,9 @@ turning automatic replies off or pausing **instantly demotes every automatic top
   privileges. Four sabotage controls (verbatim check, topic stage, kill switch at claim, hourly cap) each make it fail.
 - Two real bugs were found by tests while building phase 4 and fixed: a demotion that the same evaluation loop immediately undid,
   and a threshold that ratcheted up on every evaluation instead of once per wrong mark.
+- `node --test tests/cima-knowledge-match.test.mjs` — 8 tests (phase 5: coverage vs the old matcher, topic scoping, no forced nearest
+  match, unusable entries, ambiguity, determinism, replay integration, purity). Five mutations (any-topic candidates, no floor, ignoring
+  ambiguity, accepting expired or unapproved entries) each fail a test; the readiness and reset behaviour are covered in the store tests.
 - (phase 1 detail) the engine, gate, shadow comparison, schema shape and purity checks (engine, gate, shadow comparison, schema shape, purity).
   Mutation-checked: removing the threshold check, the floor clamp, or the required-field gate each fails a test.
 - `supabase/tests/cima-topic-autonomy.sql` — transactional DB tests (rolled back). Run against a real Postgres 16:
@@ -141,9 +144,8 @@ tenant's last 4,000 interactions and approved knowledge, writes nothing, flags t
 
 **Known limits (be honest with the numbers):**
 
-- On synthetic data with approved knowledge matching the owner's reply, only 2 of 8 hour-questions were covered: the
-  existing knowledge retrieval (`rankKnowledge`) is token-overlap and conservative. Coverage will be low until FAQ
-  entries cover paraphrases. The report shows this gap instead of hiding it; improving retrieval is a separate, deliberate change.
+- *(Superseded by phase 5.)* On synthetic data only 2 of 8 hour-questions were covered by the Copilot's token matcher. The replay and the
+  automatic path now use the topic-scoped matcher described in phase 5.
 - Auto labels are rough (e.g. a stray function word). The owner renames topics before activating them.
 - Pairing assumes the next outbound message answers the question; a human reply to something else is noise the confidence
   engine absorbs, not something it can detect.
@@ -239,8 +241,39 @@ even with strong evidence (→ `shadow`). A demotion is final for that evaluatio
 - Confidence comes from replay/shadow evidence and from "wrong" marks. A sent answer is **not** automatically counted as correct
   (there is no signal for that), so live use can lower confidence but only replay/shadow can raise it.
 - The threshold rises on wrong marks; **relaxing it is not implemented** (the pure function exists, nothing calls it).
-- Retrieval of the matching knowledge is still the conservative token-overlap search, so coverage may be low.
+- *(Superseded by phase 5.)* Knowledge matching for automatic replies is now the topic-scoped matcher; the Copilot for human review keeps its own.
 - Only Instagram, only through the existing Zernio path. No scheduled runner, no per-customer verification beyond confirmed fields.
+
+## Phase 5 — coverage and clarity (no schema change)
+
+**Why.** Automation can only be trusted on evidence, and evidence only accrues when a customer message is matched to an approved
+answer. The Copilot's token matcher needs the customer's words to overlap the entry's question word for word, so on synthetic Persian
+paraphrases it covered **4 of 16** questions; evidence would have accrued far too slowly for confidence to ever rise.
+
+**Topic-scoped knowledge matching** (`lib/crm/knowledge-match.mjs`, used by replay and by the automatic decision; **the Copilot for human
+review is untouched**):
+
+1. only approved, unexpired entries whose own question belongs to the matched topic are candidates;
+2. scoring is character-trigram overlap after dropping generic question words (robust to Persian suffixes/clitics);
+3. a floor (0.30) and a margin (0.08) apply: two *different* answers about equally close are **ambiguous** and nothing is sent; an
+   unrelated message gets "no close answer", never the nearest entry by force.
+
+On the synthetic conversations this covers **15 of 16** questions with no confusion between topics (related questions scored 0.29–1.00;
+unrelated and cross-topic pairs exactly 0.00). **That is synthetic data.** Real precision is unknown; this module deliberately does not hide a wrong match — it
+shows up as a *rejected* replay outcome, which lowers the topic's confidence and keeps it out of automatic mode. Replay and live decisions
+use the same matcher, so the evidence measures what automation would really do. Replay reports now also count `ambiguous` pairs.
+
+**"Why hasn't this topic gone automatic?"** Each topic card now shows, from the same decision the evaluator takes (computed read-only,
+nothing is written): what is missing (an approved related answer, required information), that evidence is still being collected
+(n of 30), that confidence has not reached the threshold, that the tenant switch is off, or that it is ready. It also shows how many
+approved answers belong to the topic.
+
+**Owner can reset the threshold.** The threshold rises by itself only when the owner marks an answer wrong; lowering it back to the floor
+is a deliberate owner action (`reset_threshold`, with a confirmation). Automatic relaxation stays unimplemented on purpose.
+
+**Known limits:** precision on real conversations is unmeasured; the floor and margin are fixed defaults, not tuned; one short
+paraphrase in the synthetic set («تا چه ساعتی پاسخگو هستید؟», score 0.29, just under the 0.30 floor) is still missed — the safe direction; knowledge entries still carry one question each, so the owner
+adding a few variants will raise coverage further.
 
 **Repository gaps found while testing.** The repository's migrations do not rebuild the database on their own: `crm_learning_suggestions`
 (referenced by `20261019_cima_human_review_foundation.sql`) is never created in any file, `20261021_cima_verified_identity_projection.sql`
