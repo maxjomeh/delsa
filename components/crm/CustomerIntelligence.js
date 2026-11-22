@@ -102,7 +102,7 @@ export default function CustomerIntelligence({db,userId,customers,interactions,o
    <div><div className={styles.eyebrow}><Sparkles size={14}/> DELSA / SIMA CUSTOMER INTELLIGENCE</div><h3>پروفایل هوشمند مشتریان</h3><p>داده‌های واقعی، تاریخچهٔ ارتباطات و اقدام بعدی در یک نمای واحد</p></div>
    <button type="button" className={styles.primary} onClick={onAdd}><Plus size={16}/> مشتری جدید</button>
   </div>
-  <HistorySyncPanel onRefresh={onRefresh}/>
+  <details className={styles.advanced}><summary>همگام‌سازی و بازخوانی تاریخچه (پیشرفته)</summary><HistorySyncPanel onRefresh={onRefresh}/></details>
   <div className={styles.columns}>
    <aside className={styles.queue+(mobileDetail?' '+styles.hideMobile:'')} aria-label="فهرست مشتریان">
     <div className={styles.sideHeader}><div><span className={styles.eyebrow}>MY CUSTOMERS</span><h4>مشتریان <span className={styles.count}>{readable(customers.length)}</span></h4></div><UserRound size={19}/></div>
