@@ -54,3 +54,6 @@
 @media(max-width:880px){.layout{grid-template-columns:minmax(0,1fr)}.threads{max-height:300px}.timeline{max-height:380px}}
 @media(max-width:520px){.intro h3{font-size:19px}.metrics{width:100%}.metrics>div{flex:1;min-width:0}.composeFilters{grid-template-columns:1fr}.bubble{max-width:98%}.timeline,.compose{padding:14px}.thread{padding:12px!important}}
 @media(prefers-reduced-motion:reduce){.wrap *, .wrap *::before,.wrap *::after{animation:none!important;transition:none!important}}
+
+/* v2: decorative English eyebrow removed for a calmer UI */
+.eyebrow{display:none!important}
