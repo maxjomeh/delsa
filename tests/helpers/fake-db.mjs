@@ -8,9 +8,11 @@ const UNIQUE = {
   sima_topics: [['tenant_id', 'topic_key']],
   sima_topic_outcomes: [['tenant_id', 'topic_id', 'source', 'interaction_id']],
   sima_topic_fields: [['topic_id', 'field_key']],
+  sima_auto_answers: [['tenant_id', 'review_id', 'conversation_version']],
+  sima_autonomy_settings: [['tenant_id']],
 };
 
-export function fakeDb(seed = {}, {refuse = {}} = {}) {
+export function fakeDb(seed = {}, {refuse = {}, rpc = {}} = {}) {
   const tables = new Map(Object.entries(seed).map(([name, rows]) => [name, rows.map(r => ({...r}))]));
   const rows = name => tables.get(name) || tables.set(name, []).get(name);
   const calls = [];
@@ -36,6 +38,12 @@ export function fakeDb(seed = {}, {refuse = {}} = {}) {
           const row = prepare(table, raw);
           if (clash(table, row)) {
             if (state.op === 'upsert' && state.options.ignoreDuplicates) continue;
+            if (state.op === 'upsert') {   // ON CONFLICT DO UPDATE: merge into the existing row (the conflict key is never rewritten)
+              const keys = String(state.options.onConflict || '').split(',').filter(Boolean);
+              const cols = keys.length ? keys : (UNIQUE[table] || [[]])[0];
+              const existing = rows(table).find(r => cols.every(c => r[c] === row[c]));
+              if (existing) { const {id, created_at, ...patch} = raw; Object.assign(existing, patch); result.push(existing); continue; }
+            }
             return {data: null, error: {code: '23505', message: 'duplicate key'}};
           }
           rows(table).push(row); result.push(row);
@@ -46,7 +54,15 @@ export function fakeDb(seed = {}, {refuse = {}} = {}) {
         result = rows(table).filter(matches);
         tables.set(table, rows(table).filter(r => !result.includes(r)));
       }
-      if (state.order) result = [...result].sort((a, b) => (a[state.order.col] > b[state.order.col] ? 1 : -1) * (state.order.asc ? 1 : -1));
+      // Stable ordering: rows with equal sort keys keep insertion order (later insertion = newer), like a clock that always advances.
+      if (state.order) {
+        const {col, asc} = state.order;
+        result = result.map((row, i) => ({row, i})).sort((a, b) => {
+          const x = a.row[col], y = b.row[col];
+          const cmp = x > y ? 1 : x < y ? -1 : 0;
+          return cmp !== 0 ? (asc ? cmp : -cmp) : (asc ? a.i - b.i : b.i - a.i);
+        }).map(entry => entry.row);
+      }
       if (state.limit != null) result = result.slice(state.offset || 0, (state.offset || 0) + state.limit);
       const copy = result.map(r => ({...r}));
       if (state.single) return {data: copy[0] ?? null, error: null};
@@ -69,5 +85,12 @@ export function fakeDb(seed = {}, {refuse = {}} = {}) {
     };
     return api;
   }
-  return {from: builder, calls, rows, tables};
+  // rpc handlers are supplied by the test: (args, db) => ({data, error}). Every call is recorded like a query.
+  const api = {from: builder, calls, rows, tables};
+  api.rpc = (name, args = {}) => {
+    calls.push({table: `rpc:${name}`, op: 'rpc', payload: args, filters: []});
+    const handler = rpc[name];
+    return Promise.resolve(handler ? handler(args, api) : {data: null, error: {message: `no handler for ${name}`}});
+  };
+  return api;
 }

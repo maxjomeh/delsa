@@ -1,8 +1,9 @@
 'use client';
 // CIMA topics: what customers ask about, how sure CIMA is for each topic, and what the owner has allowed.
-// Configuration and learning only. Automatic sending does not exist yet, and this screen never turns it on.
+// Topic configuration and learning evidence. Automatic replies are controlled in AutoRepliesPanel (explicit acknowledgement to turn on).
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import {Check,Lightbulb,RefreshCw,Search,ShieldAlert} from 'lucide-react';
+import AutoRepliesPanel from './AutoRepliesPanel';
 import styles from './TopicsWorkspace.module.css';
 
 const num=v=>Number(v||0).toLocaleString('fa-IR');
@@ -122,7 +123,7 @@ export default function TopicsWorkspace(){
         <button type="button" disabled={busy} onClick={()=>act('discover')}><Search size={17} aria-hidden="true"/>کشف موضوع‌ها</button>
         <button type="button" disabled={busy} onClick={()=>act('replay')}><RefreshCw size={17} aria-hidden="true"/>اجرای بازپخش</button>
       </div></header>
-    <p className={styles.banner} role="note">ارسال خودکار هنوز فعال نیست. سیما فقط یاد می‌گیرد و اعتماد‌به‌نفسش را می‌سنجد؛ هیچ پیامی بدون شما برای مشتری فرستاده نمی‌شود.</p>
+    <AutoRepliesPanel onChange={load}/>
     {error&&<p role="alert" className={styles.error}>{error}</p>}
     {notice&&<p role="status" className={styles.notice}>{notice}</p>}
 

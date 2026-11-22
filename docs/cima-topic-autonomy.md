@@ -1,9 +1,12 @@
-# CIMA — topic-level learning and automatic answers (phases 1–3)
+# CIMA — topic-level learning and automatic answers (phases 1–4)
 
-Status: phase 1 (decision engine + schema), phase 2 (topic discovery + historical replay) and phase 3 (persistence, owner
-screen, shadow evidence) are in. **Nothing here sends a message or calls a provider, and nothing can turn automatic sending on:
-the tenant switch is deliberately not exposed anywhere.** Everything has been run on synthetic conversations only, never on
-real customer data or a real database.
+Status: phases 1–3 (decision engine, discovery/replay, owner screen + shadow evidence) and **phase 4 (automatic sending)** are in.
+
+> **Safety posture.** Phase 4 is the first code in this project that can message a customer without a human. It ships **OFF**:
+> the server mode `CIMA_AUTO_MODE` defaults to `off` (anything unrecognised means off), the scheduled runner is **not**
+> scheduled by this repository, and a tenant must also switch automatic replies on with an explicit acknowledgement.
+> It has **never sent a real message**: every send path was tested with a fake provider and, for the database functions,
+> on a real Postgres. Treat the first live run as an experiment: start with `dry_run`.
 
 ## Product intent (owner decisions, 2026-11-22)
 
@@ -87,6 +90,17 @@ turning automatic replies off or pausing **instantly demotes every automatic top
 - `node --test tests/cima-backtest.test.mjs` — 15 tests (phase 2: discovery, pairing, replay, knowledge suggestion, CLI, route containment); mutation-checked (scoring risky questions, bootstrapping risky knowledge, dropping never-auto each fail a test)
 - `node --test tests/cima-topic-store.test.mjs tests/cima-topic-routes.test.mjs` — 15 tests (phase 3: tenant scoping of every query, idempotent replay, shadow-vs-backtest labelling, stage walk with the tenant switch, database refusal handling, route containment); mutation-checked (dropping a tenant filter, scoring proposed topics, losing idempotency, accepting any field each fail a test)
 - `supabase/tests/cima-topic-runtime.sql` — activation stamp, bounded profile, once-per-interaction outcomes; removing the constraint or the trigger makes it fail
+- `node --test tests/cima-auto-answer.test.mjs tests/cima-auto-runner.test.mjs tests/cima-auto-store.test.mjs tests/cima-auto-routes.test.mjs` — 34 tests
+  (phase 4: the decision, exactly-once sending, every refusal, provider outcomes, circuit breaker, tenant scoping, owner controls,
+  route containment, human path untouched). Mutation-checked: dropping the opt-out, required-field, sender, circuit-breaker,
+  already-decided, acknowledgement, "sent-only" and "once-only" rules, or treating a 503 / a missing receipt as accepted, each fails a test.
+  One mutation (dropping the word-for-word check) initially survived because the test masked it behind another check; the test was
+  corrected until that mutation failed. A flaky ordering in the fake database (6 of 30 runs failed) was root-caused and fixed (0 of 30).
+- `supabase/tests/cima-auto-send.sql` — **on the real migration chain**: 35 refusal assertions (conversation, subscription, switch, topic, knowledge, caps, table guards, privileges — each negative changes one thing and must be refused by the database itself),
+  the happy path (exact approved text, trusted conversation), claim semantics, kill switch at claim time, human items untouched,
+  privileges. Four sabotage controls (verbatim check, topic stage, kill switch at claim, hourly cap) each make it fail.
+- Two real bugs were found by tests while building phase 4 and fixed: a demotion that the same evaluation loop immediately undid,
+  and a threshold that ratcheted up on every evaluation instead of once per wrong mark.
 - (phase 1 detail) the engine, gate, shadow comparison, schema shape and purity checks (engine, gate, shadow comparison, schema shape, purity).
   Mutation-checked: removing the threshold check, the floor clamp, or the required-field gate each fails a test.
 - `supabase/tests/cima-topic-autonomy.sql` — transactional DB tests (rolled back). Run against a real Postgres 16:
@@ -170,14 +184,72 @@ Postgres 16 including negative controls). **Until both are applied the screen sh
   topic simply returns to needing fields, which is the safe direction.
 - Pairing, retrieval and label limits from phase 2 still apply.
 
-## Not in this change (next phase)
+## Phase 4 — automatic sending (off by default)
 
-4. Automatic sender through the existing human-send outbox (idempotency, receipts, UNKNOWN state, window check), the tenant
-   master switch UI + kill switch, runtime "verified field" check per customer, scheduled replay, per-topic dashboard,
-   and improved knowledge retrieval so coverage is not artificially low.
+**What an automatic answer is.** Always the **exact text of an approved knowledge entry** that belongs to the matched topic. The
+model never writes free text to a customer; the database enforces it (see below). An approved answer that itself mentions price,
+stock or commitments is not sent automatically.
 
-The `sima_response_candidates.confidence is null` database check is intentionally left as is until phase 4: per-topic
-confidence lives in this engine, not on individual drafts.
+**Every condition must hold at once** (`lib/crm/auto-answer.mjs`): tenant switch on and not paused · topic active, in stage `auto`,
+not never-auto · freshly measured confidence ≥ threshold ≥ owner floor · every required field **confirmed** for this customer ·
+no risk block in the customer's *whole current turn* (all consecutive inbound messages, not only the last) · not opted out ·
+inside the 23 h window · no send already pending · hourly and per-customer caps not reached.
+
+**Three server modes** (`CIMA_AUTO_MODE`): `off` (default; nothing is even evaluated), `dry_run` (decides and records the answer it
+*would* send, sends nothing), `live`. Dry-run decisions never count toward live caps.
+
+**Exactly once.** A decision row is inserted *before* anything external happens and is unique per customer turn, so a repeated or
+overlapping run skips it. Sending = database `prepare` → atomic `claim` → **one** dispatch → `finalize` with the same pessimistic
+rules as the human path: only a definite refusal (400/401/403/422/429) is `rejected`; a timeout, 5xx, 409-in-flight, missing
+receipt or partial failure is `unknown` and is **never retried**. The Zernio idempotency key is the outbox id.
+
+**Defence in depth, in the database** (`20261124_cima_auto_send.sql`, service-only entry points, never callable by browser roles).
+`sima_prepare_auto_send` re-verifies, regardless of what the application says: active CRM subscription; automatic replies on and
+not paused; topic active, `auto`, not never-auto; **the text equals the approved, unexpired entry's answer word for word at the same
+revision**; hourly and per-customer caps; and every rule the human path enforces (23 h window, opt-out, no newer business reply,
+one send per turn, verified identity, trusted conversation). `sima_claim_auto_send` re-checks the kill switch at the last moment and
+refuses human outbox items. Decisions are audited in `sima_auto_answers` (identity immutable, final statuses final).
+
+**Controls for the owner** (Sima → مدیریت → «موضوع‌ها و پاسخ خودکار» → «پاسخ خودکار»): turning ON or resuming needs an explicit
+acknowledgement; **«توقف فوری» is always available and needs none** — pausing makes the database demote every automatic topic at
+once. Caps are editable. The decision log shows every decision *including refusals and their reasons*, and **«اشتباه بود»** on a sent
+answer records a heavy failure (counts ×3), raises that topic's threshold by 0.02 (once per mark, never above 0.995, never below the
+floor) and re-evaluates it immediately.
+
+**Automatic demotion.** A circuit breaker pauses the tenant after three consecutive provider failures. A topic leaves `auto` when its
+confidence falls clearly below the threshold — with thin evidence one wrong answer is enough — or after three wrong answers in 30 days
+even with strong evidence (→ `shadow`). A demotion is final for that evaluation (it can no longer be undone by the same pass).
+
+**Rollout (suggested):**
+
+1. Apply migrations `20261122`, `20261123`, `20261124`.
+2. Set `CIMA_AUTO_CRON_SECRET` (≥ 32 random chars) and `CIMA_AUTO_MODE=dry_run`. Schedule `POST /api/crm/auto/run` with
+   `Authorization: Bearer <secret>` (e.g. every 5 minutes). Nothing is scheduled by the repository.
+3. Define required fields, activate topics, run replay until a topic reaches `auto`, switch the tenant's automatic replies on.
+4. Watch the decision log for days. Compare what CIMA *would* have sent with what you sent.
+5. Only then `CIMA_AUTO_MODE=live`, for one tenant first. Keep «توقف فوری» in reach; unset `CIMA_AUTO_MODE` (or set `off`) is the
+   global kill switch.
+
+**Known limits (be honest with the numbers):**
+
+- The application layer is tested against an in-memory fake database and a fake Zernio. The database functions are tested on a real
+  Postgres 16 **built from the repository's real migrations** (outbox, human review, Zernio, knowledge, phases 1–4) — but
+  that chain needed stubs for objects the repository itself does not create (see "Repository gaps"). Nothing ran against Supabase,
+  PostgREST or Zernio.
+- Confidence comes from replay/shadow evidence and from "wrong" marks. A sent answer is **not** automatically counted as correct
+  (there is no signal for that), so live use can lower confidence but only replay/shadow can raise it.
+- The threshold rises on wrong marks; **relaxing it is not implemented** (the pure function exists, nothing calls it).
+- Retrieval of the matching knowledge is still the conservative token-overlap search, so coverage may be low.
+- Only Instagram, only through the existing Zernio path. No scheduled runner, no per-customer verification beyond confirmed fields.
+
+**Repository gaps found while testing.** The repository's migrations do not rebuild the database on their own: `crm_learning_suggestions`
+(referenced by `20261019_cima_human_review_foundation.sql`) is never created in any file, `20261021_cima_verified_identity_projection.sql`
+needs `crm_zernio_*` columns that no file adds, and `service_code` / `is_admin()` come from files outside `supabase/migrations`.
+They were evidently applied directly to the database. This does not affect running production, but a fresh environment cannot be
+rebuilt from the repository.
+
+The `sima_response_candidates.confidence is null` database check is intentionally left as is: per-topic confidence lives in this
+engine, not on individual drafts.
 
 ## Operations
 

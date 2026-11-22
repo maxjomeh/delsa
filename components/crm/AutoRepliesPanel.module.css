@@ -1,0 +1,34 @@
+/* Sima workspace tokens; mobile-first. STOP is deliberately the most prominent control. */
+.panel{display:grid;gap:14px;min-width:0;padding:18px;border:1.5px solid var(--line);border-radius:20px;background:var(--panel);color:var(--ink)}
+.head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}
+.head h4{display:flex;align-items:center;gap:8px;margin:0 0 4px;font-size:18px;font-weight:800}
+.hint{margin:0;color:var(--muted);font-size:14px;line-height:1.8}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;min-height:30px;padding:0 12px;border:1px solid var(--line);border-radius:99px;font-size:13px;font-weight:600;color:var(--muted)}
+.chip[data-tone=live],.chip[data-tone=on],.chip[data-tone=sent]{color:var(--accentText,var(--accent));border-color:color-mix(in srgb,var(--accent) 50%,var(--line));background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.chip[data-tone=paused],.chip[data-tone=wrong],.chip[data-tone=rejected],.chip[data-tone=unknown],.chip[data-tone=failed]{color:var(--ink);border-color:#c0392b88;background:#c0392b14}
+.error,.notice{margin:0;padding:12px 16px;border-radius:16px;font-size:15px}
+.error{border:1.5px solid #c0392b66;background:#c0392b14}
+.notice{border:1.5px solid color-mix(in srgb,var(--accent) 40%,var(--line));background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.controls{display:flex;flex-wrap:wrap;gap:10px}
+.controls button,.caps button,.confirm button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border:1.5px solid var(--line2,var(--line));border-radius:13px;background:transparent;color:var(--ink);font-size:15px;font-weight:700}
+.controls button:disabled,.caps button:disabled,.confirm button:disabled{opacity:.55}
+.stop{min-height:52px!important;padding:0 26px!important;border-color:transparent!important;background:#c0392b!important;color:#fff!important;font-size:16px!important}
+.primary{border-color:transparent!important;background:linear-gradient(135deg,#ff7a3d,#ff5a1f 55%,#f2470d)!important;color:#1d0e06!important}
+.confirm{display:grid;gap:10px;width:100%;padding:14px;border:1.5px solid var(--line);border-radius:16px;background:var(--panel2)}
+.confirm label{display:flex;align-items:flex-start;gap:10px;font-size:15px;line-height:1.8}
+.confirm input{width:22px;height:22px;margin-top:4px;flex:none}
+.confirm button{justify-self:start}
+.caps{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px}
+.caps label{display:grid;gap:4px;font-size:14px;font-weight:700}
+.caps input{min-height:44px;width:120px;padding:0 12px;border:1.5px solid var(--line2,var(--line));border-radius:13px;background:var(--panel2);color:var(--ink);font-size:16px}
+.counts{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:14px;color:var(--muted)}
+.counts span{display:inline-flex;align-items:center;gap:6px}
+.counts b{color:var(--ink);font-size:16px}
+.log summary{cursor:pointer;min-height:40px;display:flex;align-items:center;font-size:15px;font-weight:700}
+.log ul{display:grid;gap:0;margin:0;padding:0;list-style:none}
+.log li{display:grid;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+.log li p{margin:0;color:var(--muted);font-size:14px}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.row small{color:var(--muted);font-size:13px;margin-inline-start:auto}
+.link{justify-self:start;min-height:40px;padding:0 4px;border:0;background:transparent;color:#c0392b;font-size:14px;font-weight:700}
