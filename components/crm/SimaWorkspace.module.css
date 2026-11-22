@@ -139,3 +139,6 @@
 .workspace .records article>div>strong{flex-basis:100%;font-size:16px}
 .workspace .records article :is(small,p){margin:0;font-size:14px;color:var(--muted)}
 .workspace .records article>button{flex:none}
+/* the dashboard frame already paints the page background; no boxed glow behind the workspace */
+:global(html) .workspace{background:none}
+:global(html:not([data-theme=dark])) .workspace,:global(html[data-theme=dark]) .workspace{background:none}

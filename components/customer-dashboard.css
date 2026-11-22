@@ -56,3 +56,83 @@ html.scroll-reveal-enabled .customer-shell > .customer-content.scroll-reveal{
 @media(max-width:640px){
   .customer-main--crm{padding-inline:13px}
 }
+
+/* ===== Homepage design language (v2) for the customer dashboard frame =====
+   Colours already come from the shared tokens (same palette as app/home.css); this block aligns shape,
+   type scale, navigation and buttons with the homepage and the redesigned Sima workspace. */
+html .customer-shell{--accentText:#983005;--soft:rgba(242,80,18,.14);--line2:rgba(26,22,18,.36);--btnInk:#1d0e06;--green:#14733f;--glass:rgba(255,250,241,.86);--cardsh:0 1px 0 #fff inset,0 18px 40px -26px rgba(70,45,15,.4);font-size:15px;line-height:1.9}
+html[data-theme=dark] .customer-shell{--accentText:#ff8a4c;--soft:rgba(255,90,31,.18);--line2:rgba(255,255,255,.28);--green:#52d68f;--glass:rgba(27,24,21,.74);--cardsh:0 1px 0 rgba(255,255,255,.05) inset}
+/* sidebar */
+html .customer-shell .customer-sidebar{background:var(--panel);border-inline-end:1.5px solid var(--line);padding:22px 16px}
+html .customer-shell .customer-sidebar>.brand{border-bottom:1.5px solid var(--line)}
+html .customer-shell .customer-account{border:1.5px solid var(--line);border-radius:16px;background:var(--panel2);padding:12px 14px}
+html .customer-shell .customer-account strong{font-size:14px;font-weight:700}
+html .customer-shell .customer-account small{font-size:12px}
+html .customer-shell .customer-nav-title{font-size:13px;font-weight:700;color:var(--muted)}
+html .customer-shell .customer-sidebar nav{gap:6px}
+html .customer-shell .customer-sidebar nav button{min-height:48px;padding:0 14px;border:0;border-radius:14px;background:transparent;box-shadow:none;color:var(--muted);font-size:15px;font-weight:700;gap:12px}
+html .customer-shell .customer-sidebar nav button:hover{background:var(--soft);color:var(--ink)}
+html .customer-shell .customer-sidebar nav button.active{background:var(--soft);color:var(--accentText);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--orange) 45%,transparent)}
+html .customer-shell .nav-new{font-size:12px}
+html .customer-shell .customer-help{border:1.5px solid var(--line);border-radius:16px;background:var(--panel2)}
+html .customer-shell .customer-help strong{font-size:14px}
+html .customer-shell .customer-help p{font-size:13px;line-height:1.8}
+html .customer-shell .customer-logout,html .customer-shell .customer-back{min-height:44px;font-size:14px;font-weight:600;border-radius:13px;color:var(--muted)}
+/* top bar: glass like the homepage header */
+html .customer-shell .customer-topbar{height:64px;font-size:14px;background:var(--glass);backdrop-filter:blur(16px);border-bottom:1.5px solid var(--line)}
+html .customer-shell .customer-topbar strong{font-size:15px;font-weight:800}
+html .customer-shell .customer-status{display:inline-flex;align-items:center;gap:9px;min-height:36px;padding:0 15px;border:1px solid var(--line2);border-radius:99px;background:var(--soft);color:var(--accentText);font-size:13px;font-weight:600}
+html .customer-shell .customer-status i{background:var(--green);box-shadow:0 0 0 4px color-mix(in srgb,var(--green) 22%,transparent)}
+/* heading */
+html .customer-shell .customer-main{padding-top:32px}
+html .customer-shell .customer-heading .customer-eyebrow{display:none}
+html .customer-shell .customer-heading h1{font-size:clamp(26px,3vw,34px);font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+html .customer-shell .customer-heading p{font-size:15px;line-height:1.9}
+/* cards and panels */
+html .customer-shell :is(.customer-panel,.customer-hero,.customer-stats article){border:1.5px solid var(--line);border-radius:20px;background:var(--panel);box-shadow:var(--cardsh)}
+html .customer-shell .customer-panel{padding:22px 24px}
+html .customer-shell .customer-hero{min-height:0;padding:24px 26px;background:linear-gradient(125deg,var(--panel2),var(--panel) 65%)}
+html .customer-shell .customer-panel-title h2,html .customer-shell .customer-panel h2{font-size:20px;font-weight:800;margin:0}
+html .customer-shell .customer-hero h2{font-size:22px;font-weight:800}
+html .customer-shell .customer-panel-title>div>span,html .customer-shell .customer-step-count,html .customer-shell .customer-count{font-size:13px}
+html .customer-shell .customer-panel p,html .customer-shell .customer-hero p,html .customer-shell .customer-step p{font-size:15px;line-height:1.9;color:var(--muted)}
+html .customer-shell .customer-stats{grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+html .customer-shell .customer-stats article{padding:20px 22px}
+html .customer-shell .customer-stats article>span{font-size:14px;font-weight:600}
+html .customer-shell .customer-stats article>strong{font-size:clamp(26px,2.6vw,34px)}
+html .customer-shell .customer-stats article>small{font-size:13px}
+html .customer-shell .customer-overview-grid{gap:14px}
+/* buttons */
+html .customer-shell .customer-primary{min-height:46px;padding:0 22px;border:0;border-radius:13px;background:linear-gradient(135deg,#ff7a3d,#ff5a1f 55%,#f2470d);color:var(--btnInk);font-size:15px;font-weight:800;box-shadow:0 12px 30px -10px rgba(255,90,31,.6)}
+html .customer-shell :is(.customer-quick-actions button,.customer-inline-link,.customer-cancel,.customer-form-actions button:not(.customer-primary)){min-height:44px;padding:0 18px;border:1.5px solid var(--line2);border-radius:13px;background:transparent;color:var(--ink);font-size:14px;font-weight:700}
+html .customer-shell :is(.customer-quick-actions button,.customer-inline-link):hover{border-color:var(--orange);background:var(--soft)}
+/* forms, lists, footer */
+html .customer-shell :is(.customer-form input,.customer-form select,.customer-form textarea,.support-compose textarea){min-height:46px;border:1.5px solid var(--line2);border-radius:13px;background:var(--panel2);color:var(--ink);font-size:15px}
+html .customer-shell .customer-form label{font-size:14px}
+html .customer-shell .customer-record{border:1.5px solid var(--line);border-radius:16px;background:var(--panel2)}
+html .customer-shell .record-main strong{font-size:15px}
+html .customer-shell :is(.record-main span,.record-main a,.record-value small,.customer-footnote){font-size:13px}
+html .customer-shell .customer-footer{font-size:13px;border-top:1.5px solid var(--line)}
+html .customer-shell .customer-notice{border:1.5px solid var(--line2);border-radius:16px;font-size:14px}
+/* mobile: brand and account on one row, tabs below (no overlap, no clipped labels) */
+@media(max-width:640px){
+ html .customer-shell .customer-sidebar{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:12px 14px 10px;border-bottom:1.5px solid var(--line)}
+ html .customer-shell .customer-sidebar>.brand{order:1;flex:none;padding:0;border:0}
+ html .customer-shell .customer-account{order:2;position:static;margin:0 auto 0 0;margin-inline-start:auto;margin-inline-end:0;max-width:60%;padding:5px 10px;border-radius:99px}
+ html .customer-shell .customer-account small{display:none}
+ html .customer-shell .customer-account strong{font-size:13px}
+ html .customer-shell .customer-sidebar nav{order:3;flex:0 0 100%;display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px}
+ html .customer-shell .customer-sidebar nav button{flex:none;min-height:42px;padding:0 14px;font-size:14px;gap:8px}
+ html .customer-shell .customer-topbar{height:56px}
+ html .customer-shell .customer-main{padding-top:20px}
+ html .customer-shell .customer-panel{padding:18px}
+ html .customer-shell .customer-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+}
+/* Sima has its own header: avoid a duplicated title in the CRM tab; hide decorative English eyebrow in hero */
+html .customer-shell .customer-main--crm .customer-heading{display:none}
+html .customer-shell .customer-main--crm{padding-top:22px}
+html .customer-shell .customer-hero>div:nth-child(2)>span{display:none}
+@media(max-width:640px){html .customer-shell .customer-stats article:last-child:nth-child(odd){grid-column:1/-1}}
+html .customer-shell :is(.support-online,.support-message time){font-size:13px}
+html .customer-shell :is(.support-empty,.support-message p,.support-welcome p){font-size:15px}
+html .customer-shell .support-welcome strong{font-size:16px}
