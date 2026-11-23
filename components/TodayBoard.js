@@ -73,7 +73,7 @@ export default function TodayBoard({db,userId,name,onOpen}){
 
     <div className={styles.counters}>
       <button type="button" className={waiting.length?styles.hot:''} onClick={()=>onOpen('reviews')}><MessageCircle size={22} aria-hidden="true"/><strong>{num(waiting.length)}</strong><span>پیام بی‌پاسخ</span></button>
-      <button type="button" className={overdue.length?styles.hot:''} onClick={()=>onOpen('tasks')}><CalendarCheck size={22} aria-hidden="true"/><strong>{num(due.length)}</strong><span>پیگیری امروز{overdue.length?` · ${num(overdue.length)} عقب‌افتاده`:''}</span></button>
+      <button type="button" className={overdue.length?styles.hot:''} onClick={()=>onOpen('tasks')}><CalendarCheck size={22} aria-hidden="true"/><strong>{num(due.length)}</strong><span>پیگیری امروز{overdue.length?`، ${num(overdue.length)} عقب‌افتاده`:''}</span></button>
       <button type="button" onClick={()=>onOpen('leads')}><Target size={22} aria-hidden="true"/><strong>{num(openLeads.length)}</strong><span>فرصت فروش باز</span></button>
       <button type="button" onClick={()=>onOpen('orders')}><Wallet size={22} aria-hidden="true"/><strong>{num(paidSum)}</strong><span>فروش امروز · تومان</span></button>
     </div>
@@ -94,7 +94,7 @@ export default function TodayBoard({db,userId,name,onOpen}){
         <section className={styles.card} aria-labelledby="today-tasks">
           <div className={styles.cardHead}><h2 id="today-tasks">پیگیری‌های امروز</h2>{due.length>0&&<button type="button" onClick={()=>onOpen('tasks')}>همه <ChevronLeft size={16} aria-hidden="true"/></button>}</div>
           {due.length===0?<p className={styles.empty}>پیگیری سررسیدشده‌ای نیست.</p>:<ul className={styles.list}>{due.slice(0,5).map(t=><li key={t.id} className={styles.task}>
-            <span className={styles.body}><strong>{t.title}</strong><small>{label(byId.get(t.customer_id))} · {tehranDay(t.due_at)<todayKey?'عقب‌افتاده':clock(t.due_at)}</small></span>
+            <span className={styles.body}><strong>{t.title}</strong><small>{label(byId.get(t.customer_id))}، {tehranDay(t.due_at)<todayKey?'عقب‌افتاده':clock(t.due_at)}</small></span>
             <button type="button" className={styles.done} disabled={busyTask===t.id} onClick={()=>complete(t)} aria-label={`انجام شد: ${t.title}`}><Check size={18} aria-hidden="true"/>انجام شد</button>
           </li>)}</ul>}
         </section>
