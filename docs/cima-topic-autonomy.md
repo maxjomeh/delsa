@@ -290,5 +290,15 @@ A read-only SQL export (`supabase/exports/cima-readiness-export.sql`: hashed ids
 
 ## Operations
 
-The migration has **not** been applied to any production database by this change. Apply through the normal process
-after review; it is additive and idempotent.
+Migration status on the live Delsa database (`delsa-backend`, Postgres 17), recorded 2026-11-23:
+
+- `20261122_cima_topic_autonomy.sql` and `20261123_cima_topic_runtime.sql` were applied by the owner through the Supabase SQL
+  editor; both returned success and the five `sima_topic*`/`sima_autonomy_settings` tables exist with RLS on and no policies
+  (service-role access only). They were tested on Postgres 16, not 17; nothing version-specific is known.
+- `20261124_cima_auto_send.sql` is **not** applied (`sima_auto_answers` does not exist). Its column prerequisites were checked
+  against the live schema (`customer_subscriptions`, `store_products.service_code`, `crm_*`, `sima_human_review_cases`,
+  `sima_message_outbox`, `sima_knowledge_entries`) and the live `sima_claim_human_send(uuid)` is the one it delegates to.
+  It does not redefine that function. Apply it only when the dry-run stage is wanted; automatic sending stays off until
+  `CIMA_AUTO_MODE` is set.
+
+Migrations are additive and idempotent. Apply the rest through the normal process after review.
