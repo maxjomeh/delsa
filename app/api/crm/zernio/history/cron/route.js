@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import {timingSafeEqual} from 'node:crypto';
 import {serverDatabase} from '../../../../../../lib/crm/instagram';
-import {nextHistoryPage} from '../../../../../../lib/crm/zernio-history.mjs';
+import {nextHistoryPage,historyCandidates} from '../../../../../../lib/crm/zernio-history.mjs';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -15,16 +15,8 @@ const permitted=request=>{
  return a.length===b.length&&timingSafeEqual(a,b);
 };
 async function bootstrap(db){
- const {data,error}=await db.from('crm_zernio_events').select('tenant_id,profile_id,account_id,payload')
-  .in('event_type',['account.connected','message.received']).order('received_at',{ascending:false}).limit(3000);
- if(error)throw error;
  const unique=new Map();
- for(const e of data){
-  if(!e.account_id||!/^[a-f0-9]{24}$/i.test(e.account_id))continue;
-  const platform=e.payload?.account?.platform;
-  if(!['instagram','facebook'].includes(platform))continue;
-  const k=e.tenant_id+':'+e.account_id;if(!unique.has(k))unique.set(k,e);
- }
+ for(const e of await historyCandidates(db))unique.set(e.tenant_id+':'+e.account_id,e);
  const {data:jobs,error:jobsError}=await db.from('crm_zernio_history_jobs').select('tenant_id,account_id,status,completed_at,started_at,last_run_at,errors').limit(1000);
  if(jobsError)throw jobsError;
  const current=new Map(jobs.map(j=>[j.tenant_id+':'+j.account_id,j]));

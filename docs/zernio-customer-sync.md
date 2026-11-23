@@ -24,3 +24,11 @@ Never expose Zernio/Vercel keys to the browser or chat. Identity mapping is priv
 - CI runs Node customer intelligence/inbox/webhook tests plus `npm run build`.
 - After production promotion: send a **new** Instagram DM to a connected business account, verify the new event is queued and then processed, and check the single customer profile's activity and need suggestion. Old `message.read` events should not create conversations.
 - Reconnect or move a social account only with its owner's consent.
+
+## History worker egress (2026-11-23)
+`app/api/crm/zernio/history/cron/route.js` runs every 2 minutes (pg_cron `sima_zernio_historical_inbox_scan`). Each run used to download the
+full JSON payload of up to 3000 events through PostgREST only to learn which (tenant, account) pairs exist. Migration
+`20261125_zernio_history_candidates.sql` adds `crm_zernio_history_candidates()` (service role only) which does the same selection inside
+the database and returns just the pairs; the route uses it and falls back to the previous query if the function is not installed yet.
+Verified on Postgres 16: identical output to the previous selection (including the 3000-event window), about 2000x fewer bytes on synthetic
+data. Whether this was the main source of the project's egress is **not** confirmed; check Supabase Usage after applying.
